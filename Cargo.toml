@@ -1,0 +1,15 @@
+[package]
+name = "planetarium"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.92"
+authors = ["Oleg Alexandrov <alexandrovoleg.ru@gmail.com>"]
+readme = "README.md"
+license = "MIT"
+homepage = "https://teratron.github.io/planetarium"
+documentation = "https://teratron.github.io/planetarium"
+repository = "https://github.com/teratron/planetarium"
+keywords = []
+
+[dependencies]
+bevy = "0.18.0"
