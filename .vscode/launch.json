@@ -1,5 +1,14 @@
 {
     "version": "0.2.0",
+	"environment": [
+		{
+			"name": "PATH",
+			"value": "%USERPROFILE%/.rustup/toolchains/stable-x86_64-pc-windows-msvc/bin;${workspaceFolder}/target/debug/deps;%PATH%"
+		}
+	],
+	"env": {
+		"PATH": "${env:USERPROFILE}/.rustup/toolchains/stable-x86_64-pc-windows-msvc/bin;${workspaceFolder}/target/debug/deps;${env:PATH}"
+	},
     "configurations": [
         {
             "name": "Run Bevy Project",
