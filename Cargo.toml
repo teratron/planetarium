@@ -12,7 +12,22 @@ documentation = "https://teratron.github.io/planetarium/docs"
 repository = "https://github.com/teratron/planetarium"
 keywords = ["rust", "bevy", "game", "simulation", "planetarium"]
 categories = ["games", "simulation", "science"]
-exclude = ["examples/*", "assets/*", "docs/*", "target/*"]
+exclude = ["examples/*", "docs/*", "target/*"]
 
 [dependencies]
-bevy = "0.18.0"
+bevy = { version = "0.18.0", features = ["free_camera"] }
+
+[workspace]
+resolver = "2"
+members = ["examples/*"]
+
+[[example]]
+name = "hello"
+path = "examples/hello.rs"
+doc-scrape-examples = false
+
+[package.metadata.example.hello]
+name = "Hello"
+description = "A quick start guide example demonstrating the basic features."
+category = "Getting Started Guide"
+wasm = false
