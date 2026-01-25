@@ -2,17 +2,17 @@
 name = "planetarium"
 version = "0.1.0"
 edition = "2024"
-rust-version = "1.92"
+rust-version = "1.93"
 authors = ["Oleg Alexandrov <alexandrovoleg.ru@gmail.com>"]
 readme = "README.md"
-description = ""
+description = "A planetarium simulation built with Bevy game engine."
 license = "MIT"
 homepage = "https://teratron.github.io/planetarium"
 documentation = "https://teratron.github.io/planetarium/docs"
 repository = "https://github.com/teratron/planetarium"
-keywords = ["rust", "bevy"]
-categories = []
-exclude  = []
+keywords = ["rust", "bevy", "game", "simulation", "planetarium"]
+categories = ["games", "simulation", "science"]
+exclude = ["examples/*", "assets/*", "docs/*", "target/*"]
 
 [dependencies]
 bevy = "0.18.0"

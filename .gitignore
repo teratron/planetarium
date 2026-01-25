@@ -5,9 +5,9 @@
 # Remove Cargo.lock from gitignore if it is present in a library or binary crate, but it should be checked in for binaries.
 Cargo.lock
 
-# Ignore IDE files
+# IDE files
 .idea/
-.vscode/
-!.vscode/settings.json
-!.vscode/launch.json
-!.vscode/tasks.json
+#.vscode/
+#!.vscode/settings.json
+#!.vscode/launch.json
+#!.vscode/tasks.json
