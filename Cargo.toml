@@ -11,8 +11,8 @@ homepage = "https://teratron.github.io/planetarium"
 documentation = "https://teratron.github.io/planetarium/docs"
 repository = "https://github.com/teratron/planetarium"
 keywords = ["rust", "bevy", "game", "simulation", "planetarium"]
-categories = ["games", "simulation", "science"]
-exclude = ["examples/*", "docs/*", "target/*"]
+categories = ["games", "simulation"]
+exclude = ["examples/*", "docs/*", "tests/*", "target/*"]
 
 [dependencies]
 bevy = { version = "0.18.0", features = ["free_camera"] }
