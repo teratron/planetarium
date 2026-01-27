@@ -11,18 +11,10 @@ impl Plugin for FloorPlugin {
 
 fn spawn_floor(
     mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    mut meshes: ResMut<Assets<Mesh>>,
 ) {
-    /*let floor = (
-        Mesh3d(meshes.add(Circle::new(4.0))),
-        MeshMaterial3d(materials.add(Color::WHITE)),
-        Transform::from_rotation(Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2)),
-    );
-	commands.spawn(floor);*/
-
     let white_material = materials.add(Color::WHITE);
-
     let floor = meshes.add(Plane3d::new(Vec3::Y, Vec2::splat(10.0)));
 
     // Top side of floor

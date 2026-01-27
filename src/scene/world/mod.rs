@@ -1,10 +1,19 @@
 use bevy::prelude::*;
-use std::f32::consts::{FRAC_PI_4, PI};
+use std::f32::consts::FRAC_PI_4;
 
 use crate::tailwind;
 
 pub mod floor;
-pub mod light;
+mod wall;
+
+pub struct WorldPlugin;
+
+impl Plugin for WorldPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(Startup, spawn_world);
+        app.add_plugins(floor::FloorPlugin);
+    }
+}
 
 fn spawn_world(
     mut commands: Commands,
@@ -12,7 +21,7 @@ fn spawn_world(
     mut meshes: ResMut<Assets<Mesh>>,
 ) {
     let cube = meshes.add(Cuboid::new(1.0, 1.0, 1.0));
-    let floor = meshes.add(Plane3d::new(Vec3::Y, Vec2::splat(10.0)));
+    //let floor = meshes.add(Plane3d::new(Vec3::Y, Vec2::splat(10.0)));
     let sphere = meshes.add(Sphere::new(0.5));
     let wall = meshes.add(Cuboid::new(0.2, 4.0, 3.0));
 
@@ -20,17 +29,6 @@ fn spawn_world(
     let red_material = materials.add(Color::from(tailwind::RED_950));
     let white_material = materials.add(Color::WHITE);
 
-    // Top side of floor
-    commands.spawn((
-        Mesh3d(floor.clone()),
-        MeshMaterial3d(white_material.clone()),
-    ));
-    // Under side of floor
-    commands.spawn((
-        Mesh3d(floor.clone()),
-        MeshMaterial3d(white_material.clone()),
-        Transform::from_xyz(0.0, -0.01, 0.0).with_rotation(Quat::from_rotation_x(PI)),
-    ));
     // Blue sphere
     commands.spawn((
         Mesh3d(sphere.clone()),
