@@ -16,6 +16,7 @@ exclude = ["examples/*", "docs/*", "tests/*", "target/*"]
 
 [dependencies]
 bevy = { version = "0.18.0", features = ["free_camera"] }
+#bevy = "0.18.0"
 
 [workspace]
 resolver = "2"

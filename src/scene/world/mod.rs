@@ -1,10 +1,8 @@
 use bevy::prelude::*;
 use std::f32::consts::FRAC_PI_4;
 
-use crate::{
-    scene::world::{floor::FloorPlugin, wall::WallPlugin},
-    tailwind,
-};
+use crate::scene::world::{floor::FloorPlugin, wall::WallPlugin};
+use bevy::color::palettes::tailwind;
 
 mod floor;
 mod wall;

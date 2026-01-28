@@ -1,6 +1,4 @@
-use bevy::{
-    camera_controller::free_camera::FreeCameraPlugin, color::palettes::tailwind, prelude::*,
-};
+use bevy::{camera_controller::free_camera::FreeCameraPlugin, prelude::*};
 
 mod scene;
 
