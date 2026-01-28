@@ -1,29 +1,28 @@
+---
+trigger: always_on
+---
+
 # Rust SemVer
 
 ## Versioning Basics
 
 **Version Format:** `MAJOR.MINOR.PATCH`
-
 - **MAJOR** — incompatible API changes
 - **MINOR** — backwards-compatible new features
 - **PATCH** — backwards-compatible bug fixes
 
 **0.y.z releases:** changes in `y` = major, changes in `z` = minor
 
----
-
 ## Change Categories
 
 ### 🔴 MAJOR (require major version bump)
 
 **Working with Public Items:**
-
 - ❌ Removing/renaming/moving any public items
 - ❌ Adding a private struct field when all current fields are public
 - ❌ Adding a public field when no private field exists
 
 **Type and Representation Changes:**
-
 - ❌ Changing alignment/layout/size of well-defined types
 - ❌ Adding/removing `repr(packed)`, `repr(align)`, `repr(C)` for types with public fields
 - ❌ Changing `repr(packed(N))` or `repr(align(N))` if it changes alignment/layout
@@ -33,50 +32,40 @@
 - ❌ Changing order of public fields in `repr(C)` types
 
 **Enums:**
-
 - ❌ Adding new enum variants (without `#[non_exhaustive]`)
 - ❌ Adding new fields to enum variants
 
 **Traits:**
-
 - ❌ Adding non-defaulted trait item
 - ❌ Any change to trait item signatures
 - ❌ Adding trait item that makes trait non-object-safe
 - ❌ Adding type parameter without default
 
 **Generics:**
-
 - ❌ Tightening generic bounds
 - ❌ Generalizing type to use generics (with possibly different types)
 - ❌ Capturing more generic parameters in RPIT
 
 **Functions:**
-
 - ❌ Adding/removing function parameters
 - ❌ Generalizing function with type mismatch
 
 **Attributes:**
-
 - ❌ Switching from `no_std` support to requiring `std`
 - ❌ Adding `#[non_exhaustive]` to existing enum/variant/struct with no private fields
 
 **Cargo:**
-
 - ❌ Removing a Cargo feature
 - ❌ Removing feature from list if it changes functionality
-
----
 
 ### 🟢 MINOR (require minor version bump)
 
 **Adding Items:**
-
 - ✅ Adding new public items (functions, types, modules)
 - ✅ Adding/removing private fields when at least one already exists
 - ✅ Going from tuple struct with all private fields to normal struct, or vice versa
 
 **Representation Changes:**
-
 - ✅ Changing private fields in `repr(C)` types
 - ✅ Adding variants to `repr(C)` enum with `#[non_exhaustive]`
 - ✅ Adding `repr(C)` to default representation
@@ -84,7 +73,6 @@
 - ✅ Adding `repr(transparent)` to default representation
 
 **Generics:**
-
 - ✅ Loosening generic bounds
 - ✅ Adding defaulted type parameters
 - ✅ Generalizing type to use generics (with identical types)
@@ -92,17 +80,13 @@
 - ✅ Capturing fewer generic parameters in RPIT
 
 **Functions:**
-
 - ✅ Generalizing function to use generics (supporting original type)
 - ✅ Making an `unsafe` function safe
 
 **Cargo:**
-
 - ✅ Adding new Cargo feature
 - ✅ Changing dependency features (if no breaking changes)
 - ✅ Adding dependencies
-
----
 
 ### ⚠️ POSSIBLY-BREAKING (depends on context)
 
@@ -113,8 +97,6 @@
 - ⚠️ Changing platform and environment requirements
 - ⚠️ Removing optional dependency (if it's in feature list)
 - ⚠️ Introducing new lints (may break projects with `#![deny(warnings)]`)
-
----
 
 ## Mitigation Strategies for Breaking Changes
 
@@ -148,14 +130,11 @@
 2. Don't include potentially breaking features in `default`
 3. Use `dep:` syntax for optional dependencies
 
----
-
 ## Change Verification Checklist
 
 ### Before Release Always Check
 
 **API Changes:**
-
 - [ ] Removed/renamed public items? → MAJOR
 - [ ] Changed public function signatures? → MAJOR
 - [ ] Added fields to struct with public fields? → MAJOR
@@ -163,23 +142,18 @@
 - [ ] Changed generic bounds? → check tightening/loosening
 
 **Type Layout:**
-
 - [ ] Changed `repr` attributes? → check table above
 - [ ] Changed size/alignment of type with documented layout? → MAJOR
 
 **Dependencies:**
-
 - [ ] Removed features? → MAJOR
 - [ ] Removed optional dependencies? → POSSIBLY-BREAKING
 - [ ] Increased minimum Rust version? → POSSIBLY-BREAKING
 
 **Documentation:**
-
 - [ ] All public changes documented?
 - [ ] CHANGELOG updated?
 - [ ] Migration guide provided (for major changes)?
-
----
 
 ## Specifics for Different Situations
 
@@ -206,26 +180,22 @@
 - May break projects with `#![deny(warnings)]`
 - This is acceptable, but document it
 
----
-
 ## Quick Reference: Common Scenarios
 
-| Change                                       | Version | Note                    |
-|----------------------------------------------|---------|-------------------------|
-| Adding function                              | MINOR   | Safe                    |
-| Removing function                            | MAJOR   | Use deprecation         |
-| Changing function parameters                 | MAJOR   | Create new function     |
-| Adding trait method with default             | MINOR   | But may conflict        |
-| Changing trait method                        | MAJOR   | Create new trait        |
-| Adding field to struct (all fields public)   | MAJOR   | Use `#[non_exhaustive]` |
-| Adding field (has private fields)            | MINOR   | Safe                    |
-| Adding enum variant without `non_exhaustive` | MAJOR   | Use `#[non_exhaustive]` |
-| Adding `#[must_use]`                         | MINOR   | Lint, not breaking      |
-| Changing MSRV                                | MINOR*  | *Per recommendations    |
-| Adding `repr(C)`                             | MINOR   | To default repr         |
-| Removing `repr(C)`                           | MAJOR   | If layout matters       |
-
----
+| Change | Version | Note |
+|----|----|----|
+| Adding function | MINOR | Safe |
+| Removing function | MAJOR | Use deprecation |
+| Changing function parameters | MAJOR | Create new function |
+| Adding trait method with default | MINOR | But may conflict |
+| Changing trait method | MAJOR | Create new trait |
+| Adding field to struct (all fields public) | MAJOR | Use `#[non_exhaustive]` |
+| Adding field (has private fields) | MINOR | Safe |
+| Adding enum variant without `non_exhaustive` | MAJOR | Use `#[non_exhaustive]` |
+| Adding `#[must_use]` | MINOR | Lint, not breaking |
+| Changing MSRV | MINOR* | *Per recommendations |
+| Adding `repr(C)` | MINOR | To default repr |
+| Removing `repr(C)` | MAJOR | If layout matters |
 
 ## Decision-Making Principles
 
@@ -235,8 +205,6 @@
 4. **Test with cargo-semver-checks:** Automated verification
 5. [**Follow API Guidelines:**](https://rust-lang.github.io/api-guidelines/)
 6. **Communicate with users:** Especially for edge cases
-
----
 
 ## Verification Tools
 
@@ -249,8 +217,6 @@
 - [Cargo SemVer Reference](https://doc.rust-lang.org/cargo/reference/semver.html)
 - [API Guidelines](https://rust-lang.github.io/api-guidelines/)
 - [SemVer Specification](https://semver.org/)
-
----
 
 ## Advanced Scenarios
 
@@ -304,8 +270,6 @@ pub trait MyTrait: private::Sealed {
 impl private::Sealed for MyType {}
 impl MyTrait for MyType {}
 ```
-
----
 
 ## Common Pitfalls to Avoid
 
@@ -402,8 +366,6 @@ pub trait Handler {
     cargo semver-checks check-release
 ```
 
----
-
 ## When Breaking Changes Are Necessary
 
 Sometimes breaking changes are inevitable. When they are:
@@ -433,8 +395,6 @@ Sometimes breaking changes are inevitable. When they are:
     new_function(&data);
     ```
 ```
-
----
 
 ## Summary Flowchart
 
