@@ -1,9 +1,12 @@
 use bevy::prelude::*;
 use std::f32::consts::FRAC_PI_4;
 
-use crate::tailwind;
+use crate::{
+    scene::world::{floor::FloorPlugin, wall::WallPlugin},
+    tailwind,
+};
 
-pub mod floor;
+mod floor;
 mod wall;
 
 pub struct WorldPlugin;
@@ -11,7 +14,7 @@ pub struct WorldPlugin;
 impl Plugin for WorldPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_world);
-        app.add_plugins(floor::FloorPlugin);
+        app.add_plugins((FloorPlugin, WallPlugin));
     }
 }
 
@@ -21,25 +24,17 @@ fn spawn_world(
     mut meshes: ResMut<Assets<Mesh>>,
 ) {
     let cube = meshes.add(Cuboid::new(1.0, 1.0, 1.0));
-    //let floor = meshes.add(Plane3d::new(Vec3::Y, Vec2::splat(10.0)));
     let sphere = meshes.add(Sphere::new(0.5));
-    let wall = meshes.add(Cuboid::new(0.2, 4.0, 3.0));
 
     let blue_material = materials.add(Color::from(tailwind::BLUE_700));
     let red_material = materials.add(Color::from(tailwind::RED_950));
-    let white_material = materials.add(Color::WHITE);
+    //let white_material = materials.add(Color::WHITE);
 
     // Blue sphere
     commands.spawn((
         Mesh3d(sphere.clone()),
         MeshMaterial3d(blue_material.clone()),
         Transform::from_xyz(3.0, 1.5, 0.0),
-    ));
-    // Tall wall
-    commands.spawn((
-        Mesh3d(wall.clone()),
-        MeshMaterial3d(white_material.clone()),
-        Transform::from_xyz(-3.0, 2.0, 0.0),
     ));
     // Cube behind wall
     commands.spawn((

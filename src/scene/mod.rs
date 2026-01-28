@@ -3,9 +3,11 @@ mod light;
 mod world;
 
 use bevy::prelude::*;
-use camera::{CameraPlugin, CameraSettingsPlugin};
-use light::LightPlugin;
-use world::WorldPlugin;
+use crate::scene::{
+    camera::{CameraPlugin, CameraSettingsPlugin},
+    light::LightPlugin,
+    world::WorldPlugin,
+};
 
 pub struct ScenePlugin;
 
