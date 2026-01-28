@@ -339,8 +339,6 @@ pub trait Handler {
 }
 ```
 
----
-
 ## Edition-Specific Considerations
 
 ### Rust 2024 RPIT Capturing
@@ -354,8 +352,6 @@ pub trait Handler {
 - repr(packed) affects closure captures
 - Can cause compilation errors in user code
 - Consider this when changing repr attributes
-
----
 
 ## Testing Strategy
 

@@ -13,14 +13,15 @@ Skills are modular, self-contained packages that extend Claude's capabilities by
 
 ### What Skills Provide
 
-1.  **Specialized workflows** - Multi-step procedures for specific domains
-2.  **Tool integrations** - Instructions for working with specific file formats or APIs
-3.  **Domain expertise** - Company-specific knowledge, schemas, business logic
-4.  **Bundled resources** - Scripts, references, and assets for complex and repetitive tasks
+1. **Specialized workflows** - Multi-step procedures for specific domains
+2. **Tool integrations** - Instructions for working with specific file formats or APIs
+3. **Domain expertise** - Company-specific knowledge, schemas, business logic
+4. **Bundled resources** - Scripts, references, and assets for complex and repetitive tasks
 
 ## Core Principles
 
 ### Concise is Key
+
 The context window is a public good. Skills share the context window with everything else Claude needs: system prompt, conversation history, other Skills' metadata, and the actual user request.
 
 **Default assumption: Claude is already very smart.** Only add context Claude doesn't already have. Challenge each piece of information: "Does Claude really need this explanation?" and "Does this paragraph justify its token cost?"
@@ -28,16 +29,18 @@ The context window is a public good. Skills share the context window with everyt
 Prefer concise examples over verbose explanations.
 
 ### Set Appropriate Degrees of Freedom
+
 Match the level of specificity to the task's fragility and variability:
 
-*   **High freedom (text-based instructions)**: Use when multiple approaches are valid, decisions depend on context, or heuristics guide the approach.
-*   **Medium freedom (pseudocode or scripts with parameters)**: Use when a preferred pattern exists, some variation is acceptable, or configuration affects behavior.
-*   **Low freedom (specific scripts, few parameters)**: Use when operations are fragile and error-prone, consistency is critical, or a specific sequence must be followed.
+* **High freedom (text-based instructions)**: Use when multiple approaches are valid, decisions depend on context, or heuristics guide the approach.
+* **Medium freedom (pseudocode or scripts with parameters)**: Use when a preferred pattern exists, some variation is acceptable, or configuration affects behavior.
+* **Low freedom (specific scripts, few parameters)**: Use when operations are fragile and error-prone, consistency is critical, or a specific sequence must be followed.
 
 ### Anatomy of a Skill
+
 Every skill consists of a required SKILL.md file and optional bundled resources:
 
-```
+```text
 skill-name/
 ├── SKILL.md (required)
 │   ├── YAML frontmatter metadata (required)
@@ -52,14 +55,16 @@ skill-name/
 
 ## Skill Creation Process
 
-1.  **Understand the skill with concrete examples**: Identify patterns and triggers.
-2.  **Plan reusable skill contents**: Scripts for automation, references for knowledge, assets for templates.
-3.  **Initialize the skill**: Run `scripts/init_skill.py <name> --path <location>`.
-4.  **Edit the skill**: Write SKILL.md and implement resources. Use imperative form.
-5.  **Package the skill**: Run `scripts/package_skill.py <path>`.
-6.  **Iterate**: Test on real tasks and refine.
+1. **Understand the skill with concrete examples**: Identify patterns and triggers.
+2. **Plan reusable skill contents**: Scripts for automation, references for knowledge, assets for templates.
+3. **Initialize the skill**: Run `scripts/init_skill.py <name> --path <location>`.
+4. **Edit the skill**: Write SKILL.md and implement resources. Use imperative form.
+5. **Package the skill**: Run `scripts/package_skill.py <path>`.
+6. **Iterate**: Test on real tasks and refine.
 
 ### Design Patterns
+
 Refer to these guides for advanced implementations:
-- **Multi-step processes**: See [references/workflows.md](references/workflows.md)
-- **Output quality standards**: See [references/output-patterns.md](references/output-patterns.md)
+
+* **Multi-step processes**: See [references/workflows.md](references/workflows.md)
+* **Output quality standards**: See [references/output-patterns.md](references/output-patterns.md)
