@@ -1,12 +1,7 @@
-use bevy::{camera_controller::free_camera::FreeCameraPlugin, prelude::*};
-
-mod scene;
-
-use scene::ScenePlugin;
+use bevy::prelude::*;
 
 fn main() {
     App::new()
-        .add_plugins((DefaultPlugins, FreeCameraPlugin))
-        .add_plugins(ScenePlugin)
-        .run();
+    .add_plugins(DefaultPlugins)
+    .run();
 }

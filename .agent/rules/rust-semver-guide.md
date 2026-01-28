@@ -7,6 +7,7 @@ trigger: always_on
 ## Versioning Basics
 
 **Version Format:** `MAJOR.MINOR.PATCH`
+
 - **MAJOR** — incompatible API changes
 - **MINOR** — backwards-compatible new features
 - **PATCH** — backwards-compatible bug fixes
@@ -18,11 +19,13 @@ trigger: always_on
 ### 🔴 MAJOR (require major version bump)
 
 **Working with Public Items:**
+
 - ❌ Removing/renaming/moving any public items
 - ❌ Adding a private struct field when all current fields are public
 - ❌ Adding a public field when no private field exists
 
 **Type and Representation Changes:**
+
 - ❌ Changing alignment/layout/size of well-defined types
 - ❌ Adding/removing `repr(packed)`, `repr(align)`, `repr(C)` for types with public fields
 - ❌ Changing `repr(packed(N))` or `repr(align(N))` if it changes alignment/layout
@@ -32,40 +35,48 @@ trigger: always_on
 - ❌ Changing order of public fields in `repr(C)` types
 
 **Enums:**
+
 - ❌ Adding new enum variants (without `#[non_exhaustive]`)
 - ❌ Adding new fields to enum variants
 
 **Traits:**
+
 - ❌ Adding non-defaulted trait item
 - ❌ Any change to trait item signatures
 - ❌ Adding trait item that makes trait non-object-safe
 - ❌ Adding type parameter without default
 
 **Generics:**
+
 - ❌ Tightening generic bounds
 - ❌ Generalizing type to use generics (with possibly different types)
 - ❌ Capturing more generic parameters in RPIT
 
 **Functions:**
+
 - ❌ Adding/removing function parameters
 - ❌ Generalizing function with type mismatch
 
 **Attributes:**
+
 - ❌ Switching from `no_std` support to requiring `std`
 - ❌ Adding `#[non_exhaustive]` to existing enum/variant/struct with no private fields
 
 **Cargo:**
+
 - ❌ Removing a Cargo feature
 - ❌ Removing feature from list if it changes functionality
 
 ### 🟢 MINOR (require minor version bump)
 
 **Adding Items:**
+
 - ✅ Adding new public items (functions, types, modules)
 - ✅ Adding/removing private fields when at least one already exists
 - ✅ Going from tuple struct with all private fields to normal struct, or vice versa
 
 **Representation Changes:**
+
 - ✅ Changing private fields in `repr(C)` types
 - ✅ Adding variants to `repr(C)` enum with `#[non_exhaustive]`
 - ✅ Adding `repr(C)` to default representation
@@ -73,6 +84,7 @@ trigger: always_on
 - ✅ Adding `repr(transparent)` to default representation
 
 **Generics:**
+
 - ✅ Loosening generic bounds
 - ✅ Adding defaulted type parameters
 - ✅ Generalizing type to use generics (with identical types)
@@ -80,10 +92,12 @@ trigger: always_on
 - ✅ Capturing fewer generic parameters in RPIT
 
 **Functions:**
+
 - ✅ Generalizing function to use generics (supporting original type)
 - ✅ Making an `unsafe` function safe
 
 **Cargo:**
+
 - ✅ Adding new Cargo feature
 - ✅ Changing dependency features (if no breaking changes)
 - ✅ Adding dependencies
@@ -135,6 +149,7 @@ trigger: always_on
 ### Before Release Always Check
 
 **API Changes:**
+
 - [ ] Removed/renamed public items? → MAJOR
 - [ ] Changed public function signatures? → MAJOR
 - [ ] Added fields to struct with public fields? → MAJOR
@@ -142,15 +157,18 @@ trigger: always_on
 - [ ] Changed generic bounds? → check tightening/loosening
 
 **Type Layout:**
+
 - [ ] Changed `repr` attributes? → check table above
 - [ ] Changed size/alignment of type with documented layout? → MAJOR
 
 **Dependencies:**
+
 - [ ] Removed features? → MAJOR
 - [ ] Removed optional dependencies? → POSSIBLY-BREAKING
 - [ ] Increased minimum Rust version? → POSSIBLY-BREAKING
 
 **Documentation:**
+
 - [ ] All public changes documented?
 - [ ] CHANGELOG updated?
 - [ ] Migration guide provided (for major changes)?
@@ -183,7 +201,7 @@ trigger: always_on
 ## Quick Reference: Common Scenarios
 
 | Change | Version | Note |
-|----|----|----|
+| ---- | ---- | ---- |
 | Adding function | MINOR | Safe |
 | Removing function | MAJOR | Use deprecation |
 | Changing function parameters | MAJOR | Create new function |
