@@ -40,7 +40,7 @@ Match the level of specificity to the task's fragility and variability:
 
 Every skill consists of a required SKILL.md file and optional bundled resources:
 
-```text
+```plaintext
 skill-name/
 ├── SKILL.md (required)
 │   ├── YAML frontmatter metadata (required)

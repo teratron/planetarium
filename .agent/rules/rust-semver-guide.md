@@ -201,7 +201,7 @@ trigger: always_on
 ## Quick Reference: Common Scenarios
 
 | Change | Version | Note |
-| ---- | ---- | ---- |
+| ------ | ------- | ---- |
 | Adding function | MINOR | Safe |
 | Removing function | MAJOR | Use deprecation |
 | Changing function parameters | MAJOR | Create new function |
@@ -412,7 +412,7 @@ Sometimes breaking changes are inevitable. When they are:
 
 ## Summary Flowchart
 
-```text
+```plaintext
 Is it a public API change?
 ├─ No → Consider PATCH or MINOR (docs, internal changes)
 └─ Yes → Continue
