@@ -4,6 +4,13 @@
 
 Planetarium is a 3D game written in Rust and Bevy game engine.
 
+## Technology Stack
+
+| Component | Minimum Version | Notes |
+| --------- | --------------- | ----- |
+| Rust | 1.93+ | Edition 2024 |
+| Bevy | 0.18+ | Core game engine |
+
 ## Building and Running
 
 ### Build
