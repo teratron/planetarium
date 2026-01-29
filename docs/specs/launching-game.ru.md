@@ -68,24 +68,31 @@
 ## 🔁 Архитектурная схема управления состояниями
 
 ```python
-# Псевдокод конечного автомата
+# Core state manager
 class GameStateManager:
-    states = {
-        BOOT:       InitEngineState,
-        SPLASH:     SplashScreenState,
-        UPDATE:     UpdateCheckState,   # опционально
-        MAIN_MENU:  MainMenuState,
-        SETTINGS:   SettingsState,
-        GAMEPLAY:   GameplayState,
-        QUIT:       QuitState
-    }
+    def __init__(self):
+        self.states = {
+            "BOOT":       BootState(),
+            "SPLASH":     SplashState(),
+            "UPDATE":     UpdateState(),    # optional
+            "MAIN_MENU":  MainMenuState(),
+            "SETTINGS":   SettingsState(),
+            "LOBBY":      LobbyState(),     # multiplayer
+            "GAMEPLAY":   GameplayState(),
+            "QUIT":       QuitState()
+        }
+        self.current = self.states["BOOT"]
     
-    def update(dt):
-        current_state.handle_input()
-        current_state.update(dt)
-        if current_state.is_complete():
-            next_state = current_state.get_next_state()
-            transition_to(next_state)  # с плавной анимацией
+    def update(self, dt):
+        next_state_id = self.current.update(dt)
+        if next_state_id and next_state_id != self.current.id:
+            self.transition_to(next_state_id)
+    
+    def transition_to(self, state_id):
+        self.current.exit()                     # cleanup current
+        self.current = self.states[state_id]    # switch state
+        self.current.enter()                    # initialize new
+        play_transition_animation()             # fade/slide/etc.
 ```
 
 ## ⚙️ Важные технические рекомендации
