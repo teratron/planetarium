@@ -17,6 +17,9 @@ exclude = ["examples/*", "docs/*", "tests/*", "target/*"]
 [dependencies]
 bevy = "0.18.0"
 
+[dev-dependencies]
+dotenvy = "0.15.7"
+
 [workspace]
 resolver = "2"
 members = ["examples/*"]
