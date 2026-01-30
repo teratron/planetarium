@@ -8,54 +8,5 @@
   ],
   "env": {
     "PATH": "${env:USERPROFILE}/.rustup/toolchains/stable-x86_64-pc-windows-msvc/bin;${workspaceFolder}/target/debug/deps;${env:PATH}"
-  },
-  "configurations": [
-    {
-      "name": "Run Bevy Project",
-      "type": "lldb",
-      "request": "launch",
-      "cargo": {
-        "args": [
-          "build",
-          "--package",
-          "planetarium",
-          "--bin",
-          "planetarium"
-        ],
-        "filter": {
-          "name": "planetarium",
-          "kind": "bin"
-        }
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": [
-        "rust"
-      ]
-    },
-    {
-      "name": "Debug Bevy Project",
-      "type": "lldb",
-      "request": "launch",
-      "cargo": {
-        "args": [
-          "build",
-          "--package",
-          "planetarium",
-          "--bin",
-          "planetarium",
-          "--locked"
-        ],
-        "filter": {
-          "name": "planetarium",
-          "kind": "bin"
-        }
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": [
-        "rust"
-      ]
-    }
-  ]
+  }
 }
