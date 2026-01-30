@@ -134,7 +134,7 @@ fn setup_splash(commands: Commands, asset_server: Res<AssetServer>) {
 ```plaintext
 assets/
 ├── textures/
-│   └── logo.png            # Splash screen logo
+│   └── logo.png              # Splash screen logo
 └── fonts/
     └── FiraSans-Regular.ttf  # Optional: custom font
 ```
