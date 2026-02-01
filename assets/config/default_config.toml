@@ -1,0 +1,52 @@
+# ============================================================================
+# Planetarium Configuration File
+# ============================================================================
+# This file is automatically created in your system's config directory:
+# - Windows: %APPDATA%\Teratron\Planetarium\config.toml
+# - Linux: ~/.config/Planetarium/config.toml
+# - macOS: ~/Library/Application Support/com.Teratron.Planetarium/config.toml
+#
+# You can safely edit this file. Invalid values will be clamped to safe ranges.
+# Press F5 in debug mode to hot-reload changes without restarting the game.
+# ============================================================================
+
+# Configuration version (do not modify manually)
+version = 1
+
+# ============================================================================
+# GRAPHICS SETTINGS
+# ============================================================================
+[graphics]
+# Window resolution [width, height]
+# Valid range: 640x480 to 7680x4320
+resolution = [1280, 720]
+
+# Run in fullscreen mode
+fullscreen = false
+
+# Enable vertical sync (prevents screen tearing)
+vsync = true
+
+# Graphics quality preset
+# Options: "Low", "Medium", "High", "Ultra"
+quality = "High"
+
+# ============================================================================
+# AUDIO SETTINGS
+# ============================================================================
+[audio]
+# Master volume (0.0 = muted, 1.0 = maximum)
+master_volume = 1.0
+
+# Music volume (0.0 = muted, 1.0 = maximum)
+music_volume = 0.7
+
+# Sound effects volume (0.0 = muted, 1.0 = maximum)
+sfx_volume = 0.8
+
+# ============================================================================
+# GAMEPLAY SETTINGS
+# ============================================================================
+# Language code (ISO 639-1)
+# Supported: "en" (English), "ru" (Russian)
+language = "en"

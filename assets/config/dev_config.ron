@@ -1,0 +1,11 @@
+// Developer Configuration (Debug Mode Only)
+// This file is only loaded in debug builds and stripped in release.
+// 
+// Hot-reload: Press F5 to reload game config without restarting
+// This file can be edited while the game is running.
+
+(
+    show_fps: true,
+    show_gizmos: false,
+    hot_reload: true,
+)
