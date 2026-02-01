@@ -6,7 +6,7 @@ pub mod loading;
 pub mod main_menu;
 pub mod settings;
 pub mod splash;
-// pub mod paused;
+pub mod paused;
 
 #[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, States)]
 pub enum GameState {
@@ -32,6 +32,7 @@ impl Plugin for StatesPlugin {
             settings::SettingsPlugin,
             loading::LoadingPlugin,
             gameplay::GameplayPlugin,
+            paused::PausedPlugin,
         ));
     }
 }

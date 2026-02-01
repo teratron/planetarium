@@ -27,7 +27,7 @@ struct SplashTimer {
     can_skip: bool,
 }
 
-fn setup_splash(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn setup_splash(mut commands: Commands, _asset_server: Res<AssetServer>) {
     // Splash screen container
     commands
         .spawn((
@@ -43,12 +43,16 @@ fn setup_splash(mut commands: Commands, asset_server: Res<AssetServer>) {
             SplashScreen,
         ))
         .with_children(|parent| {
-            // Logo image
+            // Logo placeholder (text-based for now)
             parent.spawn((
-                ImageNode::new(asset_server.load("textures/logo.png")),
+                Text::new("PLANETARIUM"),
+                TextFont {
+                    font_size: 64.0,
+                    ..default()
+                },
+                TextColor(Color::WHITE),
                 Node {
-                    width: Val::Px(300.0),
-                    height: Val::Px(300.0),
+                    margin: UiRect::bottom(Val::Px(40.0)),
                     ..default()
                 },
                 SplashLogo,
@@ -91,7 +95,7 @@ fn splash_timer_tick(
     }
     
     // Auto-transition when finished
-    if splash_timer.timer.finished() {
+    if splash_timer.timer.just_finished() {
         info!("Splash timer finished, transitioning to MainMenu");
         next_state.set(GameState::MainMenu);
     }
@@ -120,7 +124,7 @@ fn splash_skip_input(
 
 fn cleanup_splash(mut commands: Commands, query: Query<Entity, With<SplashScreen>>) {
     for entity in &query {
-        commands.entity(entity).despawn_recursive();
+        commands.entity(entity).despawn();
     }
     commands.remove_resource::<SplashTimer>();
     info!("Splash screen cleaned up");

@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy::window::WindowResolution;
 
 pub mod resources;
 pub mod states;
@@ -9,7 +10,7 @@ fn main() {
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
                 title: "Planetarium".into(),
-                resolution: (1280., 720.).into(),
+                resolution: WindowResolution::new(1280, 720),
                 present_mode: bevy::window::PresentMode::AutoVsync,
                 ..default()
             }),

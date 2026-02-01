@@ -1,13 +1,13 @@
-use crate::states::GameState;
-use crate::ui::buttons::spawn_menu_button;
-use crate::ui::theme::{colors, fonts};
 use bevy::prelude::*;
+use crate::states::GameState;
+use crate::ui::theme::{colors, fonts};
 
 pub struct MainMenuPlugin;
 
 impl Plugin for MainMenuPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::MainMenu), setup_main_menu)
+        app.add_message::<AppExit>()
+            .add_systems(OnEnter(GameState::MainMenu), setup_main_menu)
             .add_systems(
                 Update,
                 (handle_menu_interaction, animate_menu_hover).run_if(in_state(GameState::MainMenu)),
@@ -20,7 +20,7 @@ impl Plugin for MainMenuPlugin {
 struct MainMenuRoot;
 
 #[derive(Component, Clone, Copy)]
-enum MenuButton {
+pub enum MenuButton {
     NewGame,
     Continue,
     Settings,
@@ -58,11 +58,36 @@ fn setup_main_menu(mut commands: Commands) {
             ));
 
             // Menu buttons
-            spawn_menu_button(parent, MenuButton::NewGame, "New Game");
-            spawn_menu_button(parent, MenuButton::Continue, "Continue");
-            spawn_menu_button(parent, MenuButton::Settings, "Settings");
-            spawn_menu_button(parent, MenuButton::Credits, "Credits");
-            spawn_menu_button(parent, MenuButton::Exit, "Exit");
+            for (button_type, label) in [
+                (MenuButton::NewGame, "New Game"),
+                (MenuButton::Continue, "Continue"),
+                (MenuButton::Settings, "Settings"),
+                (MenuButton::Credits, "Credits"),
+                (MenuButton::Exit, "Exit"),
+            ] {
+                parent
+                    .spawn((
+                        Button,
+                        Node {
+                            width: Val::Px(280.0),
+                            height: Val::Px(56.0),
+                            justify_content: JustifyContent::Center,
+                            align_items: AlignItems::Center,
+                            margin: UiRect::bottom(Val::Px(16.0)),
+                            ..default()
+                        },
+                        BackgroundColor(colors::BUTTON_NORMAL),
+                        button_type,
+                    ))
+                    .with_child((
+                        Text::new(label),
+                        TextFont {
+                            font_size: fonts::BUTTON_TEXT_SIZE,
+                            ..default()
+                        },
+                        TextColor(colors::TEXT_PRIMARY),
+                    ));
+            }
         });
 
     info!("Main menu setup complete");
@@ -71,7 +96,7 @@ fn setup_main_menu(mut commands: Commands) {
 fn handle_menu_interaction(
     query: Query<(&Interaction, &MenuButton), Changed<Interaction>>,
     mut next_state: ResMut<NextState<GameState>>,
-    mut exit_events: EventWriter<AppExit>,
+    mut app_exit: MessageWriter<AppExit>,
 ) {
     for (interaction, button) in &query {
         if *interaction != Interaction::Pressed {
@@ -97,17 +122,14 @@ fn handle_menu_interaction(
             }
             MenuButton::Exit => {
                 info!("Exit requested");
-                exit_events.send(AppExit::Success);
+                app_exit.write(AppExit::Success);
             }
         }
     }
 }
 
 fn animate_menu_hover(
-    mut query: Query<
-        (&Interaction, &mut BackgroundColor),
-        (Changed<Interaction>, With<MenuButton>),
-    >,
+    mut query: Query<(&Interaction, &mut BackgroundColor), (Changed<Interaction>, With<MenuButton>)>,
 ) {
     for (interaction, mut bg_color) in &mut query {
         *bg_color = match interaction {
@@ -120,7 +142,7 @@ fn animate_menu_hover(
 
 fn cleanup_main_menu(mut commands: Commands, query: Query<Entity, With<MainMenuRoot>>) {
     for entity in &query {
-        commands.entity(entity).despawn_recursive();
+        commands.entity(entity).despawn();
     }
     info!("Main menu cleaned up");
 }
