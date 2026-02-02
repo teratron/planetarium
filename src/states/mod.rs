@@ -4,9 +4,9 @@ pub mod boot;
 pub mod gameplay;
 pub mod loading;
 pub mod main_menu;
+pub mod paused;
 pub mod settings;
 pub mod splash;
-pub mod paused;
 
 #[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, States)]
 pub enum GameState {
