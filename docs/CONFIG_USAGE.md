@@ -3,6 +3,7 @@
 ## Overview
 
 Planetarium uses a dual-layer configuration system:
+
 - **GameConfig**: User-facing settings stored in TOML format
 - **DevConfig**: Developer-only settings stored in RON format (debug builds only)
 
@@ -11,6 +12,7 @@ Planetarium uses a dual-layer configuration system:
 ### Location
 
 Configuration files are stored in platform-specific directories:
+
 - **Windows**: `%APPDATA%\Teratron\Planetarium\config.toml`
 - **Linux**: `~/.config/Planetarium/config.toml`
 - **macOS**: `~/Library/Application Support/com.Teratron.Planetarium/config.toml`
@@ -119,6 +121,7 @@ cargo test --lib config::tests
 ```
 
 Tests cover:
+
 - Value validation and clamping
 - Version migration
 - Serialization/deserialization
