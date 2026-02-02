@@ -104,16 +104,49 @@ foliage_fading = true
 # Options: "Low", "Medium", "High"
 depth_buffer_precision = "Low"
 
-
 # ============================================================================
 # AUDIO SETTINGS
 # ============================================================================
 [audio]
+# Audio output device
+# Options: "Default" or specific device name
+output_device = "Default"
+
+# Audio output mode
+# Options: "Default", "Stereo", "Mono", "Surround"
+output_mode = "Default"
+
 # Master volume (0.0 = muted, 1.0 = maximum)
-master_volume = 1.0
+master_volume = 0.85
 
 # Music volume (0.0 = muted, 1.0 = maximum)
-music_volume = 0.7
+music_volume = 0.85
+
+# Ambience volume (0.0 = muted, 1.0 = maximum)
+ambience_volume = 0.85
+
+# User Interface volume (0.0 = muted, 1.0 = maximum)
+ui_volume = 0.85
 
 # Sound effects volume (0.0 = muted, 1.0 = maximum)
-sfx_volume = 0.8
+sfx_volume = 0.85
+
+# ============================================================================
+# MOUSE SETTINGS
+# ============================================================================
+[mouse]
+# Invert mouse Y-axis
+# Options: true, false
+invert_y = false
+
+# Mouse sensitivity for Y-axis
+# Valid range: 0.1 to 10.0
+sensitivity_y = 3.5
+
+# Mouse sensitivity for X-axis
+# Valid range: 0.1 to 10.0
+sensitivity_x = 3.5
+
+# Invert mouse wheel scroll direction
+# Options: true, false
+invert_wheel = false
