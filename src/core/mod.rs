@@ -5,3 +5,6 @@ pub mod states;
 
 /// Command line argument parsing.
 pub mod cli;
+
+/// Application configuration and path resolution.
+pub mod config;

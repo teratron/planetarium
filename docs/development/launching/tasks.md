@@ -2,15 +2,15 @@
 
 ## Phase 1: Foundation & Booting (Priority: Critical)
 
-- [ ] **[L-101]** Setup Project Structure
+- [x] **[L-101]** Setup Project Structure
   - Create `src/launcher/`, `src/game/`, `src/core/`, `src/ui/`.
   - Setup `main.rs` and `lib.rs`.
-- [ ] **[L-102]** AppState & Core Plugins
+- [x] **[L-102]** AppState & Core Plugins
   - Define `AppState` enum.
   - Register empty `LauncherPlugin` and its sub-plugins.
-- [ ] **[L-103]** CLI Arguments Support
+- [x] **[L-103]** CLI Arguments Support
   - Implement `--skip-splash` and `--state` flags.
-- [ ] **[L-104]** Configuration System
+- [x] **[L-104]** Configuration System
   - Implement `settings.toml` loading with `serde`.
   - Implement cross-platform path resolution for `%APPDATA%`.
 - [ ] **[L-105]** Config Migration (Version Guard)
