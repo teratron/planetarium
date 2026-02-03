@@ -63,7 +63,7 @@ The module manages the following states:
     - **Update & Security**: Verifies version with the server and performs background file integrity checks (hashes).
     - **Authentication**: Handles user login or session restoration if required.
     - **Shader Pre-compilation**: Loads and compiles necessary shaders.
-    - **Localization**: Loads selected language files (ISO 639-1) before entering the menu.
+    - **Localization**: Loads selected language files (Project Fluent `.ftl`) and fonts before entering the menu.
 2. **Splash**:
     - Displays a sequence of splash screens (Engine license requirements, Studio logo, Partners).
     - **Transitions**: Support for smooth fade-in/fade-out between screens.
@@ -155,6 +155,29 @@ The project follows the "Professional Game Loop" standard, separating logic from
 - **Asynchronous Orchestration**: Processes tags requested by game logic and handles dependencies.
 - **Optimized Loading**: Integration with asynchronous IO and support for pre-compiling GPU-ready data (shaders, textures).
 
+### Localization (AAA Approach)
+
+The project uses **Project Fluent (.ftl)** for managing text resources:
+
+- **Pluralization & Grammar**: Native support for complex grammatical rules (e.g., Russian plurals).
+- **Key-Based Access**: Code refers to unique identifiers (e.g., `menu-start-button`) instead of raw text.
+- **Dynamic Content**: Support for variables (e.g., `welcome-user = Welcome, { $user }!`).
+- **Isolation**: Each language lives in its own directory within `assets/locales/`.
+
+### Standard UI Audio Assets
+
+| File | Purpose |
+| ---- | ------- |
+| `click.ogg` | Primary action (button press). |
+| `select.ogg` | Hover on button or item selection. |
+| `back.ogg` | Exiting a sub-menu (e.g., from Settings back to Main Menu). |
+| `confirmation.ogg` | Success feedback (e.g., settings saved or loading finished). |
+| `error.ogg` | Audio feedback for errors (e.g., failed to load config). |
+| `scroll.ogg` | Scrolling through lists or sliders. |
+| `toggle.ogg` | Toggle switches (On/Off states like VSync). |
+| `open.ogg` / `close.ogg` | Optional: UI panel animations. |
+| `maximize.ogg` / `minimize.ogg` | Optional: Interface scaling or full-screen transitions. |
+
 ## Proposed File Structure
 
 For a Bevy project, it is essential to distinguish between **static content** (root assets folder) and **source code** (src folder):
@@ -167,6 +190,16 @@ For a Bevy project, it is essential to distinguish between **static content** (r
 │   ├── images/             # Textures, sprites, icons
 │   ├── fonts/              # Typography (.ttf, .otf)
 │   ├── audio/              # Sound effects and music
+│   ├── locales/            # Localization (AAA Fluent .ftl files)
+│   │   ├── en-US/          # English (United States)
+│   │   │   ├── menu.ftl    # Main menu strings
+│   │   │   ├── items.ftl   # Item names and descriptions
+│   │   │   └── dialogs.ftl # Dialog system text
+│   │   ├── ru-RU/          # Russian (Russia)
+│   │   │   ├── menu.ftl
+│   │   │   ├── items.ftl
+│   │   │   └── dialogs.ftl
+│   │   └── index.toml      # Languages manifest (list of available locales)
 │   ├── shaders/            # Custom GLSL/WGSL code
 │   └── configs/            # assets.toml, default.toml
 ├── src/                    # SOURCE CODE (Rust files)
