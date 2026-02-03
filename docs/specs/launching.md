@@ -56,21 +56,27 @@ graph LR
 The module manages the following states:
 
 1. **Boot**:
-    - Loads and validates configuration files (TOML/JSON).
-    - Initializes the window and rendering engine.
-    - **Diagnostics**: Initializes Bevy's `LogPlugin` and system performance monitors.
-    - Sets up global resources (logger, file sinks, etc.).
-    - **Update Check**: Verifies if a newer version of the application is available.
-    - **Authentication**: Handles user login/session restoration if required.
+    - **Environment Setup**: Determines platform-specific paths (e.g., `%APPDATA%` on Windows, `~/.local/share` on Linux) for logs and saves.
+    - Loads and validates configuration files (`settings.toml`).
+    - Initializes the window and rendering engine (Graphic API, Input, Audio).
+    - **Diagnostics**: Initializes Bevy's `LogPlugin` and non-blocking analytics/telemetry.
+    - **Update & Security**: Verifies version with the server and performs background file integrity checks (hashes).
+    - **Authentication**: Handles user login or session restoration if required.
     - **Shader Pre-compilation**: Loads and compiles necessary shaders.
     - **Localization**: Loads selected language files (ISO 639-1) before entering the menu.
 2. **Splash**:
-    - Displays a sequence of splash screens (e.g., Engine, Studio, Partners).
+    - Displays a sequence of splash screens (Engine license requirements, Studio logo, Partners).
     - **Transitions**: Support for smooth fade-in/fade-out between screens.
+    - **Background Tasks**: Continues non-blocking initialization tasks (e.g., verifying large asset manifests).
     - **Progress & Feedback**: Ability to see loading progress for the next state and random gameplay tips/hints.
 3. **MainMenu**:
-    - Provides a standard UI for "Start Game", "Settings", "Credits", and "Exit".
-    - **Comprehensive Settings**: Includes a ready-to-use GUI for all options defined in `default.toml`.
+    - Provides a standard UI for:
+        - **Play**: Mode selection (Campaign, Multiplayer, Sandbox).
+        - **New Game**: Profile creation and initial slot selection.
+        - **Load Game**: List of save slots with visual previews and metadata.
+        - **Settings**: Comprehensive GUI for all options (Graphics, Sound, Controls, Language).
+        - **Extras**: Achievements, Credits, or Store (if applicable).
+        - **Exit**: Clean application shutdown.
     - **Save Management**: Verifies save slot integrity and metadata before enabling "Load Game".
     - **Adaptive UI**: The menu and settings dynamically adjust their content based on whether the game is 2D or 3D.
     - **Extensibility**: Design allows easy addition/removal of menu items and re-styling of the UI.
