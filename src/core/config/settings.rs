@@ -2,10 +2,10 @@
 //!
 //! Defines the structure of the application settings and handles loading/saving.
 
+use crate::core::config::AppPaths;
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::fs;
-use crate::core::config::AppPaths;
 
 /// Current version of the settings schema, used for migrations.
 pub const SETTINGS_VERSION: u32 = 1;
@@ -15,11 +15,14 @@ pub const SETTINGS_VERSION: u32 = 1;
 pub struct UserSettings {
     /// Schema version for this config file.
     pub version: u32,
+    #[serde(default)]
     pub display: DisplaySettings,
+    #[serde(default)]
     pub audio: AudioSettings,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(default)]
 pub struct DisplaySettings {
     pub width: u32,
     pub height: u32,
@@ -27,26 +30,39 @@ pub struct DisplaySettings {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(default)]
 pub struct AudioSettings {
     pub master_volume: f32,
     pub music_volume: f32,
     pub sfx_volume: f32,
 }
 
+impl Default for DisplaySettings {
+    fn default() -> Self {
+        Self {
+            width: 1280,
+            height: 720,
+            fullscreen: false,
+        }
+    }
+}
+
+impl Default for AudioSettings {
+    fn default() -> Self {
+        Self {
+            master_volume: 0.8,
+            music_volume: 0.7,
+            sfx_volume: 1.0,
+        }
+    }
+}
+
 impl Default for UserSettings {
     fn default() -> Self {
         Self {
             version: SETTINGS_VERSION,
-            display: DisplaySettings {
-                width: 1280,
-                height: 720,
-                fullscreen: false,
-            },
-            audio: AudioSettings {
-                master_volume: 0.8,
-                music_volume: 0.7,
-                sfx_volume: 1.0,
-            },
+            display: DisplaySettings::default(),
+            audio: AudioSettings::default(),
         }
     }
 }
@@ -56,17 +72,38 @@ pub fn load_settings(paths: &AppPaths) -> UserSettings {
     if paths.settings_file.exists() {
         match fs::read_to_string(&paths.settings_file) {
             Ok(content) => match toml::from_str::<UserSettings>(&content) {
-                Ok(s) => {
+                Ok(mut s) => {
                     info!("[Config] Settings loaded from {:?}", paths.settings_file);
+
+                    // --- VERSION GUARD / MIGRATION ---
+                    if s.version < SETTINGS_VERSION {
+                        info!(
+                            "[Config] Migration: Upgrading settings from v{} to v{}",
+                            s.version, SETTINGS_VERSION
+                        );
+                        s.version = SETTINGS_VERSION;
+                        // Saving the migrated settings back to disk.
+                        // Because of #[serde(default)], any NEW fields in our current
+                        // Rust structs will be populated with defaults while keeping
+                        // the user's existing values for old fields.
+                        save_settings(paths, &s);
+                    }
+
                     s
                 }
                 Err(e) => {
-                    warn!("[Config] Failed to parse settings.toml: {}. Using defaults.", e);
+                    warn!(
+                        "[Config] Failed to parse settings.toml: {}. Using defaults.",
+                        e
+                    );
                     UserSettings::default()
                 }
             },
             Err(e) => {
-                warn!("[Config] Failed to read settings file: {}. Using defaults.", e);
+                warn!(
+                    "[Config] Failed to read settings file: {}. Using defaults.",
+                    e
+                );
                 UserSettings::default()
             }
         }
