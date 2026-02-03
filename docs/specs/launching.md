@@ -9,7 +9,7 @@ The primary goal is to provide a standardized structure that can be easily reuse
 ## Launch Sequence Overview
 
 ```mermaid
-graph LR
+graph TD
     subgraph S1 [Stage 1: Initialization]
         Booting[Booting]
     end
@@ -26,21 +26,28 @@ graph LR
         InGame[In-Game]
     end
 
+    %% Standard Flow
     Booting --> Splash
     Splash --> MainMenu
     MainMenu --> Loading
     Loading --> InGame
     
+    %% Dev Backdoor (CLI Bypass)
+    Booting -.->|"--skip-splash"| MainMenu
+    Booting -.->|"--state=InGame"| InGame
+    
     %% Background details
-    Booting -.-> B_Init(Updates / Auth)
+    Booting -.-> B_Init(Env / Config / Locales)
     Splash -.-> S_Pre(Shaders / Hints)
     MainMenu -.-> M_Opt(Settings / Saves)
-    Loading -.-> L_Ast(Assets / World)
+    Loading -.-> L_Ast(Manifests / Assets)
     
     InGame <--> Paused((Paused))
     
-    %% Error Flow
+    %% Error Flow & Fallback
     Booting & Splash & MainMenu & Loading -.-> Error([ERROR STATE])
+    Error -->|Fallback| MainMenu
+    Error -->|Quit| Exit((Exit App))
 ```
 
 ## Design Principles
@@ -286,6 +293,25 @@ The module leverages Bevy's built-in logging system (powered by the `tracing` cr
 - **Blocking Operations**: Do not perform heavy IO or computations on the main rendering thread.
 - **Forced Updates**: Avoid mandatory updates without a "Skip" or "Cancel" option, unless they are critical for security or compatibility.
 - **Missing Navigation**: Ensure every sub-menu or settings screen has a clear "Back" or "Cancel" button.
+
+## System Robustness & Developer Tools
+
+To ensure a smooth development cycle and production stability, the following "backdoors" and safety measures are implemented:
+
+- **Developer Backdoor (CLI & Shortcuts)**:
+  - Support for `--skip-splash` to bypass branding screens during testing.
+  - Command-line argument `--state=<StateName>` to jump directly to a specific state (e.g., `Gameplay`).
+  - **Debug Overlay**: A toggleable diagnostic layer (e.g., via `F1` or `~`) displaying FPS, memory usage, and logic logs.
+- **Configuration Migration (Version Guard)**:
+  - All config files (`settings.toml`) include a `version` field.
+  - If a user has an older version of the config, the system performs a "non-destructive merge," adding missing fields from the default template while preserving user choices.
+- **First-Run Orchestration**:
+  - The `Boot` module detects if a configuration exists in the platform-specific data folder (e.g., `%APPDATA%`).
+  - If absent, it auto-initializes the environment using templates from `assets/configs/`.
+- **Asset Hardening**:
+  - **Embedded Fallbacks**: Critical resources (error fonts, basic UI textures) are embedded into the executable using `include_bytes!` to ensure the game can at least display error messages if external assets are corrupted.
+- **Global Event Bus**:
+  - A centralized event system (e.g., `SystemEvent`) allows decoupled communication between plugins for high-level actions (`AppExit`, `ConfigReload`, `NetworkLost`).
 
 ## UI/UX Interaction Standards
 
