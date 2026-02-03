@@ -8,13 +8,16 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 
 /// Current version of the settings schema, used for migrations.
-pub const SETTINGS_VERSION: u32 = 1;
+pub const SETTINGS_VERSION: u32 = 2;
 
 /// Global resource holding all user settings.
 #[derive(Resource, Serialize, Deserialize, Debug, Clone)]
 pub struct UserSettings {
     /// Schema version for this config file.
     pub version: u32,
+    /// Preferred language (e.g., "en-US", "ru-RU").
+    #[serde(default)]
+    pub language: String,
     #[serde(default)]
     pub display: DisplaySettings,
     #[serde(default)]
@@ -61,6 +64,7 @@ impl Default for UserSettings {
     fn default() -> Self {
         Self {
             version: SETTINGS_VERSION,
+            language: "en-US".to_string(),
             display: DisplaySettings::default(),
             audio: AudioSettings::default(),
         }

@@ -9,10 +9,10 @@ impl Plugin for BootPlugin {
     fn build(&self, app: &mut App) {
         info!("[BootPlugin] Initializing...");
 
-        // Register initialization systems
+        // Register initialization systems sequentially
         app.add_systems(
             OnEnter(AppState::Booting),
-            (setup_config, setup_localization),
+            (setup_config, setup_localization).chain(),
         );
 
         // Handle transition to next state
