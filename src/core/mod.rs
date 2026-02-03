@@ -11,3 +11,6 @@ pub mod config;
 
 /// Multi-language support using Project Fluent.
 pub mod localization;
+
+/// Asset manifest and management.
+pub mod assets;

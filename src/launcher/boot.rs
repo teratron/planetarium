@@ -1,3 +1,4 @@
+use crate::core::assets::setup_asset_manifest;
 use crate::core::config::setup_config;
 use crate::core::localization::setup_localization;
 use crate::core::states::AppState;
@@ -12,7 +13,7 @@ impl Plugin for BootPlugin {
         // Register initialization systems sequentially
         app.add_systems(
             OnEnter(AppState::Booting),
-            (setup_config, setup_localization).chain(),
+            (setup_config, setup_localization, setup_asset_manifest).chain(),
         );
 
         // Handle transition to next state

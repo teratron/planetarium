@@ -85,6 +85,23 @@ impl Localization {
         warn!("[Localization] Missing key in all bundles: {}", key);
         key.to_string()
     }
+
+    /// Returns the localized path for an asset (e.g., audio/click.ogg).
+    /// Tries the current locale directory first, then falls back to en-US.
+    pub fn get_path(&self, sub_path: &str) -> String {
+        let primary_path = format!("locales/{}/{}", self.current_locale, sub_path);
+        let fallback_path = format!("locales/en-US/{}", sub_path);
+
+        // We check if the file exists in the assets folder.
+        // Bevy's AssetServer usually handles 'assets/' prefix automatically,
+        // but since we are resolving paths manually here, we check against the disk.
+        let full_primary = format!("assets/{}", primary_path);
+        if std::path::Path::new(&full_primary).exists() {
+            primary_path
+        } else {
+            fallback_path
+        }
+    }
 }
 
 /// System to load initial locales based on user settings.

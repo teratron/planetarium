@@ -1,0 +1,14 @@
+# Planetarium Asset Manifest
+# Defines all mandatory assets for the application.
+
+[fonts]
+main = "fonts/Inter-Regular.ttf"
+bold = "fonts/Inter-Bold.ttf"
+
+[audio]
+click = "audio/click.ogg"
+music_menu = "music/menu_ambient.ogg"
+
+[branding]
+splash_logo = "branding/logo.png"
+background_menu = "branding/menu_bg.png"

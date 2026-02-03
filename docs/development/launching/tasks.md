@@ -25,7 +25,7 @@
   - Create `en-US` and `ru-RU` directory structure.
 - [x] **[L-202]** Localized Asset Loader
   - Implement the "Fallback" logic for missing strings/audio.
-- [ ] **[L-203]** Asset Manifest System
+- [x] **[L-203]** Asset Manifest System
   - Implement `assets.toml` parsing.
   - Setup bundled asset loading handles.
 
