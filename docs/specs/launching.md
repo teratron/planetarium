@@ -99,6 +99,39 @@ The module manages the following states:
 - `MenuPlugin`: Core menu functionality and the settings sub-system.
 - `LoadingPlugin`: Resource orchestration via manifest tags, progress tracking, and transition to the game.
 
+### Bevy Implementation Details
+
+#### Core Resources
+
+| Resource | Purpose |
+| -------- | ------- |
+| `GameSettings` | Graphics, audio, and controls configuration initialized from TOML. |
+| `SplashTimer` | Timer resource for auto-transitioning between brand screens. |
+| `LoadingAssets` | Tracks `Handle<T>` collections to calculate loading progress. |
+
+#### Marker Components (State Management)
+
+| Marker | Purpose | Cleanup Strategy |
+| ------ | ------- | ---------------- |
+| `SplashScreen` | Entities visible during Stage 2. | `OnExit(AppState::Splash)` despawn. |
+| `MainMenuRoot` | The root UI node for the Main Menu. | `OnExit(AppState::MainMenu)` despawn. |
+| `SettingsScreen` | Root node for the settings interface. | `OnExit(AppState::MainMenu)` despawn. |
+| `LoadingScreen` | UI elements for the progress bar and tips. | `OnExit(AppState::Loading)` despawn. |
+| `GameplayCamera` | Primary game camera (3D or 2D). | `OnExit(AppState::InGame)` cleanup. |
+
+#### Best Practices
+
+- **Modular Plugins**: Every stage is an independent `Plugin`.
+- **StateScoped Cleanup**: Use `OnExit` systems or `StateScoped` components to ensure no "leaking" entities between states.
+- **Marker Components**: Use empty structs (e.g., `struct SplashScreen;`) to filter entities in systems.
+- **Event-Driven UI**: UI updates respond to events (e.g., `VolumeChangedEvent`) rather than polling.
+
+## Error Handling Strategy
+
+- **Missing Assets**: Use hardcoded placeholders (e.g., a magenta square for textures) OR skip non-essential assets with a log warning.
+- **State Transition Failures**: Log an `ERROR`, but attempt to fallback to the `MainMenu` instead of crashing.
+- **Minimal MVP**: Avoid complex modal dialogs for non-critical errors; keep the flow moving.
+
 ## State-Driven Scene Management
 
 The project follows the "Professional Game Loop" standard, separating logic from data using **Bevy States** and **Scenes**:
@@ -110,8 +143,6 @@ The project follows the "Professional Game Loop" standard, separating logic from
 3. **Decoupling**: Logic (Rust systems) remains independent of visual presentation (Scene data).
 
 ## Asset Orchestration (AAA Approach)
-
-The module employs a **Manifest-Driven Asset Management** system:
 
 - **Manifest File**: All game assets are defined in external manifests (e.g., `assets/assets.toml`).
 - **Asset Bundles & Tagging**: Resources are grouped into logical bundles identified by tags.
@@ -217,6 +248,18 @@ The module leverages Bevy's built-in logging system (powered by the `tracing` cr
 - **Blocking Operations**: Do not perform heavy IO or computations on the main rendering thread.
 - **Forced Updates**: Avoid mandatory updates without a "Skip" or "Cancel" option, unless they are critical for security or compatibility.
 - **Missing Navigation**: Ensure every sub-menu or settings screen has a clear "Back" or "Cancel" button.
+
+## UI/UX Interaction Standards
+
+To achieve a professional "AAA feel," the following polish features must be implemented:
+
+- **State Transitions**: Implement smooth fade-in/fade-out (alpha-blending) when switching between `AppState` scenes.
+- **Splash Interaction**: Allow skipping any splash screen after a minimum of 1 second by pressing any key or clicking.
+- **Informative Loading**: The progress bar must show a numerical percentage and the name of the current asset group being loaded.
+- **Reactive UI**:
+  - Buttons must have distinct hover and press animations (e.g., slight scaling or color shift).
+  - Play subtle sound effects (SFX) on button hover and click.
+- **Save/Load State**: The interaction logic for selecting slots and displaying metadata (Playtime, Date) must be handled within the `MenuPlugin`.
 
 ## User Stories
 
