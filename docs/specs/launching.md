@@ -194,7 +194,7 @@ Professional engines support mid-game updates without restart via **Hot-Reloadin
 | **Interruption** | Allow exit via [Alt+F4] or system buttons at any stage except initial engine setup. |
 | **Offline Mode** | Ensure the core game is playable without internet. |
 | **Localization** | Language files must be loaded and ready before the MainMenu state. |
-| **Save Integrity** | Check save slot data early to prevent corrupted state crashes. |
+| **Save Integrity** | Check save slot data early (on entering the Load Menu) to prevent corrupted state crashes. |
 | **Performance** | Instrument each stage with timers for internal analytics/optimization. |
 
 ## Diagnostics & Logging
