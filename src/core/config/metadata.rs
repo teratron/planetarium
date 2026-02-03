@@ -19,6 +19,12 @@ pub struct AppMetadata {
     pub title: &'static str,
     /// The current version of the application.
     pub version: &'static str,
+    /// A short description of the application.
+    pub description: &'static str,
+    /// URL to the application's source code repository.
+    pub repository: &'static str,
+    /// List of application authors.
+    pub authors: &'static str,
 }
 
 impl Default for AppMetadata {
@@ -27,6 +33,9 @@ impl Default for AppMetadata {
             name: APP_NAME,
             title: APP_TITLE,
             version: env!("CARGO_PKG_VERSION"),
+            description: env!("CARGO_PKG_DESCRIPTION"),
+            repository: env!("CARGO_PKG_REPOSITORY"),
+            authors: env!("CARGO_PKG_AUTHORS"),
         }
     }
 }

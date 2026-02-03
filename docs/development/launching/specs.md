@@ -62,7 +62,7 @@ graph TD
 
 1. **Boot**:
     - **Environment Setup**: Determines platform-specific paths (e.g., `%APPDATA%` on Windows, `~/.local/share` on Linux) for logs and saves.
-    - **Metadata Loading**: Loads static application info (App Name, Initial Window Title, Version) from a core configuration file before engine initialization.
+    - **Metadata Loading**: Loads static application info (App Name, Initial Window Title, Version, Description, Repository, Authors) from `Cargo.toml` via `AppMetadata` resource before engine initialization.
     - Loads and validates configuration files (`settings.toml`).
     - Initializes the window and rendering engine (Graphic API, Input, Audio).
     - **Diagnostics**: Initializes Bevy's `LogPlugin` and non-blocking analytics/telemetry.
