@@ -8,17 +8,39 @@ The primary goal is to provide a standardized structure that can be easily reuse
 
 ## Launch Sequence Overview
 
-```plaintext
-┌──────────────────────────────────────────────────────────────────────────────┐
-│                            LAUNCH SEQUENCE FLOW                              │
-├──────────────────────────────────────────────────────────────────────────────┤
-│  Booting ───────► Splash ───────► MainMenu ───────► Loading ───────► InGame  │
-│     │                │               │                 │                │    │
-│     └─► Updates      └─► Shaders     ├─► Settings      └─► Assets       │    │
-│     └─► Auth         └─► Hints       └─► Credits       └─► World        │    │
-│                                                                         │    │
-│                                InGame (Gameplay) ◄───► Paused           │    │
-└──────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+graph LR
+    subgraph S1 [Stage 1: Initialization]
+        Booting[Booting]
+    end
+    subgraph S2 [Stage 2: Brand/Feedback]
+        Splash[Splash]
+    end
+    subgraph S3 [Stage 3: Interaction]
+        MainMenu[Main Menu]
+    end
+    subgraph S4 [Stage 4: Orchestration]
+        Loading[Loading]
+    end
+    subgraph S5 [Stage 5: Active]
+        InGame[In-Game]
+    end
+
+    Booting --> Splash
+    Splash --> MainMenu
+    MainMenu --> Loading
+    Loading --> InGame
+    
+    %% Background details
+    Booting -.-> B_Init(Updates / Auth)
+    Splash -.-> S_Pre(Shaders / Hints)
+    MainMenu -.-> M_Opt(Settings / Saves)
+    Loading -.-> L_Ast(Assets / World)
+    
+    InGame <--> Paused((Paused))
+    
+    %% Error Flow
+    Booting & Splash & MainMenu & Loading -.-> Error([ERROR STATE])
 ```
 
 ## Design Principles
@@ -26,7 +48,8 @@ The primary goal is to provide a standardized structure that can be easily reuse
 - **Modularity**: Implemented as a set of Bevy Plugins.
 - **State-Driven**: Uses Bevy's `States` to manage transitions between phases.
 - **Extensibility**: Core components should be easy to override or extend without modifying the module's core logic.
-- **Generic Support**: Core logic is agnostic to 2D or 3D rendering. UI components (Menu/Settings) are designed to be adaptable or conditional based on the project's requirements (e.g., automatically hiding 3D-specific graphics settings for 2D games).
+- **Generic Support**: Core logic is agnostic to 2D or 3D rendering. UI components (Menu/Settings) are designed to be adaptable or conditional based on the project's requirements.
+- **Core-First Approach**: Maximize use of Bevy's standard library. Third-party plugins are only introduced when required functionality is absent from the engine's core.
 
 ## Launching Sequence
 
@@ -38,15 +61,17 @@ The module manages the following states:
     - Sets up global resources (logger, etc.).
     - **Update Check**: Verifies if a newer version of the application is available.
     - **Authentication**: Handles user login/session restoration if required.
-    - **Shader Pre-compilation**: Loads and compiles necessary shaders to prevent stutters during gameplay.
+    - **Shader Pre-compilation**: Loads and compiles necessary shaders.
+    - **Localization**: Loads selected language files (ISO 639-1) before entering the menu.
 2. **Splash**:
     - Displays a sequence of splash screens (e.g., Engine, Studio, Partners).
     - **Transitions**: Support for smooth fade-in/fade-out between screens.
     - **Progress & Feedback**: Ability to see loading progress for the next state and random gameplay tips/hints.
 3. **MainMenu**:
     - Provides a standard UI for "Start Game", "Settings", "Credits", and "Exit".
-    - **Comprehensive Settings**: Includes a ready-to-use GUI for all options defined in `default.toml` (Graphics quality, AA, VSync, Audio volumes, Input rebinding).
-    - **Adaptive UI**: The menu and settings dynamically adjust their content based on whether the game is 2D or 3D, hiding irrelevant options.
+    - **Comprehensive Settings**: Includes a ready-to-use GUI for all options defined in `default.toml`.
+    - **Save Management**: Verifies save slot integrity and metadata before enabling "Load Game".
+    - **Adaptive UI**: The menu and settings dynamically adjust their content based on whether the game is 2D or 3D.
     - **Extensibility**: Design allows easy addition/removal of menu items and re-styling of the UI.
 4. **Loading**:
     - Handles asynchronous loading of assets required for the main game world/level.
@@ -63,6 +88,7 @@ The module manages the following states:
 - `Splash`: Sequence of brand screens.
 - `MainMenu`: Interaction and configuration.
 - `Loading`: Preparing game assets.
+- `Error`: Critical failure state (shows error message and exit/retry options).
 - `InGame`: Active gameplay (Handled by external game logic).
 
 ### Plugins
@@ -80,37 +106,59 @@ The project follows the "Professional Game Loop" standard, separating logic from
 2. **Scene Controller**: Each state manages its own data container (Scene).
     - Entering a state triggers the asynchronous loading of a specific scene (UI layouts, lighting, background assets).
     - Exiting a state ensures efficient resource unloading.
-3. **Decoupling**: Logic (Rust systems) remains independent of visual presentation (Scene data), allowing for easy iteration by both developers and designers.
+3. **Decoupling**: Logic (Rust systems) remains independent of visual presentation (Scene data).
 
 ## Asset Orchestration (AAA Approach)
 
-The module employs a **Manifest-Driven Asset Management** system to ensure high performance and scalability:
+The module employs a **Manifest-Driven Asset Management** system:
 
-- **Manifest File**: All game assets are defined in external manifests (e.g., `assets/assets.toml`). This decoupling allows changing assets without recompiling the code.
-- **Asset Bundles & Tagging**: Resources are grouped into logical bundles identified by tags (e.g., `"Environment_Mars"`, `"Characters"`, `"Global_SFX"`).
-- **Asynchronous Orchestration**:
-  - The `LoadingPlugin` interprets tags requested by the game logic (e.g., `loading_api.load_tag("Intro")`).
-  - It handles resource dependencies automatically.
-  - Progress is reported as a normalized float (0.0 to 1.0) and a status string for the UI.
-- **Optimized Loading**: Integration with asynchronous IO and support for pre-compiling GPU-ready data (shaders, textures).
+- **Manifest File**: All game assets are defined in external manifests (e.g., `assets/assets.toml`).
+- **Asset Bundles & Tagging**: Resources are grouped into logical bundles identified by tags.
+- **Asynchronous Orchestration**: Processes tags requested by game logic and handles dependencies.
+- **Optimized Loading**: Integration with asynchronous IO and support for pre-compiling GPU-ready data.
 
-### Configuration
+## UI Framework
 
-Integration with `default.toml` to control:
+To maximize engine utilization, the module strictly uses **Bevy's built-in UI system** (`bevy_ui`):
 
-- Splash screen durations.
-- Menu style presets.
-- Resolution and windowing options.
+- **Flexbox Positioning**: Layouts are managed using Taffy.
+- **Interactivity**: Standard Bevy `Interaction` components.
+- **Styling**: Data-driven styles for easy theming.
+
+## Live Configuration (AAA Approach)
+
+Professional engines support mid-game updates without restart via **Hot-Reloading**:
+
+- **File Watchers**: Detects changes in `default.toml` and manifests.
+- **Event-Driven Updates**: `ConfigChangedEvent` triggers reactive updates in Audio, Graphics, and UI systems immediately.
+
+## Technical Implementation Guidelines
+
+| Aspect | Recommendation |
+| ------ | -------------- |
+| **Asset Loading** | Use asynchronous loading with caching; never block the main rendering thread. |
+| **Interruption** | Allow exit via [Alt+F4] or system buttons at any stage except initial engine setup. |
+| **Offline Mode** | Ensure the core game is playable without internet. |
+| **Localization** | Language files must be loaded and ready before the MainMenu state. |
+| **Save Integrity** | Check save slot data early to prevent corrupted state crashes. |
+| **Performance** | Instrument each stage with timers for internal analytics/optimization. |
 
 ## User Stories
 
 - **As a Developer**, I want to drop this module into a new project and have a working main menu and loading screen within minutes.
 - **As a Player**, I want a smooth transition from clicking the executable to seeing the main menu.
-- **As a Developer**, I want to easily add my own custom splash screen before the main menu.
-- **As a Game Designer**, I want to add new assets to a level by simply editing a text manifest, without touching the core loading logic.
+- **As a Developer**, I want to easily add my own custom splash screen.
+- **As a Game Designer**, I want to add new assets by simply editing a text manifest.
 
 ## Future Considerations
 
 - Support for localization.
 - Controller/Gamepad support for menus out of the box.
 - Persistent user settings.
+
+## Backlog / Future Discussions
+
+- [ ] Detailed 2D vs 3D specific settings (Pixel Perfect, LODs, etc.).
+- [ ] Advanced UI theming and skinning (using only Bevy UI).
+- [ ] Error Handling strategy (Local vs Global errors).
+- [ ] Controller/Gamepad remapping interface.
