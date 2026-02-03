@@ -31,9 +31,9 @@
 
 ## Phase 3: Brand & Feedback (Splash) (Priority: Medium)
 
-- [ ] **[L-301]** Splash Screen Sprite/Video Player
+- [x] **[L-301]** Splash Screen Sprite/Video Player
   - Implement sequence logic with timers.
-- [ ] **[L-302]** Skip Logic & Input Interleaving
+- [x] **[L-302]** Skip Logic & Input Interleaving
   - Implement the "1s minimum" skip rule.
 - [ ] **[L-303]** UI Fading System
   - Component-based alpha blending for smooth transitions.
