@@ -8,3 +8,6 @@ pub mod cli;
 
 /// Application configuration and path resolution.
 pub mod config;
+
+/// Multi-language support using Project Fluent.
+pub mod localization;

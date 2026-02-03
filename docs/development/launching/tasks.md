@@ -20,7 +20,7 @@
 
 ## Phase 2: Localization & Assets (Priority: High)
 
-- [ ] **[L-201]** Fluent Localization Engine
+- [x] **[L-201]** Fluent Localization Engine
   - Setup `bevy_fluent` or manual Fluent integration.
   - Create `en-US` and `ru-RU` directory structure.
 - [ ] **[L-202]** Localized Asset Loader

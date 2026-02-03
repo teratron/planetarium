@@ -1,4 +1,5 @@
 use crate::core::config::setup_config;
+use crate::core::localization::setup_localization;
 use crate::core::states::AppState;
 use bevy::prelude::*;
 
@@ -8,8 +9,11 @@ impl Plugin for BootPlugin {
     fn build(&self, app: &mut App) {
         info!("[BootPlugin] Initializing...");
 
-        // Register the configuration setup system
-        app.add_systems(OnEnter(AppState::Booting), setup_config);
+        // Register initialization systems
+        app.add_systems(
+            OnEnter(AppState::Booting),
+            (setup_config, setup_localization),
+        );
 
         // Handle transition to next state
         app.add_systems(

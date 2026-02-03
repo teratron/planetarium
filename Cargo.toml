@@ -25,9 +25,12 @@ path = "src/main.rs"
 [dependencies]
 bevy = "0.18.0"
 toml = "0.9.11"
-clap = { version = "4.5.1", features = ["derive"] }
+clap = { version = "4.5.57", features = ["derive"] }
 serde = { version = "1.0", features = ["derive"] }
 dirs = "6.0.0"
+fluent-bundle = "0.16.0"
+intl-memoizer = "0.5"
+unic-langid = "0.9.5"
 
 [dev-dependencies]
 dotenvy = "0.15.7"
