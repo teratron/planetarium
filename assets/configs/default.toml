@@ -150,3 +150,65 @@ sensitivity_x = 3.5
 # Invert mouse wheel scroll direction
 # Options: true, false
 invert_wheel = false
+
+# ============================================================================
+# CONTROLS SETTINGS
+# ============================================================================
+[controls.behavior]
+# Crouch behavior
+# Options: "Hold", "Toggle"
+crouch = "Hold"
+
+# Sprint behavior
+# Options: "Hold", "Toggle"
+sprint = "Hold"
+
+# Walk behavior
+# Options: "Hold", "Toggle"
+walk = "Hold"
+
+[controls.movement]
+# Movement keys
+move_forwards = "W"
+move_backwards = "S"
+move_left = "A"
+move_right = "D"
+jump = "Space"
+crouch = "LeftCtrl"
+sprint = "LeftShift"
+walk = "LeftAlt"
+fly_up = "Space"
+fly_down = "LeftCtrl"
+
+[controls.actions]
+# Action keys
+primary_action = "LeftMouse"
+secondary_action = "RightMouse"
+use_ability_1 = "Q"
+use_ability_2 = "E"
+use_ability_3 = "R"
+drop_item = "G"
+hotbar_slot_1 = "1"
+hotbar_slot_2 = "2"
+hotbar_slot_3 = "3"
+hotbar_slot_4 = "4"
+
+[controls.menus]
+# Menu keys
+open_inventory = "Tab"
+show_player_list = "P"
+
+[controls.misc]
+# Miscellaneous keys
+switch_hud_visibility = "F8"
+toggle_fullscreen = "F11"
+take_screenshot = "F12"
+
+[controls.debug]
+# Debug keys
+decrease_speed_multiplier = "F1"
+increase_speed_multiplier = "F2"
+toggle_creative_collision = "F3"
+toggle_fly_camera = "F4"
+toggle_fly_camera_control_target = "F5"
+toggle_debug_screens = "F7"
