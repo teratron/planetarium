@@ -15,6 +15,8 @@
   - Implement cross-platform path resolution for `%APPDATA%`.
 - [ ] **[L-105]** Config Migration (Version Guard)
   - Add version check and auto-merge logic for settings.
+- [ ] **[L-106]** App Metadata Centralization
+  - Move hardcoded values (App Title, Version) from `main.rs` to a config file.
 
 ## Phase 2: Localization & Assets (Priority: High)
 

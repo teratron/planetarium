@@ -38,7 +38,8 @@ pub enum AppState {
 
 ### 2.1 Configuration Management
 
-- Use `serde` and `toml` for `settings.toml`.
+- **App Metadata**: Dedicated `metadata.toml` (or a section in `settings.toml`) for non-player-facing properties like `app_title` and `app_id`.
+- Use `serde` and `toml` for configuration management.
 - **System**: `load_config_system` (Startup).
 - **Migration**: Check `version` field. If mismatched, merge with `default.toml` using `serde_json::Value` or similar manual merge logic.
 - **FS**: Determine `DataDir` using `dirs` crate (Cross-platform).
