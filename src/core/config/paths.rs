@@ -2,12 +2,10 @@
 //!
 //! Handles resolution of platform-specific directories for data and configuration.
 
+use crate::core::config::metadata::APP_NAME;
 use bevy::prelude::*;
 use std::fs;
 use std::path::PathBuf;
-
-/// The name of the folder where application data is stored.
-const APP_NAME: &str = "Planetarium";
 
 /// Resource that stores resolved platform-specific paths.
 #[derive(Resource, Debug, Clone)]

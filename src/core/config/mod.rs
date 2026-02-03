@@ -3,9 +3,11 @@
 //! This module handles the application's configuration settings, including
 //! user-defined settings and platform-specific path resolution.
 
+pub mod metadata;
 pub mod paths;
 pub mod settings;
 
+pub use metadata::AppMetadata;
 pub use paths::AppPaths;
 pub use settings::UserSettings;
 
@@ -13,6 +15,12 @@ use bevy::prelude::*;
 
 /// System to initialize paths and load settings.
 pub fn setup_config(mut commands: Commands) {
+    let metadata = AppMetadata::default();
+    info!(
+        "[Config] Initializing {} v{}",
+        metadata.title, metadata.version
+    );
+
     let paths = AppPaths::from_env();
 
     if let Err(e) = paths.ensure_dirs() {
@@ -21,6 +29,7 @@ pub fn setup_config(mut commands: Commands) {
 
     let settings = settings::load_settings(&paths);
 
+    commands.insert_resource(metadata);
     commands.insert_resource(paths);
     commands.insert_resource(settings);
 }

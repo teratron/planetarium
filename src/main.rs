@@ -4,6 +4,7 @@
 
 use bevy::prelude::*;
 use planetarium::core::cli::CliArgs;
+use planetarium::core::config::metadata::APP_TITLE;
 use planetarium::core::states::AppState;
 use planetarium::launcher::LauncherPlugin;
 
@@ -38,7 +39,7 @@ fn main() {
         // Window setup
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
-                title: "Planetarium".into(),
+                title: APP_TITLE.into(),
                 ..default()
             }),
             ..default()
