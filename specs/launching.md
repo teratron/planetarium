@@ -58,7 +58,8 @@ The module manages the following states:
 1. **Boot**:
     - Loads and validates configuration files (TOML/JSON).
     - Initializes the window and rendering engine.
-    - Sets up global resources (logger, etc.).
+    - **Diagnostics**: Initializes Bevy's `LogPlugin` and system performance monitors.
+    - Sets up global resources (logger, file sinks, etc.).
     - **Update Check**: Verifies if a newer version of the application is available.
     - **Authentication**: Handles user login/session restoration if required.
     - **Shader Pre-compilation**: Loads and compiles necessary shaders.
@@ -142,6 +143,27 @@ Professional engines support mid-game updates without restart via **Hot-Reloadin
 | **Localization** | Language files must be loaded and ready before the MainMenu state. |
 | **Save Integrity** | Check save slot data early to prevent corrupted state crashes. |
 | **Performance** | Instrument each stage with timers for internal analytics/optimization. |
+
+## Diagnostics & Logging
+
+The module leverages Bevy's built-in logging system (powered by the `tracing` crate) to ensure transparency and ease of debugging:
+
+- **Log Levels**:
+  - `ERROR`: Critical failures (e.g., "Failed to compile essential shaders", "Config file corrupted").
+  - `WARN`: Non-blocking issues (e.g., "Update server unreachable", "Optional asset missing").
+  - `INFO`: Significant milestones (e.g., "Entering MainMenu", "Authentication successful").
+  - `DEBUG`: Detailed internal steps (e.g., "Loaded asset manifest in 14ms").
+- **Output Targets**:
+  - **Console**: Real-time feedback during development.
+  - **File Log**: Automatically saved to the user's local data folder for troubleshooting production issues.
+- **Contextual Data**: All logs include timestamps and the name of the originating plugin (e.g., `[BootPlugin]`).
+
+## What to Avoid
+
+- **Long "Black Screens"**: Never leave the player without visual feedback or a progress indicator.
+- **Blocking Operations**: Do not perform heavy IO or computations on the main rendering thread.
+- **Forced Updates**: Avoid mandatory updates without a "Skip" or "Cancel" option, unless they are critical for security or compatibility.
+- **Missing Navigation**: Ensure every sub-menu or settings screen has a clear "Back" or "Cancel" button.
 
 ## User Stories
 
