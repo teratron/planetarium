@@ -7,6 +7,6 @@ pub struct BootPlugin;
 
 impl Plugin for BootPlugin {
     fn build(&self, _app: &mut App) {
-        // Initialization logic will go here
+        info!("[BootPlugin] Initializing...");
     }
 }

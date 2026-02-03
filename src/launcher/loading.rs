@@ -7,6 +7,6 @@ pub struct LoadingPlugin;
 
 impl Plugin for LoadingPlugin {
     fn build(&self, _app: &mut App) {
-        // Asset loading logic will go here
+        info!("[LoadingPlugin] Initializing...");
     }
 }

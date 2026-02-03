@@ -7,6 +7,6 @@ pub struct SplashPlugin;
 
 impl Plugin for SplashPlugin {
     fn build(&self, _app: &mut App) {
-        // Splash screen logic will go here
+        info!("[SplashPlugin] Initializing...");
     }
 }

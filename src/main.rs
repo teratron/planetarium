@@ -13,18 +13,22 @@ fn main() {
     let args = CliArgs::parse_args();
 
     // Determine the initial state.
-    // If --state is provided, we try to match it; otherwise, we use the default (Booting).
     let initial_state = if let Some(state_str) = &args.state {
         match state_str.to_lowercase().as_str() {
             "splash" => AppState::Splash,
             "mainmenu" | "menu" => AppState::MainMenu,
             "loading" => AppState::Loading,
             "ingame" | "game" => AppState::InGame,
-            _ => AppState::Booting, // Fallback if name is unrecognized
+            _ => AppState::Booting,
         }
     } else {
         AppState::Booting
     };
+
+    info!("[Main] Initializing system with state: {:?}", initial_state);
+    if args.skip_splash {
+        info!("[Main] CLI: Splash screens will be skipped.");
+    }
 
     App::new()
         // Registering the high-level application state with our override.

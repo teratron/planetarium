@@ -7,6 +7,6 @@ pub struct MenuPlugin;
 
 impl Plugin for MenuPlugin {
     fn build(&self, _app: &mut App) {
-        // Menu and settings logic will go here
+        info!("[MenuPlugin] Initializing...");
     }
 }

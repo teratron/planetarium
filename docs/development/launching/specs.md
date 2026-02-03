@@ -1,10 +1,8 @@
-# Launching Module Specification
+# Architecture Specification: Launching Module
 
 ## Overview
 
-The Launching Module is designed as a universal, modular template for Bevy games. It handles the initial stages of a game application, from the very first frame to the moment the player enters the game world.
-
-The primary goal is to provide a standardized structure that can be easily reused across different projects (both 2D and 3D) while maintaining a strict separation between the platform/launch logic and the specific game content.
+This document specifies the professional "Launching" module for the Planetarium game. It covers the complete application initialization sequence, including system health checks, branding, main menu orchestration, and asset loading.
 
 ## Launch Sequence Overview
 
@@ -52,15 +50,15 @@ graph TD
 
 ## Design Principles
 
-- **Modularity**: Implemented as a set of Bevy Plugins.
-- **State-Driven**: Uses Bevy's `States` to manage transitions between phases.
-- **Extensibility**: Core components should be easy to override or extend without modifying the module's core logic.
-- **Generic Support**: Core logic is agnostic to 2D or 3D rendering. UI components (Menu/Settings) are designed to be adaptable or conditional based on the project's requirements.
-- **Core-First Approach**: Maximize use of Bevy's standard library. Third-party plugins are only introduced when required functionality is absent from the engine's core.
+1. **State-Driven**: Every stage is a first-class `AppState`.
+2. **Asynchronous Loading**: Critical operations (IO, Shader compilation) must not block the main thread.
+3. **Visual Continuity**: Professional transitions (fades, vignettes) between all states.
+4. **Resilience**: Graceful failure handling with user-friendly error states.
+5. **User-Centric**: Respect player time (e.g., skippable splash screens after minimum feedback duration).
 
-## Launching Sequence
+## Technical Architecture
 
-The module manages the following states:
+### AppStates (Core FSM)
 
 1. **Boot**:
     - **Environment Setup**: Determines platform-specific paths (e.g., `%APPDATA%` on Windows, `~/.local/share` on Linux) for logs and saves.
@@ -68,47 +66,22 @@ The module manages the following states:
     - Loads and validates configuration files (`settings.toml`).
     - Initializes the window and rendering engine (Graphic API, Input, Audio).
     - **Diagnostics**: Initializes Bevy's `LogPlugin` and non-blocking analytics/telemetry.
-    - **Update & Security**: Verifies version with the server and performs background file integrity checks (hashes).
-    - **Authentication**: Handles user login or session restoration if required.
-    - **Shader Pre-compilation**: Loads and compiles necessary shaders.
-    - **Localization**: Loads selected language files (Project Fluent `.ftl`) and fonts before entering the menu.
 2. **Splash**:
-    - Displays a sequence of splash screens (Engine license requirements, Studio logo, Partners).
-    - **Transitions**: Support for smooth fade-in/fade-out between screens.
-    - **Background Tasks**: Continues non-blocking initialization tasks (e.g., verifying large asset manifests).
-    - **Progress & Feedback**: Ability to see loading progress for the next state and random gameplay tips/hints.
+    - A sequential queue of branding videos/images.
+    - Progressive loading of core UI textures in the background.
+    - Mandatory legal screens (if required).
 3. **MainMenu**:
-    - Provides a standard UI for:
-        - **Play**: Mode selection (Campaign, Multiplayer, Sandbox).
-        - **New Game**: Profile creation and initial slot selection.
-        - **Load Game**: List of save slots with visual previews and metadata.
-        - **Settings**: Comprehensive GUI for all options (Graphics, Sound, Controls, Language).
-        - **Extras**: Achievements, Credits, or Store (if applicable).
-        - **Exit**: Clean application shutdown.
-    - **Save Management**: Verifies save slot integrity and metadata before enabling "Load Game".
-    - **Adaptive UI**: The menu and settings dynamically adjust their content based on whether the game is 2D or 3D.
-    - **Extensibility**: Design allows easy addition/removal of menu items and re-styling of the UI.
+    - The interactive hub (New Game, Load, Settings, Exit).
+    - Background ambiance (static scene or dynamic 3D vignette).
+    - Sub-menus (Settings, Save Slots) are rendered as children or modal overlaps within this state.
 4. **Loading**:
-    - Handles asynchronous loading of assets required for the main game world/level.
-    - Displays a detailed loading bar and current task status.
-    - Transitions to the `InGame` state once all critical assets are ready.
-
-## Technical Architecture
-
-### State Machine
-
-`AppState` (Enumeration):
-
-- `Booting`: System initialization, updates, and auth.
-- `Splash`: Sequence of brand screens.
-- `MainMenu`: Interaction and configuration.
-- `Loading`: Preparing game assets.
-- `Error`: Critical failure state (shows error message and exit/retry options).
-- `InGame`: Active gameplay (Handled by external game logic).
+    - Asset orchestration based on "bundles" (e.g., Stage 1 assets).
+    - UI Feedback: Progress bar, loading hints/lore, and animated indicators.
+5. **Error**:
+    - Global exception handler state. Shows error details and provides a "Back to Menu" or "Exit" option.
 
 ### Plugins
 
-- `BootPlugin`: Handles initial setup, update checks, and authentication logic.
 - `BootPlugin`: Handles initial setup, update checks, and authentication logic.
 - `SplashPlugin`: Manages the queue of splash screens, including progress indicators and hint systems.
 - `MenuPlugin`: Core menu functionality and the settings sub-system.
@@ -118,21 +91,13 @@ The module manages the following states:
 
 #### Core Resources
 
-| Resource | Purpose |
-| -------- | ------- |
-| `GameSettings` | Graphics, audio, and controls configuration initialized from TOML. |
-| `SplashTimer` | Timer resource for auto-transitioning between brand screens. |
-| `LoadingAssets` | Tracks `Handle<T>` collections to calculate loading progress. |
+- `struct LaunchConfig`: Global settings loaded during `Boot`.
+- `struct LoadingTracker`: Tracks progress of current asset bundle batches.
 
-#### Marker Components (State Management)
+#### Marker Components
 
-| Marker | Purpose | Cleanup Strategy |
-| ------ | ------- | ---------------- |
-| `SplashScreen` | Entities visible during Stage 2. | `OnExit(AppState::Splash)` despawn. |
-| `MainMenuRoot` | The root UI node for the Main Menu. | `OnExit(AppState::MainMenu)` despawn. |
-| `SettingsScreen` | Root node for the settings interface. | `OnExit(AppState::MainMenu)` despawn. |
-| `LoadingScreen` | UI elements for the progress bar and tips. | `OnExit(AppState::Loading)` despawn. |
-| `GameplayCamera` | Primary game camera (3D or 2D). | `OnExit(AppState::InGame)` cleanup. |
+- `struct SplashElement`: For entities specific to the Splash stage.
+- `struct MenuUI`: For entities specific to the MainMenu stage.
 
 #### Best Practices
 
@@ -149,8 +114,6 @@ The module manages the following states:
 
 ## State-Driven Scene Management
 
-The project follows the "Professional Game Loop" standard, separating logic from data using **Bevy States** and **Scenes**:
-
 1. **Finite State Machine (FSM)**: `AppState` acts as the application's "brain," controlling the lifecycle, memory cleanup (`OnExit`), and system scheduling.
 2. **Scene Controller**: Each state manages its own data container (Scene).
     - Entering a state triggers the asynchronous loading of a specific scene (UI layouts, lighting, background assets).
@@ -166,7 +129,7 @@ The project follows the "Professional Game Loop" standard, separating logic from
 
 ### Localization (AAA Approach)
 
-The project uses **Project Fluent (.ftl)** for managing text resources:
+The system uses [Project Fluent](https://projectfluent.org/) for highly scalable and grammatically correct translations.
 
 - **Pluralization & Grammar**: Native support for complex grammatical rules (e.g., Russian plurals).
 - **Key-Based Access**: Code refers to unique identifiers (e.g., `menu-start-button`) instead of raw text.
@@ -176,80 +139,54 @@ The project uses **Project Fluent (.ftl)** for managing text resources:
 
 ### Standard UI Audio Assets
 
-| File | Purpose |
-| ---- | ------- |
-| `click.ogg` | Primary action (button press). |
-| `select.ogg` | Hover on button or item selection. |
-| `back.ogg` | Exiting a sub-menu (e.g., from Settings back to Main Menu). |
-| `confirmation.ogg` | Success feedback (e.g., settings saved or loading finished). |
-| `error.ogg` | Audio feedback for errors (e.g., failed to load config). |
-| `scroll.ogg` | Scrolling through lists or sliders. |
-| `toggle.ogg` | Toggle switches (On/Off states like VSync). |
-| `open.ogg` / `close.ogg` | Optional: UI panel animations. |
-| `maximize.ogg` / `minimize.ogg` | Optional: Interface scaling or full-screen transitions. |
+To ensure consistent audio feedback, the following standard SFX set must be implemented:
 
-## Proposed File Structure
+- `click.ogg`: Standard button activation.
+- `hover.ogg`: Focus change on interactive elements.
+- `back.ogg`: Menu cancellation or navigation back.
+- `error.ogg`: Triggered on invalid input or failure.
+- `scroll.ogg`: Navigation through long lists or sliders.
 
-For a Bevy project, it is essential to distinguish between **static content** (root assets folder) and **source code** (src folder):
+---
 
-### Root Project Structure
+## Technical File Structure
 
-```plaintext
-. (Project Root)
-├── assets/                 # STATIC CONTENT (Physical files)
-│   ├── images/             # Textures, sprites, icons
-│   ├── fonts/              # Typography (.ttf, .otf)
-│   ├── audio/              # Common sound effects and music
-│   ├── locales/            # Localization (AAA Modular Structure)
-│   │   ├── en-US/          # English (United States)
-│   │   │   ├── text/       # .ftl Fluent files (menu, items, dialogs)
-│   │   │   └── audio/      # English voice-overs and regional audio
-│   │   ├── ru-RU/          # Russian (Russia)
-│   │   │   ├── text/       # .ftl Fluent files (menu, items, dialogs)
-│   │   │   └── audio/      # Russian voice-overs and regional audio
-│   │   └── index.toml      # Languages manifest (metadata for all locales)
-│   ├── shaders/            # Custom GLSL/WGSL code
-│   └── configs/            # assets.toml, default.toml
-├── src/                    # SOURCE CODE (Rust files)
-├── tests/                  # Integration tests
-├── docs/                   # Project documentation and design specs
-├── Cargo.toml
-└── ...
-```
+```text
+assets/
+├── locales/
+│   ├── en-US/                  # English (United States)
+│   │   ├── text/
+│   │   │   ├── menu.ftl        # Fluent localization files
+│   │   │   └── items.ftl
+│   │   └── audio/              # Localized voice-overs/SFX
+│   └── ru-RU/                  # Russian (Russia)
+│       ├── text/
+│       └── audio/
+├── configs/
+│   └── default.toml            # Shipping configuration template
+├── textures/
+│   └── brand/                  # Logo and branding assets
+└── manifests/
+    └── core.assets.toml        # Asset orchestrator definitions
 
-### Source Code Detail (src/)
-
-```plaintext
 src/
-├── main.rs                 # Minimal entry point (app builder)
-├── lib.rs                  # Library root, primary plugin registration
-├── launcher/               # THE MODULE (Reusable Template)
-│   ├── mod.rs              # LauncherPlugin (aggregates all sub-plugins)
-│   ├── boot.rs             # Stage 1: Logs, Config, Auth, Updates
-│   ├── splash.rs           # Stage 2: Splash sequence, Hints
-│   ├── menu/               # Stage 3: UI & Interaction
-│   │   ├── mod.rs
-│   │   ├── main_menu.rs    # Main Menu logic
-│   │   └── settings.rs     # Settings GUI & Logic
-│   ├── loading.rs          # Stage 4: Asset orchestration
-│   └── systems/            # Shared internal launcher systems
-├── game/                   # Project-specific logic (Game World)
-│   ├── mod.rs
-│   └── gameplay.rs         # Gameplay core states
-├── ui/                     # Generic UI Framework
-│   ├── mod.rs
-│   ├── widgets.rs          # Styled buttons, sliders, panels
-│   └── theme.rs            # Design tokens (Colors, Fonts, Sizes)
-├── core/                   # Project-wide definitions
-│   ├── mod.rs
-│   ├── states.rs           # AppState & SubState definitions
-│   └── resources.rs        # Global settings & common data
-└── assets/                 # Rust code for Asset Management
-    ├── mod.rs
-    └── manifest.rs         # Logic for interpreting assets.toml
+├── core/
+│   ├── states.rs               # AppState enum definition
+│   └── mod.rs
+├── launcher/
+│   ├── boot.rs                 # Plugin for stage 1
+│   ├── splash.rs               # Plugin for stage 2
+│   ├── menu/                   # Sub-module for stage 3
+│   │   ├── widgets.rs          # Button, Slider, etc.
+│   │   └── mod.rs
+│   ├── loading.rs              # Plugin for stage 4
+│   └── mod.rs                  # LauncherPlugin aggregate
+└── ui/
+    ├── theme.rs                # Color palettes, fonts
+    └── mod.rs
 ```
 
-## UI Framework
+## UI Framework (AAA Quality)
 
 To maximize engine utilization, the module strictly uses **Bevy's built-in UI system** (`bevy_ui`):
 
@@ -259,35 +196,32 @@ To maximize engine utilization, the module strictly uses **Bevy's built-in UI sy
 
 ## Live Configuration (AAA Approach)
 
-Professional engines support mid-game updates without restart via **Hot-Reloading**:
-
 - **File Watchers**: Detects changes in `default.toml` and manifests.
 - **Event-Driven Updates**: `ConfigChangedEvent` triggers reactive updates in Audio, Graphics, and UI systems immediately.
 
-## Technical Implementation Guidelines
+## Design Checklist (Ensuring AAA Feel)
 
-| Aspect | Recommendation |
-| ------ | -------------- |
-| **Asset Loading** | Use asynchronous loading with caching; never block the main rendering thread. |
-| **Interruption** | Allow exit via [Alt+F4] or system buttons at any stage except initial engine setup. |
-| **Offline Mode** | Ensure the core game is playable without internet. |
-| **Localization** | Language files must be loaded and ready before the MainMenu state. |
+| Requirement | Description |
+| :--- | :--- |
+| **No Hardcoded Paths** | Use the `AssetServer` or a custom path resolution service. |
+| **Input Remapping** | Support for Keyboard/Mouse, Gamepad, and Touch (if applicable) through action-based inputs. |
+| **Vignettes/Fades** | All UI transitions must be masked by professional camera effects or full-screen vignettes. |
+| **High DPI Support** | UI must scale correctly according to the system's display scale factor. |
 | **Save Integrity** | Check save slot data early (on entering the Load Menu) to prevent corrupted state crashes. |
 | **Performance** | Instrument each stage with timers for internal analytics/optimization. |
 
-## Diagnostics & Logging
+## Logging Standards
 
-The module leverages Bevy's built-in logging system (powered by the `tracing` crate) to ensure transparency and ease of debugging:
+Every module must provide clear diagnostic feedback using Bevy's logging macros.
 
-- **Log Levels**:
-  - `ERROR`: Critical failures (e.g., "Failed to compile essential shaders", "Config file corrupted").
-  - `WARN`: Non-blocking issues (e.g., "Update server unreachable", "Optional asset missing").
-  - `INFO`: Significant milestones (e.g., "Entering MainMenu", "Authentication successful").
-  - `DEBUG`: Detailed internal steps (e.g., "Loaded asset manifest in 14ms").
-- **Output Targets**:
-  - **Console**: Real-time feedback during development.
-  - **File Log**: Automatically saved to the user's local data folder for troubleshooting production issues.
-- **Contextual Data**: All logs include timestamps and the name of the originating plugin (e.g., `[BootPlugin]`).
+- **[TAG]**: Every log should start with a plugin tag, e.g., `[BootPlugin]`.
+- **Levels**:
+  - `error!`: Critical failures (config missing, assets corrupted).
+  - `warn!`: Fallbacks or non-critical missing items.
+  - `info!`: State transitions and major milestones.
+  - `debug!`: Performance data and fine-grained logic steps.
+
+## Diagnostics
 
 ## What to Avoid
 
@@ -298,7 +232,7 @@ The module leverages Bevy's built-in logging system (powered by the `tracing` cr
 
 ## System Robustness & Developer Tools
 
-To ensure a smooth development cycle and production stability, the following "backdoors" and safety measures are implemented:
+To ensure a smooth development cycle and application stability, the following safety mechanisms and tools are provided:
 
 - **Developer Backdoor (CLI & Shortcuts)**:
   - Support for `--skip-splash` to bypass branding screens during testing.
@@ -317,7 +251,7 @@ To ensure a smooth development cycle and production stability, the following "ba
 
 ## UI/UX Interaction Standards
 
-To achieve a professional "AAA feel," the following polish features must be implemented:
+For a professional "AAA feel," the following elements of interface "juiciness" should be implemented:
 
 - **State Transitions**: Implement smooth fade-in/fade-out (alpha-blending) when switching between `AppState` scenes.
 - **Splash Interaction**: Allow skipping any splash screen after a minimum of 1 second by pressing any key or clicking.
