@@ -108,6 +108,7 @@ The module manages the following states:
 ### Plugins
 
 - `BootPlugin`: Handles initial setup, update checks, and authentication logic.
+- `BootPlugin`: Handles initial setup, update checks, and authentication logic.
 - `SplashPlugin`: Manages the queue of splash screens, including progress indicators and hint systems.
 - `MenuPlugin`: Core menu functionality and the settings sub-system.
 - `LoadingPlugin`: Resource orchestration via manifest tags, progress tracking, and transition to the game.
@@ -301,7 +302,7 @@ To ensure a smooth development cycle and production stability, the following "ba
 - **Developer Backdoor (CLI & Shortcuts)**:
   - Support for `--skip-splash` to bypass branding screens during testing.
   - Command-line argument `--state=<StateName>` to jump directly to a specific state (e.g., `Gameplay`).
-  - **Debug Overlay**: A toggleable diagnostic layer (e.g., via `F1` or `~`) displaying FPS, memory usage, and logic logs.
+  - **Debug Overlay**: A state-independent diagnostic layer (e.g., via `F1` or `~`) that remains active across all `AppStates`, displaying FPS, memory usage, and logic logs.
 - **Configuration Migration (Version Guard)**:
   - All config files (`settings.toml`) include a `version` field.
   - If a user has an older version of the config, the system performs a "non-destructive merge," adding missing fields from the default template while preserving user choices.
@@ -334,13 +335,11 @@ To achieve a professional "AAA feel," the following polish features must be impl
 
 ## Future Considerations
 
-- Support for localization.
 - Controller/Gamepad support for menus out of the box.
-- Persistent user settings.
+- Advanced procedural generation loading hooks.
 
 ## Backlog / Future Discussions
 
-- [ ] Detailed 2D vs 3D specific settings (Pixel Perfect, LODs, etc.).
-- [ ] Advanced UI theming and skinning (using only Bevy UI).
-- [ ] Error Handling strategy (Local vs Global errors).
-- [ ] Controller/Gamepad remapping interface.
+- [ ] Детальные настройки для 2D vs 3D (Pixel Perfect, LOD-ы и т.д.).
+- [ ] Продвинутая темизация UI (средствами Bevy UI).
+- [ ] Интерфейс переназначения управления.
