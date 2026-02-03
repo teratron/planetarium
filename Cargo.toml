@@ -25,6 +25,7 @@ path = "src/main.rs"
 [dependencies]
 bevy = "0.18.0"
 toml = "0.9.11"
+clap = { version = "4.5.1", features = ["derive"] }
 
 [dev-dependencies]
 dotenvy = "0.15.7"
