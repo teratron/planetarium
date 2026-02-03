@@ -1,18 +1,16 @@
 //! # Planetarium Application
 //!
 //! The main entry point for the Planetarium application.
-//! This file is responsible for building the Bevy `App` and running it.
 
 use bevy::prelude::*;
+use planetarium::core::states::AppState;
+use planetarium::launcher::LauncherPlugin;
 
 fn main() {
-    // Initializing the Bevy App
     App::new()
-        // DefaultPlugins provides the core engine functionality:
-        // - Window management
-        // - Rendering (WGPU)
-        // - Input handling
-        // - Asset server
+        // Registering the high-level application state
+        .init_state::<AppState>()
+        // Window setup
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
                 title: "Planetarium".into(),
@@ -20,6 +18,7 @@ fn main() {
             }),
             ..default()
         }))
-        // Our launcher and game logic will be added here as Plugins in the next tasks
+        // Adding the aggregate Launcher plugin
+        .add_plugins(LauncherPlugin)
         .run();
 }
