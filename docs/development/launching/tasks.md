@@ -35,7 +35,7 @@
   - Implement sequence logic with timers.
 - [x] **[L-302]** Skip Logic & Input Interleaving
   - Implement the "1s minimum" skip rule.
-- [ ] **[L-303]** UI Fading System
+- [x] **[L-303]** UI Fading System
   - Component-based alpha blending for smooth transitions.
 
 ## Phase 4: Main Menu & UI Framework (Priority: High)

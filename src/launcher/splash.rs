@@ -24,8 +24,12 @@ fn setup_splash(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     manifest: Res<AssetManifest>,
+    mut fade: ResMut<crate::ui::fading::ScreenFade>,
 ) {
     info!("[SplashPlugin] Showing splash screen...");
+
+    // Start fading in
+    fade.fade_in(1.0);
 
     // Default to a 2.0 second timer
     commands.insert_resource(SplashTimer(Timer::from_seconds(2.0, TimerMode::Once)));
@@ -60,18 +64,18 @@ fn setup_splash(
 }
 
 fn countdown_splash(
-    mut next_state: ResMut<NextState<AppState>>,
     time: Res<Time>,
     mut timer: ResMut<SplashTimer>,
     keys: Res<ButtonInput<KeyCode>>,
     mouse: Res<ButtonInput<MouseButton>>,
+    mut fade: ResMut<crate::ui::fading::ScreenFade>,
 ) {
     timer.0.tick(time.delta());
 
     // Check if timer finished naturally
     if timer.0.just_finished() {
-        info!("[SplashPlugin] Splash finished. Transitioning to MainMenu.");
-        next_state.set(AppState::MainMenu);
+        info!("[SplashPlugin] Splash finished. Fading out...");
+        fade.fade_out(0.5, AppState::MainMenu);
         return;
     }
 
@@ -81,8 +85,8 @@ fn countdown_splash(
             || mouse.any_just_pressed([MouseButton::Left, MouseButton::Right]);
 
         if skip_input {
-            info!("[SplashPlugin] Splash skipped by user.");
-            next_state.set(AppState::MainMenu);
+            info!("[SplashPlugin] Splash skipped by user. Fading out...");
+            fade.fade_out(0.3, AppState::MainMenu); // Faster fade on skip
         }
     }
 }

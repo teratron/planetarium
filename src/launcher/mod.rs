@@ -24,6 +24,12 @@ pub struct LauncherPlugin;
 impl Plugin for LauncherPlugin {
     fn build(&self, app: &mut App) {
         // Registering sub-plugins
-        app.add_plugins((BootPlugin, SplashPlugin, MenuPlugin, LoadingPlugin));
+        app.add_plugins((
+            BootPlugin,
+            SplashPlugin,
+            MenuPlugin,
+            LoadingPlugin,
+            crate::ui::fading::FadingPlugin,
+        ));
     }
 }
