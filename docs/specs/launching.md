@@ -162,7 +162,8 @@ The project uses **Project Fluent (.ftl)** for managing text resources:
 - **Pluralization & Grammar**: Native support for complex grammatical rules (e.g., Russian plurals).
 - **Key-Based Access**: Code refers to unique identifiers (e.g., `menu-start-button`) instead of raw text.
 - **Dynamic Content**: Support for variables (e.g., `welcome-user = Welcome, { $user }!`).
-- **Isolation**: Each language lives in its own directory within `assets/locales/`.
+- **Audio Localization**: Support for regional audio files (voice-overs, etc.) stored within the locale structure.
+- **Isolation & Fallback**: Each language lives in its own directory within `assets/locales/`. If a localized asset is missing, the system falls back to the default locale (English).
 
 ### Standard UI Audio Assets
 
@@ -189,17 +190,15 @@ For a Bevy project, it is essential to distinguish between **static content** (r
 ├── assets/                 # STATIC CONTENT (Physical files)
 │   ├── images/             # Textures, sprites, icons
 │   ├── fonts/              # Typography (.ttf, .otf)
-│   ├── audio/              # Sound effects and music
-│   ├── locales/            # Localization (AAA Fluent .ftl files)
+│   ├── audio/              # Common sound effects and music
+│   ├── locales/            # Localization (AAA Modular Structure)
 │   │   ├── en-US/          # English (United States)
-│   │   │   ├── menu.ftl    # Main menu strings
-│   │   │   ├── items.ftl   # Item names and descriptions
-│   │   │   └── dialogs.ftl # Dialog system text
+│   │   │   ├── text/       # .ftl Fluent files (menu, items, dialogs)
+│   │   │   └── audio/      # English voice-overs and regional audio
 │   │   ├── ru-RU/          # Russian (Russia)
-│   │   │   ├── menu.ftl
-│   │   │   ├── items.ftl
-│   │   │   └── dialogs.ftl
-│   │   └── index.toml      # Languages manifest (list of available locales)
+│   │   │   ├── text/       # .ftl Fluent files (menu, items, dialogs)
+│   │   │   └── audio/      # Russian voice-overs and regional audio
+│   │   └── index.toml      # Languages manifest (metadata for all locales)
 │   ├── shaders/            # Custom GLSL/WGSL code
 │   └── configs/            # assets.toml, default.toml
 ├── src/                    # SOURCE CODE (Rust files)
