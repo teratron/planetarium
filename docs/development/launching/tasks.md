@@ -42,9 +42,9 @@
 
 - [x] **[L-401]** Theme & Design Tokens
   - Define colors, fonts, and sizes in `theme.rs`.
-- [ ] **[L-402]** Generic Widget Library
+- [x] **[L-402]** Generic Widget Library
   - Create `PrimaryButton`, `Slider`, and `Dropdown` widgets.
-- [ ] **[L-403]** Main Menu Layout
+- [x] **[L-403]** Main Menu Layout
   - Implement the landing screen (Play, Settings, Exit).
 - [ ] **[L-404]** Settings Screen GUI
   - Implement tabs for Graphics, Audio, Controls.
