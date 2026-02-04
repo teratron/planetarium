@@ -46,7 +46,7 @@
   - Create `PrimaryButton`, `Slider`, and `Dropdown` widgets.
 - [x] **[L-403]** Main Menu Layout
   - Implement the landing screen (Play, Settings, Exit).
-- [ ] **[L-404]** Settings Screen GUI
+- [x] **[L-404]** Settings Screen GUI
   - Implement tabs for Graphics, Audio, Controls.
 - [ ] **[L-405]** Reactive Audio/Graphics Settings
   - Implement events that update the engine state immediately.

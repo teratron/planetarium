@@ -3,12 +3,11 @@
 //! Implements the landing screen with Play, Settings, and Exit buttons.
 //! Manages menu state and transitions.
 
-use bevy::prelude::*;
+use super::settings::SettingsOpen;
+use super::widgets::{ButtonAction, PrimaryButton, spawn_primary_button};
 use crate::core::states::AppState;
 use crate::ui::theme::Theme;
-use super::widgets::{
-    spawn_primary_button, ButtonAction, PrimaryButton,
-};
+use bevy::prelude::*;
 
 /// Marker component for menu root entity.
 #[derive(Component)]
@@ -75,15 +74,13 @@ pub fn spawn_main_menu(
 
     // Buttons container
     let buttons_container = commands
-        .spawn((
-            Node {
-                width: Val::Percent(100.0),
-                height: Val::Auto,
-                flex_direction: FlexDirection::Column,
-                align_items: AlignItems::Stretch,
-                ..default()
-            },
-        ))
+        .spawn((Node {
+            width: Val::Percent(100.0),
+            height: Val::Auto,
+            flex_direction: FlexDirection::Column,
+            align_items: AlignItems::Stretch,
+            ..default()
+        },))
         .id();
 
     // Spawn buttons
@@ -117,11 +114,9 @@ pub fn spawn_main_menu(
 
 /// System to handle main menu button clicks.
 pub fn handle_menu_button_clicks(
-    interaction_query: Query<
-        (&Interaction, &PrimaryButton),
-        (Changed<Interaction>, With<Button>),
-    >,
+    interaction_query: Query<(&Interaction, &PrimaryButton), (Changed<Interaction>, With<Button>)>,
     mut next_state: ResMut<NextState<AppState>>,
+    mut settings_open: ResMut<SettingsOpen>,
 ) {
     for (interaction, button) in &interaction_query {
         if *interaction == Interaction::Pressed {
@@ -132,7 +127,7 @@ pub fn handle_menu_button_clicks(
                 }
                 ButtonAction::Settings => {
                     info!("[MainMenu] Settings button clicked. Opening settings...");
-                    // TODO: Transition to settings screen or show modal
+                    settings_open.0 = true;
                 }
                 ButtonAction::Exit => {
                     info!("[MainMenu] Exit button clicked. Exiting application...");
@@ -140,6 +135,7 @@ pub fn handle_menu_button_clicks(
                 }
                 ButtonAction::Back => {
                     info!("[MainMenu] Back button clicked.");
+                    settings_open.0 = false;
                 }
             }
         }
@@ -147,10 +143,7 @@ pub fn handle_menu_button_clicks(
 }
 
 /// System to despawn the menu UI when exiting MainMenu state.
-pub fn despawn_main_menu(
-    mut commands: Commands,
-    query: Query<Entity, With<MainMenuRoot>>,
-) {
+pub fn despawn_main_menu(mut commands: Commands, query: Query<Entity, With<MainMenuRoot>>) {
     for entity in &query {
         commands.entity(entity).despawn();
     }
