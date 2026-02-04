@@ -29,14 +29,6 @@ To run all tests for the library, use the following command:
 cargo test
 ```
 
-### Run Examples
-
-The project includes examples in the `examples` directory. To run a specific example, navigate to its directory and use `cargo run`. For example, to run the `hello` example:
-
-```shell
-cargo run --example hello
-```
-
 ## Development Conventions
 
 ### Code Style

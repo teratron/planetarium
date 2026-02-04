@@ -45,14 +45,3 @@ dotenvy = "0.15.7"
 [workspace]
 resolver = "2"
 members = ["examples/*"]
-
-[[example]]
-name = "hello"
-path = "examples/hello.rs"
-doc-scrape-examples = false
-
-[package.metadata.example.hello]
-name = "Hello"
-description = "A quick start guide example demonstrating the basic features."
-category = "Getting Started Guide"
-wasm = false
