@@ -63,13 +63,8 @@ fn main() {
     info!("[Main] Initializing system with state: {:?}", initial_state);
 
     App::new()
-        // Registering the high-level application state with our override.
-        .insert_state(initial_state)
-        // Global error state for reporting critical failures.
-        .init_resource::<planetarium::core::states::ErrorState>()
-        // 2. Inserting CLI args as a Resource so they can be accessed anywhere.
-        .insert_resource(args)
-        // Window setup
+        // Window setup - MUST be added before state insertion in Bevy 0.18
+        // to ensure StatesPlugin (part of DefaultPlugins) is available.
         .add_plugins(
             DefaultPlugins
                 .set(WindowPlugin {
@@ -80,7 +75,13 @@ fn main() {
                     ..default()
                 })
                 .disable::<LogPlugin>(),
-        ) // Use our custom subscriber
+        )
+        // Registering the high-level application state with our override.
+        .insert_state(initial_state)
+        // Global error state for reporting critical failures.
+        .init_resource::<planetarium::core::states::ErrorState>()
+        // Inserting CLI args as a Resource so they can be accessed anywhere.
+        .insert_resource(args)
         // Adding the aggregate Launcher and Game plugins
         .add_plugins((LauncherPlugin, GamePlugin))
         .run();
