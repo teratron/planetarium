@@ -7,12 +7,16 @@ use bevy::prelude::*;
 
 // Importing sub-modules
 pub mod boot;
+pub mod diagnostics;
+pub mod error;
 pub mod loading;
 pub mod menu;
 pub mod splash;
 
 // Using the plugin structs from sub-modules
 use boot::BootPlugin;
+use diagnostics::DiagnosticsPlugin;
+use error::ErrorPlugin;
 use loading::LoadingPlugin;
 use menu::MenuPlugin;
 use splash::SplashPlugin;
@@ -29,6 +33,8 @@ impl Plugin for LauncherPlugin {
             SplashPlugin,
             MenuPlugin,
             LoadingPlugin,
+            ErrorPlugin,
+            DiagnosticsPlugin,
             crate::ui::fading::FadingPlugin,
             crate::ui::theme::ThemePlugin,
         ));

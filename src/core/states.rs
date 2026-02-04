@@ -31,3 +31,9 @@ pub enum AppState {
     /// Critical Error state: Shows a crash/error screen to the user.
     Error,
 }
+
+/// Global resource to hold the last critical error message.
+#[derive(Resource, Debug, Clone, Default)]
+pub struct ErrorState {
+    pub message: String,
+}

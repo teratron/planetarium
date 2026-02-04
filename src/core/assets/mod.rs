@@ -34,7 +34,11 @@ impl AssetManifest {
 }
 
 /// System to load the asset manifest from disk.
-pub fn setup_asset_manifest(mut commands: Commands) {
+pub fn setup_asset_manifest(
+    mut commands: Commands,
+    mut next_state: ResMut<NextState<crate::core::states::AppState>>,
+    mut error_state: ResMut<crate::core::states::ErrorState>,
+) {
     let manifest_path = "assets/assets.toml";
     info!("[Assets] Loading manifest from {}", manifest_path);
 
@@ -45,12 +49,18 @@ pub fn setup_asset_manifest(mut commands: Commands) {
                 m
             }
             Err(e) => {
-                error!("[Assets] Failed to parse assets.toml: {}", e);
+                let err_msg = format!("Failed to parse assets.toml: {}", e);
+                error!("[Assets] {}", err_msg);
+                error_state.message = err_msg;
+                next_state.set(crate::core::states::AppState::Error);
                 AssetManifest::default()
             }
         },
         Err(e) => {
-            error!("[Assets] Failed to read assets.toml: {}", e);
+            let err_msg = format!("Failed to read assets.toml: {}", e);
+            error!("[Assets] {}", err_msg);
+            error_state.message = err_msg;
+            next_state.set(crate::core::states::AppState::Error);
             AssetManifest::default()
         }
     };

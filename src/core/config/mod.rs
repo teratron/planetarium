@@ -14,7 +14,11 @@ pub use settings::UserSettings;
 use bevy::prelude::*;
 
 /// System to initialize paths and load settings.
-pub fn setup_config(mut commands: Commands) {
+pub fn setup_config(
+    mut commands: Commands,
+    mut next_state: ResMut<NextState<crate::core::states::AppState>>,
+    mut error_state: ResMut<crate::core::states::ErrorState>,
+) {
     let metadata = AppMetadata::default();
     info!(
         "[Config] Initializing {} v{}",
@@ -24,7 +28,10 @@ pub fn setup_config(mut commands: Commands) {
     let paths = AppPaths::from_env();
 
     if let Err(e) = paths.ensure_dirs() {
-        error!("[Config] Failed to create data directory: {}", e);
+        let err_msg = format!("Failed to create data directory: {}", e);
+        error!("[Config] {}", err_msg);
+        error_state.message = err_msg;
+        next_state.set(crate::core::states::AppState::Error);
     }
 
     let settings = settings::load_settings(&paths);

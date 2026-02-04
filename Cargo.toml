@@ -31,6 +31,13 @@ dirs = "6.0.0"
 fluent-bundle = "0.16.0"
 intl-memoizer = "0.5"
 unic-langid = "0.9.5"
+tracing-appender = "0.2"
+tracing-subscriber = { version = "0.3", features = [
+    "fmt",
+    "registry",
+    "env-filter",
+] }
+tracing = "0.1"
 
 [dev-dependencies]
 dotenvy = "0.15.7"

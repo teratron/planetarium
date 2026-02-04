@@ -1,17 +1,15 @@
-//! # Planetarium Application
-//!
-//! The main entry point for the Planetarium application.
-
+use bevy::log::LogPlugin;
 use bevy::prelude::*;
 use planetarium::core::cli::CliArgs;
+use planetarium::core::config::AppPaths;
 use planetarium::core::config::metadata::APP_TITLE;
 use planetarium::core::states::AppState;
 use planetarium::game::GamePlugin;
 use planetarium::launcher::LauncherPlugin;
+use tracing_subscriber::{EnvFilter, fmt, prelude::*};
 
 fn main() {
     // 1. Parsing CLI arguments before starting the engine.
-    // This allows us to use these flags to configure the app itself.
     let args = CliArgs::parse_args();
 
     // Determine the initial state.
@@ -27,25 +25,63 @@ fn main() {
         AppState::Booting
     };
 
-    info!("[Main] Initializing system with state: {:?}", initial_state);
-    if args.skip_splash {
-        info!("[Main] CLI: Splash screens will be skipped.");
+    // 2. Setup Logging (Robustness L-603)
+    let paths = AppPaths::from_env();
+    let (non_blocking, _log_guard) =
+        if let (Some(dir), Some(file)) = (paths.log_file.parent(), paths.log_file.file_name()) {
+            let file_appender = tracing_appender::rolling::never(dir, file);
+            let (nb, guard) = tracing_appender::non_blocking(file_appender);
+            (Some(nb), Some(guard))
+        } else {
+            (None, None)
+        };
+
+    // Build the subscriber
+    let env_filter = EnvFilter::try_from_default_env()
+        .unwrap_or_else(|_| EnvFilter::new("info,wgpu=error,naga=error"));
+
+    let stdout_layer = fmt::layer().with_ansi(true);
+
+    if let Some(nb) = non_blocking {
+        let file_layer = fmt::layer().with_ansi(false).with_writer(nb);
+        let registry = tracing_subscriber::registry()
+            .with(env_filter)
+            .with(stdout_layer)
+            .with(file_layer);
+        if let Err(e) = tracing::subscriber::set_global_default(registry) {
+            eprintln!("Failed to set tracing subscriber: {}", e);
+        }
+    } else {
+        let registry = tracing_subscriber::registry()
+            .with(env_filter)
+            .with(stdout_layer);
+        if let Err(e) = tracing::subscriber::set_global_default(registry) {
+            eprintln!("Failed to set tracing subscriber: {}", e);
+        }
     }
+
+    info!("[Main] Initializing system with state: {:?}", initial_state);
 
     App::new()
         // Registering the high-level application state with our override.
         .insert_state(initial_state)
+        // Global error state for reporting critical failures.
+        .init_resource::<planetarium::core::states::ErrorState>()
         // 2. Inserting CLI args as a Resource so they can be accessed anywhere.
         .insert_resource(args)
         // Window setup
-        .add_plugins(DefaultPlugins.set(WindowPlugin {
-            primary_window: Some(Window {
-                title: APP_TITLE.into(),
-                ..default()
-            }),
-            ..default()
-        }))
-        // Adding the aggregate Launcher plugin
+        .add_plugins(
+            DefaultPlugins
+                .set(WindowPlugin {
+                    primary_window: Some(Window {
+                        title: APP_TITLE.into(),
+                        ..default()
+                    }),
+                    ..default()
+                })
+                .disable::<LogPlugin>(),
+        ) // Use our custom subscriber
+        // Adding the aggregate Launcher and Game plugins
         .add_plugins((LauncherPlugin, GamePlugin))
         .run();
 }

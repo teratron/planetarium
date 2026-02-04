@@ -35,7 +35,13 @@ impl Plugin for BootPlugin {
 fn check_boot_finished(
     mut next_state: ResMut<NextState<AppState>>,
     cli_args: Res<crate::core::cli::CliArgs>,
+    error_state: Res<crate::core::states::ErrorState>,
 ) {
+    if !error_state.message.is_empty() {
+        // Error already occurred during booting, let the Error state transition take over.
+        return;
+    }
+
     info!("[BootPlugin] Boot sequence complete. Transitioning...");
 
     if cli_args.skip_splash {

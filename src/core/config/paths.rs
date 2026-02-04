@@ -14,6 +14,8 @@ pub struct AppPaths {
     pub data_dir: PathBuf,
     /// Full path to the settings.toml file.
     pub settings_file: PathBuf,
+    /// Path to the session log file.
+    pub log_file: PathBuf,
 }
 
 impl AppPaths {
@@ -27,10 +29,12 @@ impl AppPaths {
         };
 
         let settings_file = data_dir.join("settings.toml");
+        let log_file = data_dir.join("session.log");
 
         Self {
             data_dir,
             settings_file,
+            log_file,
         }
     }
 
