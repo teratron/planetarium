@@ -53,8 +53,8 @@
 
 ## Phase 5: Loading & Orchestration (Priority: High)
 
-- [ ] **[L-501]** Loading Progress UI
-  - Progress bar + Text indicators + Random hints.
+- [x] **[L-501]** Loading Progress UI
+  - Implement the progress bar and lore hints.
 - [ ] **[L-502]** Transition to In-Game
   - Logic for handing over control from Launcher to Game plugins.
 
