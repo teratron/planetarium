@@ -37,6 +37,8 @@ struct LoadingTracker {
     pub current_hint_index: usize,
     /// Timer to rotate hints.
     pub hint_timer: Timer,
+    /// Flag to prevent repeated logging when loading completes.
+    pub completed_logged: bool,
 }
 
 impl Default for LoadingTracker {
@@ -45,6 +47,7 @@ impl Default for LoadingTracker {
             progress: 0.0,
             current_hint_index: 0,
             hint_timer: Timer::from_seconds(4.0, TimerMode::Repeating),
+            completed_logged: false,
         }
     }
 }
@@ -195,8 +198,12 @@ fn update_loading_progress(
 
     if tracker.progress >= 1.0 {
         tracker.progress = 1.0;
-        info!("[LoadingUI] Content loaded. Fading out to InGame.");
-        fade.fade_out(0.5, AppState::InGame);
+        // Log only once when loading completes
+        if !tracker.completed_logged {
+            info!("[LoadingUI] Content loaded. Fading out to InGame.");
+            fade.fade_out(0.5, AppState::InGame);
+            tracker.completed_logged = true;
+        }
     }
 }
 
