@@ -3,6 +3,7 @@
 //! Centralizes design tokens (colors, fonts, sizes) for the application.
 
 use crate::core::assets::AssetManifest;
+use bevy::asset::AssetServer;
 use bevy::prelude::*;
 
 /// Plugin managing the UI theme.
@@ -108,24 +109,24 @@ impl Default for ThemeSizes {
 
 /// System to load theme assets (fonts) using paths from the AssetManifest.
 pub fn setup_theme(
-    mut commands: Commands,
     asset_server: Res<AssetServer>,
     manifest: Res<AssetManifest>,
     mut theme: ResMut<Theme>,
 ) {
     info!("[Theme] Hydrating theme assets...");
 
-    // Helper to load font with fallback
-    let load_font = |key: &str, default_path: &str| -> Handle<Font> {
-        let path = manifest
-            .font(key)
-            .map(|s| s.as_str())
-            .unwrap_or(default_path);
-        asset_server.load(path)
-    };
+    // Load fonts with fallback paths
+    let main_path = manifest
+        .font("main")
+        .map(|s| s.clone())
+        .unwrap_or_else(|| "fonts/Inter-Regular.ttf".to_string());
+    let bold_path = manifest
+        .font("bold")
+        .map(|s| s.clone())
+        .unwrap_or_else(|| "fonts/Inter-Bold.ttf".to_string());
 
-    theme.fonts.main = load_font("main", "fonts/Inter-Regular.ttf");
-    theme.fonts.bold = load_font("bold", "fonts/Inter-Bold.ttf");
+    theme.fonts.main = asset_server.load(main_path);
+    theme.fonts.bold = asset_server.load(bold_path);
 
     // Force initialization of colors and sizes if not already set (re-applying defaults is cheap)
     theme.colors = ThemeColors::default();
