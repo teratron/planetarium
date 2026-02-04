@@ -2,14 +2,14 @@
 # Defines all mandatory assets for the application.
 
 [fonts]
-main = "fonts/Inter-Regular.ttf"
-bold = "fonts/Inter-Bold.ttf"
+main = "fonts/FiraSans-Regular.ttf"
+bold = "fonts/FiraSans-Regular.ttf"
 
 [audio]
 click = "audio/click.ogg"
-hover = "audio/hover.ogg"
-music_menu = "music/menu_ambient.ogg"
+hover = "audio/select.ogg"
+music_menu = "audio/open.ogg"
 
 [branding]
-splash_logo = "branding/logo.png"
-background_menu = "branding/menu_bg.png"
+splash_logo = "images/logo_planetarium.png"
+background_menu = "images/logo_planetarium.png"

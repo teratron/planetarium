@@ -74,6 +74,10 @@ fn main() {
                     }),
                     ..default()
                 })
+                .set(AssetPlugin {
+                    file_path: "assets".into(),
+                    ..default()
+                })
                 .disable::<LogPlugin>(),
         )
         // Registering the high-level application state with our override.
@@ -82,7 +86,15 @@ fn main() {
         .init_resource::<planetarium::core::states::ErrorState>()
         // Inserting CLI args as a Resource so they can be accessed anywhere.
         .insert_resource(args)
+        // Global camera setup
+        .add_systems(Startup, setup_camera)
         // Adding the aggregate Launcher and Game plugins
         .add_plugins((LauncherPlugin, GamePlugin))
         .run();
+}
+
+/// Global system to spawn the 2D camera required for UI rendering.
+fn setup_camera(mut commands: Commands) {
+    info!("[Main] Spawning 2D Camera...");
+    commands.spawn(Camera2d);
 }
