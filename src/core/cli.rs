@@ -13,6 +13,7 @@ use clap::Parser;
 /// so we can access these arguments inside Bevy systems.
 #[derive(Parser, Resource, Debug, Clone)]
 #[command(author, version, about, long_about = None)]
+#[non_exhaustive]
 pub struct CliArgs {
     /// Skip the splash screens and go straight to the main menu.
     #[arg(long, default_value_t = false)]

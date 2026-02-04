@@ -12,6 +12,7 @@ pub const SETTINGS_VERSION: u32 = 2;
 
 /// Global resource holding all user settings.
 #[derive(Resource, Serialize, Deserialize, Debug, Clone)]
+#[non_exhaustive]
 pub struct UserSettings {
     /// Schema version for this config file.
     pub version: u32,
@@ -26,6 +27,7 @@ pub struct UserSettings {
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 #[serde(default)]
+#[non_exhaustive]
 pub struct DisplaySettings {
     pub width: u32,
     pub height: u32,
@@ -34,6 +36,7 @@ pub struct DisplaySettings {
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(default)]
+#[non_exhaustive]
 pub struct AudioSettings {
     pub master_volume: f32,
     pub music_volume: f32,

@@ -12,6 +12,7 @@ pub const APP_TITLE: &str = "Planetarium";
 
 /// Centralized application metadata resource.
 #[derive(Resource, Debug, Clone)]
+#[non_exhaustive]
 pub struct AppMetadata {
     /// The internal name of the application (used for file system paths).
     pub name: &'static str,

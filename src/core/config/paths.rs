@@ -9,6 +9,7 @@ use std::path::PathBuf;
 
 /// Resource that stores resolved platform-specific paths.
 #[derive(Resource, Debug, Clone)]
+#[non_exhaustive]
 pub struct AppPaths {
     /// Directory for configuration and persistent data.
     pub data_dir: PathBuf,

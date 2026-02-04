@@ -18,8 +18,18 @@ impl Plugin for DiagnosticsPlugin {
         app.add_plugins(FrameTimeDiagnosticsPlugin::default())
             .init_resource::<DebugSettings>()
             .add_systems(Startup, setup_debug_overlay)
-            .add_systems(Update, (toggle_debug_overlay, update_debug_text));
+            .add_systems(
+                Update,
+                (
+                    toggle_debug_overlay,
+                    update_debug_text.run_if(debug_overlay_visible),
+                ),
+            );
     }
+}
+
+fn debug_overlay_visible(settings: Res<DebugSettings>) -> bool {
+    settings.visible
 }
 
 #[derive(Resource)]

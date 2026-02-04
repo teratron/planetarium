@@ -10,6 +10,7 @@ use std::fs;
 
 /// Centralized manifest of all game assets.
 #[derive(Resource, Deserialize, Debug, Clone, Default)]
+#[non_exhaustive]
 pub struct AssetManifest {
     pub fonts: HashMap<String, String>,
     pub audio: HashMap<String, String>,

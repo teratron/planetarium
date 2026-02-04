@@ -19,6 +19,7 @@ impl Plugin for ThemePlugin {
 
 /// Global theme resource containing colors, fonts, and metrics.
 #[derive(Resource, Debug, Clone)]
+#[non_exhaustive]
 pub struct Theme {
     pub colors: ThemeColors,
     pub fonts: ThemeFonts,
@@ -38,6 +39,7 @@ impl Default for Theme {
 /// Standardized color palette.
 /// "Deep Space & Neon" aesthetic.
 #[derive(Debug, Clone)]
+#[non_exhaustive]
 pub struct ThemeColors {
     /// Very dark background (Void).
     pub background: Color,
@@ -78,6 +80,7 @@ impl Default for ThemeColors {
 
 /// Typed handles for standard fonts.
 #[derive(Debug, Clone, Default)]
+#[non_exhaustive]
 pub struct ThemeFonts {
     pub main: Handle<Font>,
     pub bold: Handle<Font>,
@@ -86,6 +89,7 @@ pub struct ThemeFonts {
 
 /// Standard UI metrics.
 #[derive(Debug, Clone)]
+#[non_exhaustive]
 pub struct ThemeSizes {
     pub margin: Val,
     pub padding: Val,

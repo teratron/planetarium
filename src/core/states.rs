@@ -11,6 +11,7 @@ use bevy::prelude::*;
 /// We use `States` derive to let Bevy manage transitions and
 /// allow us to use `OnEnter`, `OnExit`, and `OnUpdate` schedules.
 #[derive(States, Debug, Clone, Copy, Eq, PartialEq, Hash, Default)]
+#[non_exhaustive]
 pub enum AppState {
     /// Stage 1: System initialization, configuration loading, and environment checks.
     #[default]
@@ -34,6 +35,7 @@ pub enum AppState {
 
 /// Global resource to hold the last critical error message.
 #[derive(Resource, Debug, Clone, Default)]
+#[non_exhaustive]
 pub struct ErrorState {
     pub message: String,
 }

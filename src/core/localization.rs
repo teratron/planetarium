@@ -10,6 +10,7 @@ use unic_langid::LanguageIdentifier;
 
 /// Resource that manages localized strings and bundles.
 #[derive(Resource)]
+#[non_exhaustive]
 pub struct Localization {
     /// The currently active locale (e.g., "en-US").
     pub current_locale: LanguageIdentifier,
