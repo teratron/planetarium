@@ -8,29 +8,15 @@ use crate::ui::theme::Theme;
 use crate::core::config::UserSettings;
 use super::widgets::ButtonAction;
 
-#[derive(Component)]
-pub struct SettingsRoot;
+pub mod components;
+pub mod layout;
+
+pub use components::{SettingsRoot, ResolutionWidthControl, ResolutionHeightControl, FullscreenToggle, 
+                      MasterVolumeControl, MusicVolumeControl, SFXVolumeControl};
+pub use layout::panel as panel_layout;
 
 #[derive(Resource, Default, Debug, Clone)]
 pub struct SettingsOpen(pub bool);
-
-#[derive(Component)]
-pub struct ResolutionWidthControl;
-
-#[derive(Component)]
-pub struct ResolutionHeightControl;
-
-#[derive(Component)]
-pub struct FullscreenToggle;
-
-#[derive(Component)]
-pub struct MasterVolumeControl;
-
-#[derive(Component)]
-pub struct MusicVolumeControl;
-
-#[derive(Component)]
-pub struct SFXVolumeControl;
 
 /// Spawns the settings UI under the given parent (or as a full-screen overlay).
 pub fn spawn_settings_menu(commands: &mut Commands, theme: &Theme) -> Entity {

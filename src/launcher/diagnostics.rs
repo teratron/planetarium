@@ -33,14 +33,9 @@ fn debug_overlay_visible(settings: Res<DebugSettings>) -> bool {
 }
 
 #[derive(Resource)]
+#[derive(Default)]
 struct DebugSettings {
-    pub visible: bool,
-}
-
-impl Default for DebugSettings {
-    fn default() -> Self {
-        Self { visible: false } // Hidden by default
-    }
+    visible: bool,
 }
 
 /// Marker for the debug overlay root.

@@ -1,7 +1,7 @@
 //! # Main Menu UI Layout
 //!
 //! Implements the landing screen with Play, Settings, and Exit buttons.
-//! Manages menu state and transitions.
+//! Manages menu state and transitions using professional visual fading.
 
 use super::settings::SettingsOpen;
 use super::widgets::{ButtonAction, PrimaryButton, spawn_primary_button};
@@ -18,13 +18,28 @@ pub struct MainMenuRoot;
 #[derive(Component)]
 pub struct MenuBackground;
 
+/// Import menu layout constants from parent module.
+use super::layout;
+
 /// System to spawn the main menu UI.
 /// Includes a title and professional primary buttons (Play, Settings, Exit).
 pub fn spawn_main_menu(mut commands: Commands, theme: Res<Theme>) {
     info!("[MenuPlugin] Spawning main menu...");
 
-    // Root container
-    let root = commands
+    let root_id = spawn_root(&mut commands, &theme);
+    let panel_id = spawn_panel(&mut commands, &theme);
+    let buttons_id = spawn_buttons_container(&mut commands);
+
+    spawn_menu_buttons(&mut commands, &theme, buttons_id);
+    spawn_title(&mut commands, &theme, panel_id);
+
+    commands.entity(panel_id).add_child(buttons_id);
+    commands.entity(root_id).add_child(panel_id);
+}
+
+/// Spawn the root container for the entire menu.
+fn spawn_root(commands: &mut Commands, theme: &Theme) -> Entity {
+    commands
         .spawn((
             MainMenuRoot,
             Node {
@@ -37,14 +52,16 @@ pub fn spawn_main_menu(mut commands: Commands, theme: Res<Theme>) {
             },
             BackgroundColor(theme.colors.background),
         ))
-        .id();
+        .id()
+}
 
-    // Menu content panel
-    let menu_panel = commands
+/// Spawn the menu content panel.
+fn spawn_panel(commands: &mut Commands, theme: &Theme) -> Entity {
+    commands
         .spawn((
             Node {
-                width: Val::Px(400.0),
-                height: Val::Auto,
+                width: layout::PANEL_WIDTH,
+                height: layout::PANEL_HEIGHT,
                 flex_direction: FlexDirection::Column,
                 justify_content: JustifyContent::Center,
                 align_items: AlignItems::Center,
@@ -53,10 +70,25 @@ pub fn spawn_main_menu(mut commands: Commands, theme: Res<Theme>) {
             },
             BackgroundColor(theme.colors.surface),
         ))
-        .id();
+        .id()
+}
 
-    // Title
-    commands.entity(menu_panel).with_children(|parent| {
+/// Spawn the buttons container.
+fn spawn_buttons_container(commands: &mut Commands) -> Entity {
+    commands
+        .spawn((Node {
+            width: Val::Percent(100.0),
+            height: Val::Auto,
+            flex_direction: FlexDirection::Column,
+            align_items: AlignItems::Stretch,
+            ..default()
+        },))
+        .id()
+}
+
+/// Spawn the menu title.
+fn spawn_title(commands: &mut Commands, theme: &Theme, panel_id: Entity) {
+    commands.entity(panel_id).with_children(|parent| {
         parent.spawn((
             Text::new("PLANETARIUM"),
             TextFont {
@@ -65,50 +97,28 @@ pub fn spawn_main_menu(mut commands: Commands, theme: Res<Theme>) {
             },
             TextColor(theme.colors.accent),
             Node {
-                margin: UiRect::bottom(Val::Px(40.0)),
+                margin: UiRect::bottom(layout::TITLE_MARGIN_BOTTOM),
                 ..default()
             },
         ));
     });
+}
 
-    // Buttons container
-    let buttons_container = commands
-        .spawn((Node {
-            width: Val::Percent(100.0),
-            height: Val::Auto,
-            flex_direction: FlexDirection::Column,
-            align_items: AlignItems::Stretch,
-            ..default()
-        },))
-        .id();
+/// Spawn all menu buttons (Play, Settings, Exit).
+fn spawn_menu_buttons(
+    commands: &mut Commands,
+    theme: &Theme,
+    container_id: Entity,
+) {
+    let buttons = [
+        ("PLAY", ButtonAction::Play),
+        ("SETTINGS", ButtonAction::Settings),
+        ("EXIT", ButtonAction::Exit),
+    ];
 
-    // Spawn buttons
-    spawn_primary_button(
-        &mut commands,
-        &theme,
-        "PLAY",
-        ButtonAction::Play,
-        buttons_container,
-    );
-
-    spawn_primary_button(
-        &mut commands,
-        &theme,
-        "SETTINGS",
-        ButtonAction::Settings,
-        buttons_container,
-    );
-
-    spawn_primary_button(
-        &mut commands,
-        &theme,
-        "EXIT",
-        ButtonAction::Exit,
-        buttons_container,
-    );
-
-    commands.entity(menu_panel).add_child(buttons_container);
-    commands.entity(root).add_child(menu_panel);
+    for (label, action) in buttons {
+        spawn_primary_button(commands, theme, label, action, container_id);
+    }
 }
 
 /// System to handle main menu button clicks, initiating transitions or opening panels.
@@ -121,31 +131,40 @@ pub fn handle_menu_button_clicks(
 ) {
     for (interaction, button) in &interaction_query {
         if *interaction == Interaction::Pressed {
-            match button.action {
-                ButtonAction::Play => {
-                    info!("[MainMenu] Play button clicked. Fading out to Loading...");
-                    fade.fade_out(0.8, AppState::Loading);
-                }
-                ButtonAction::Settings => {
-                    info!("[MainMenu] Settings button clicked. Opening settings...");
-                    settings_open.0 = true;
-                }
-                ButtonAction::Exit => {
-                    info!("[MainMenu] Exit button clicked. Exiting application...");
-                    std::process::exit(0);
-                }
-                ButtonAction::Back => {
-                    info!("[MainMenu] Back button clicked.");
-                    settings_open.0 = false;
-                }
-            }
+            handle_button_action(&button.action, &mut settings_open, &mut fade);
+        }
+    }
+}
+
+/// Handle individual button action based on button type.
+fn handle_button_action(
+    action: &ButtonAction,
+    settings_open: &mut ResMut<SettingsOpen>,
+    fade: &mut ResMut<ScreenFade>,
+) {
+    match action {
+        ButtonAction::Play => {
+            info!("[MainMenu] Play button clicked. Fading out to Loading...");
+            fade.fade_out(layout::FADE_DURATION_LOADING, AppState::Loading);
+        }
+        ButtonAction::Settings => {
+            info!("[MainMenu] Settings button clicked. Opening settings...");
+            settings_open.0 = true;
+        }
+        ButtonAction::Exit => {
+            info!("[MainMenu] Exit button clicked. Exiting application...");
+            std::process::exit(0);
+        }
+        ButtonAction::Back => {
+            info!("[MainMenu] Back button clicked.");
+            settings_open.0 = false;
         }
     }
 }
 
 /// System to despawn the menu UI when exiting MainMenu state.
 pub fn despawn_main_menu(mut commands: Commands, query: Query<Entity, With<MainMenuRoot>>) {
-    for entity in &query {
+    for entity in query.iter() {
         commands.entity(entity).despawn();
     }
 }

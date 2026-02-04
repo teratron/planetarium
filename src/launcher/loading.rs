@@ -14,7 +14,7 @@ pub struct LoadingPlugin;
 impl Plugin for LoadingPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<LoadingTracker>()
-            .add_systems(OnEnter(AppState::Loading), setup_loading_screen)
+            .add_systems(OnEnter(AppState::Loading), (reset_loading_tracker, setup_loading_screen))
             .add_systems(
                 Update,
                 (
@@ -80,6 +80,13 @@ const LOADING_HINTS: &[&str] = &[
     "Synchronizing orbital trajectories...",
     "Optimizing light-speed navigation...",
 ];
+
+/// Resets the loading tracker when entering the Loading state.
+/// This ensures the `completed_logged` flag is reset for new loading cycles.
+fn reset_loading_tracker(mut tracker: ResMut<LoadingTracker>) {
+    *tracker = LoadingTracker::default();
+    info!("[LoadingUI] Tracker reset for new loading cycle.");
+}
 
 /// Spawns the complex loading screen UI.
 /// Includes a title, current asset group info, numerical percentage, progress bar, and lore hints.

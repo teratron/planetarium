@@ -7,52 +7,11 @@ use crate::core::assets::AssetManifest;
 use crate::ui::theme::Theme;
 use bevy::prelude::*;
 
-/// Marker component for primary buttons (Play, Settings, Exit).
-#[derive(Component, Debug, Clone)]
-pub struct PrimaryButton {
-    pub label: String,
-    pub action: ButtonAction,
-}
+pub mod components;
+pub mod constants;
 
-/// Actions that buttons can trigger.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ButtonAction {
-    Play,
-    Settings,
-    Exit,
-    Back,
-}
-
-/// Marker for button hover state styling.
-#[derive(Component, Debug)]
-pub struct ButtonHoverState {
-    pub base_color: Color,
-    pub hover_color: Color,
-}
-
-/// Marker component for slider widgets (volume, brightness, etc.).
-#[derive(Component, Debug, Clone)]
-pub struct Slider {
-    pub label: String,
-    pub min: f32,
-    pub max: f32,
-    pub value: f32,
-    pub setting_key: String,
-}
-
-/// Marker for interactive slider track.
-#[derive(Component, Debug)]
-pub struct SliderTrack(pub Entity); // Parent slider entity
-
-/// Marker component for dropdown widgets (quality, resolution, etc.).
-#[derive(Component, Debug, Clone)]
-pub struct Dropdown {
-    pub label: String,
-    pub options: Vec<String>,
-    pub selected_index: usize,
-    pub setting_key: String,
-    pub is_open: bool,
-}
+pub use components::{PrimaryButton, ButtonAction, ButtonHoverState, Slider, SliderTrack, Dropdown};
+pub use constants::button as button_constants;
 
 /// Spawns a high-quality primary button widget.
 ///

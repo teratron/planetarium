@@ -4,6 +4,7 @@
 use bevy::prelude::*;
 use crate::core::states::AppState;
 
+pub mod layout;
 pub mod widgets;
 pub mod screen;
 pub mod settings;

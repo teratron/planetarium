@@ -8,89 +8,96 @@ use planetarium::game::GamePlugin;
 use planetarium::launcher::LauncherPlugin;
 use tracing_subscriber::{EnvFilter, fmt, prelude::*};
 
+/// Default logging configuration level.
+const DEFAULT_LOG_FILTER: &str = "info,wgpu=error,naga=error";
+
 fn main() {
-    // 1. Parsing CLI arguments before starting the engine.
+    // 1. Parse CLI arguments
     let args = CliArgs::parse_args();
+    let initial_state = parse_initial_state(&args);
 
-    // Determine the initial state.
-    let initial_state = if let Some(state_str) = &args.state {
-        match state_str.to_lowercase().as_str() {
-            "splash" => AppState::Splash,
-            "mainmenu" | "menu" => AppState::MainMenu,
-            "loading" => AppState::Loading,
-            "ingame" | "game" => AppState::InGame,
-            _ => AppState::Booting,
-        }
-    } else {
-        AppState::Booting
-    };
+    // 2. Setup logging system
+    setup_logging(&initial_state);
 
-    // 2. Setup Logging (Robustness L-603)
+    // 3. Configure and run Bevy app
+    build_app(args, initial_state).run();
+}
+
+/// Parse CLI arguments to determine initial `AppState`.
+fn parse_initial_state(args: &CliArgs) -> AppState {
+    args.state
+        .as_ref()
+        .and_then(|state_str| match state_str.to_lowercase().as_str() {
+            "splash" => Some(AppState::Splash),
+            "mainmenu" | "menu" => Some(AppState::MainMenu),
+            "loading" => Some(AppState::Loading),
+            "ingame" | "game" => Some(AppState::InGame),
+            _ => None,
+        })
+        .unwrap_or(AppState::Booting)
+}
+
+/// Initialize logging with file and stdout output.
+fn setup_logging(initial_state: &AppState) {
     let paths = AppPaths::from_env();
-    let (non_blocking, _log_guard) =
-        if let (Some(dir), Some(file)) = (paths.log_file.parent(), paths.log_file.file_name()) {
-            let file_appender = tracing_appender::rolling::never(dir, file);
-            let (nb, guard) = tracing_appender::non_blocking(file_appender);
-            (Some(nb), Some(guard))
-        } else {
-            (None, None)
-        };
-
-    // Build the subscriber
     let env_filter = EnvFilter::try_from_default_env()
-        .unwrap_or_else(|_| EnvFilter::new("info,wgpu=error,naga=error"));
+        .unwrap_or_else(|_| EnvFilter::new(DEFAULT_LOG_FILTER));
 
     let stdout_layer = fmt::layer().with_ansi(true);
 
-    if let Some(nb) = non_blocking {
-        let file_layer = fmt::layer().with_ansi(false).with_writer(nb);
+    // Setup logging with optional file output
+    if let (Some(dir), Some(file)) = (paths.log_file.parent(), paths.log_file.file_name()) {
+        let file_appender = tracing_appender::rolling::never(dir, file);
+        let (non_blocking, _guard) = tracing_appender::non_blocking(file_appender);
+        let file_layer = fmt::layer().with_ansi(false).with_writer(non_blocking);
+        
         let registry = tracing_subscriber::registry()
             .with(env_filter)
             .with(stdout_layer)
             .with(file_layer);
+        
         if let Err(e) = tracing::subscriber::set_global_default(registry) {
-            eprintln!("Failed to set tracing subscriber: {}", e);
+            eprintln!("[Main] Failed to set tracing subscriber: {}", e);
         }
     } else {
         let registry = tracing_subscriber::registry()
             .with(env_filter)
             .with(stdout_layer);
+        
         if let Err(e) = tracing::subscriber::set_global_default(registry) {
-            eprintln!("Failed to set tracing subscriber: {}", e);
+            eprintln!("[Main] Failed to set tracing subscriber: {}", e);
         }
     }
 
     info!("[Main] Initializing system with state: {:?}", initial_state);
+}
 
-    App::new()
-        // Window setup - MUST be added before state insertion in Bevy 0.18
-        // to ensure StatesPlugin (part of DefaultPlugins) is available.
-        .add_plugins(
-            DefaultPlugins
-                .set(WindowPlugin {
-                    primary_window: Some(Window {
-                        title: APP_TITLE.into(),
-                        ..default()
-                    }),
+/// Build the Bevy application with all plugins and systems.
+fn build_app(args: CliArgs, initial_state: AppState) -> App {
+    let mut app = App::new();
+    
+    app.add_plugins(
+        DefaultPlugins
+            .set(WindowPlugin {
+                primary_window: Some(Window {
+                    title: APP_TITLE.into(),
                     ..default()
-                })
-                .set(AssetPlugin {
-                    file_path: "assets".into(),
-                    ..default()
-                })
-                .disable::<LogPlugin>(),
-        )
-        // Registering the high-level application state with our override.
-        .insert_state(initial_state)
-        // Global error state for reporting critical failures.
-        .init_resource::<planetarium::core::states::ErrorState>()
-        // Inserting CLI args as a Resource so they can be accessed anywhere.
-        .insert_resource(args)
-        // Global camera setup
-        .add_systems(Startup, setup_camera)
-        // Adding the aggregate Launcher and Game plugins
-        .add_plugins((LauncherPlugin, GamePlugin))
-        .run();
+                }),
+                ..default()
+            })
+            .set(AssetPlugin {
+                file_path: "assets".into(),
+                ..default()
+            })
+            .disable::<LogPlugin>(),
+    )
+    .insert_state(initial_state)
+    .init_resource::<planetarium::core::states::ErrorState>()
+    .insert_resource(args)
+    .add_systems(Startup, setup_camera)
+    .add_plugins((LauncherPlugin, GamePlugin));
+    
+    app
 }
 
 /// Global system to spawn the 2D camera required for UI rendering.

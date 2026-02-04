@@ -37,8 +37,8 @@ pub fn broadcast_settings_changes(
     }
 
     // Display
-    if prev.as_ref().map(|p| &p.display) != Some(&settings.display) {
-        if let Ok(mut window) = windows.single_mut() {
+    if prev.as_ref().map(|p| &p.display) != Some(&settings.display)
+        && let Ok(mut window) = windows.single_mut() {
             // Set resolution using provided API
             window.resolution.set(
                 settings.display.width as f32,
@@ -57,7 +57,6 @@ pub fn broadcast_settings_changes(
                 settings.display.width, settings.display.height, settings.display.fullscreen
             );
         }
-    }
 
     // Audio
     if prev.as_ref().map(|p| &p.audio) != Some(&settings.audio) {
