@@ -48,7 +48,7 @@
   - Implement the landing screen (Play, Settings, Exit).
 - [x] **[L-404]** Settings Screen GUI
   - Implement tabs for Graphics, Audio, Controls.
-- [ ] **[L-405]** Reactive Audio/Graphics Settings
+- [x] **[L-405]** Reactive Audio/Graphics Settings
   - Implement events that update the engine state immediately.
 
 ## Phase 5: Loading & Orchestration (Priority: High)

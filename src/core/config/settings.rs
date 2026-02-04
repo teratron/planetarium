@@ -24,7 +24,7 @@ pub struct UserSettings {
     pub audio: AudioSettings,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 #[serde(default)]
 pub struct DisplaySettings {
     pub width: u32,
@@ -32,7 +32,7 @@ pub struct DisplaySettings {
     pub fullscreen: bool,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(default)]
 pub struct AudioSettings {
     pub master_volume: f32,

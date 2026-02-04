@@ -5,6 +5,7 @@
 
 use bevy::prelude::*;
 use crate::ui::theme::Theme;
+use crate::core::config::UserSettings;
 use super::widgets::ButtonAction;
 
 #[derive(Component)]
@@ -12,6 +13,24 @@ pub struct SettingsRoot;
 
 #[derive(Resource, Default, Debug, Clone)]
 pub struct SettingsOpen(pub bool);
+
+#[derive(Component)]
+pub struct ResolutionWidthControl;
+
+#[derive(Component)]
+pub struct ResolutionHeightControl;
+
+#[derive(Component)]
+pub struct FullscreenToggle;
+
+#[derive(Component)]
+pub struct MasterVolumeControl;
+
+#[derive(Component)]
+pub struct MusicVolumeControl;
+
+#[derive(Component)]
+pub struct SFXVolumeControl;
 
 /// Spawns the settings UI under the given parent (or as a full-screen overlay).
 pub fn spawn_settings_menu(commands: &mut Commands, theme: &Theme) -> Entity {
@@ -79,16 +98,181 @@ pub fn spawn_settings_menu(commands: &mut Commands, theme: &Theme) -> Entity {
                     width: Val::Percent(100.0),
                     height: Val::Percent(70.0),
                     margin: UiRect::all(Val::Px(12.0)),
+                    flex_direction: FlexDirection::Column,
+                    justify_content: JustifyContent::FlexStart,
+                    align_items: AlignItems::FlexStart,
+                    row_gap: Val::Px(12.0),
+                    padding: UiRect::all(Val::Px(12.0)),
                     ..default()
                 },
                 BackgroundColor(theme.colors.background),
             ))
             .with_children(|content| {
+                // Graphics Settings
                 content.spawn((
-                    Text::new("Tab content placeholder"),
+                    Text::new("Graphics Settings"),
                     TextFont { font_size: theme.sizes.font_body, ..default() },
-                    TextColor(theme.colors.text_primary),
+                    TextColor(theme.colors.text_secondary),
                 ));
+
+                // Resolution label and value
+                content
+                    .spawn((
+                        Node {
+                            width: Val::Percent(100.0),
+                            flex_direction: FlexDirection::Row,
+                            justify_content: JustifyContent::SpaceBetween,
+                            align_items: AlignItems::Center,
+                            column_gap: Val::Px(12.0),
+                            ..default()
+                        },
+                    ))
+                    .with_children(|row| {
+                        row.spawn((
+                            Text::new("Width (px):"),
+                            TextFont { font_size: theme.sizes.font_body, ..default() },
+                            TextColor(theme.colors.text_primary),
+                        ));
+                        row.spawn((
+                            ResolutionWidthControl,
+                            Text::new("1280"),
+                            TextFont { font_size: theme.sizes.font_body, ..default() },
+                            TextColor(theme.colors.text_primary),
+                        ));
+                    });
+
+                content
+                    .spawn((
+                        Node {
+                            width: Val::Percent(100.0),
+                            flex_direction: FlexDirection::Row,
+                            justify_content: JustifyContent::SpaceBetween,
+                            align_items: AlignItems::Center,
+                            column_gap: Val::Px(12.0),
+                            ..default()
+                        },
+                    ))
+                    .with_children(|row| {
+                        row.spawn((
+                            Text::new("Height (px):"),
+                            TextFont { font_size: theme.sizes.font_body, ..default() },
+                            TextColor(theme.colors.text_primary),
+                        ));
+                        row.spawn((
+                            ResolutionHeightControl,
+                            Text::new("720"),
+                            TextFont { font_size: theme.sizes.font_body, ..default() },
+                            TextColor(theme.colors.text_primary),
+                        ));
+                    });
+
+                // Fullscreen toggle
+                content
+                    .spawn((
+                        Node {
+                            width: Val::Percent(100.0),
+                            flex_direction: FlexDirection::Row,
+                            justify_content: JustifyContent::SpaceBetween,
+                            align_items: AlignItems::Center,
+                            column_gap: Val::Px(12.0),
+                            ..default()
+                        },
+                    ))
+                    .with_children(|row| {
+                        row.spawn((
+                            Text::new("Fullscreen:"),
+                            TextFont { font_size: theme.sizes.font_body, ..default() },
+                            TextColor(theme.colors.text_primary),
+                        ));
+                        row.spawn((
+                            FullscreenToggle,
+                            Text::new("OFF"),
+                            TextFont { font_size: theme.sizes.font_body, ..default() },
+                            TextColor(theme.colors.text_primary),
+                        ));
+                    });
+
+                // Audio Settings
+                content.spawn((
+                    Text::new("Audio Settings"),
+                    TextFont { font_size: theme.sizes.font_body, ..default() },
+                    TextColor(theme.colors.text_secondary),
+                ));
+
+                content
+                    .spawn((
+                        Node {
+                            width: Val::Percent(100.0),
+                            flex_direction: FlexDirection::Row,
+                            justify_content: JustifyContent::SpaceBetween,
+                            align_items: AlignItems::Center,
+                            column_gap: Val::Px(12.0),
+                            ..default()
+                        },
+                    ))
+                    .with_children(|row| {
+                        row.spawn((
+                            Text::new("Master Volume:"),
+                            TextFont { font_size: theme.sizes.font_body, ..default() },
+                            TextColor(theme.colors.text_primary),
+                        ));
+                        row.spawn((
+                            MasterVolumeControl,
+                            Text::new("0.80"),
+                            TextFont { font_size: theme.sizes.font_body, ..default() },
+                            TextColor(theme.colors.text_primary),
+                        ));
+                    });
+
+                content
+                    .spawn((
+                        Node {
+                            width: Val::Percent(100.0),
+                            flex_direction: FlexDirection::Row,
+                            justify_content: JustifyContent::SpaceBetween,
+                            align_items: AlignItems::Center,
+                            column_gap: Val::Px(12.0),
+                            ..default()
+                        },
+                    ))
+                    .with_children(|row| {
+                        row.spawn((
+                            Text::new("Music Volume:"),
+                            TextFont { font_size: theme.sizes.font_body, ..default() },
+                            TextColor(theme.colors.text_primary),
+                        ));
+                        row.spawn((
+                            MusicVolumeControl,
+                            Text::new("0.70"),
+                            TextFont { font_size: theme.sizes.font_body, ..default() },
+                            TextColor(theme.colors.text_primary),
+                        ));
+                    });
+
+                content
+                    .spawn((
+                        Node {
+                            width: Val::Percent(100.0),
+                            flex_direction: FlexDirection::Row,
+                            justify_content: JustifyContent::SpaceBetween,
+                            align_items: AlignItems::Center,
+                            column_gap: Val::Px(12.0),
+                            ..default()
+                        },
+                    ))
+                    .with_children(|row| {
+                        row.spawn((
+                            Text::new("SFX Volume:"),
+                            TextFont { font_size: theme.sizes.font_body, ..default() },
+                            TextColor(theme.colors.text_primary),
+                        ));
+                        row.spawn((
+                            SFXVolumeControl,
+                            Text::new("1.00"),
+                            TextFont { font_size: theme.sizes.font_body, ..default() },
+                            TextColor(theme.colors.text_primary),
+                        ));
+                    });
             });
 
         // Back button container and button (spawned as children here)
@@ -146,5 +330,35 @@ pub fn spawn_settings_if_needed(
                 commands.entity(e).despawn();
             }
         }
+    }
+}
+
+/// Update UI display values to match current UserSettings.
+pub fn update_settings_ui(
+    settings: Res<UserSettings>,
+    mut width_q: Query<&mut Text, (With<ResolutionWidthControl>, Without<ResolutionHeightControl>, Without<FullscreenToggle>, Without<MasterVolumeControl>, Without<MusicVolumeControl>, Without<SFXVolumeControl>)>,
+    mut height_q: Query<&mut Text, (With<ResolutionHeightControl>, Without<ResolutionWidthControl>, Without<FullscreenToggle>, Without<MasterVolumeControl>, Without<MusicVolumeControl>, Without<SFXVolumeControl>)>,
+    mut fullscreen_q: Query<&mut Text, (With<FullscreenToggle>, Without<ResolutionWidthControl>, Without<ResolutionHeightControl>, Without<MasterVolumeControl>, Without<MusicVolumeControl>, Without<SFXVolumeControl>)>,
+    mut master_q: Query<&mut Text, (With<MasterVolumeControl>, Without<ResolutionWidthControl>, Without<ResolutionHeightControl>, Without<FullscreenToggle>, Without<MusicVolumeControl>, Without<SFXVolumeControl>)>,
+    mut music_q: Query<&mut Text, (With<MusicVolumeControl>, Without<ResolutionWidthControl>, Without<ResolutionHeightControl>, Without<FullscreenToggle>, Without<MasterVolumeControl>, Without<SFXVolumeControl>)>,
+    mut sfx_q: Query<&mut Text, (With<SFXVolumeControl>, Without<ResolutionWidthControl>, Without<ResolutionHeightControl>, Without<FullscreenToggle>, Without<MasterVolumeControl>, Without<MusicVolumeControl>)>,
+) {
+    if let Ok(mut text) = width_q.single_mut() {
+        text.0 = settings.display.width.to_string();
+    }
+    if let Ok(mut text) = height_q.single_mut() {
+        text.0 = settings.display.height.to_string();
+    }
+    if let Ok(mut text) = fullscreen_q.single_mut() {
+        text.0 = if settings.display.fullscreen { "ON" } else { "OFF" }.to_string();
+    }
+    if let Ok(mut text) = master_q.single_mut() {
+        text.0 = format!("{:.2}", settings.audio.master_volume);
+    }
+    if let Ok(mut text) = music_q.single_mut() {
+        text.0 = format!("{:.2}", settings.audio.music_volume);
+    }
+    if let Ok(mut text) = sfx_q.single_mut() {
+        text.0 = format!("{:.2}", settings.audio.sfx_volume);
     }
 }
