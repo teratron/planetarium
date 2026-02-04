@@ -30,6 +30,7 @@ impl Plugin for LauncherPlugin {
             MenuPlugin,
             LoadingPlugin,
             crate::ui::fading::FadingPlugin,
+            crate::ui::theme::ThemePlugin,
         ));
     }
 }

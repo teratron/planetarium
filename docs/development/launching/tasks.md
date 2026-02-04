@@ -40,7 +40,7 @@
 
 ## Phase 4: Main Menu & UI Framework (Priority: High)
 
-- [ ] **[L-401]** Theme & Design Tokens
+- [x] **[L-401]** Theme & Design Tokens
   - Define colors, fonts, and sizes in `theme.rs`.
 - [ ] **[L-402]** Generic Widget Library
   - Create `PrimaryButton`, `Slider`, and `Dropdown` widgets.

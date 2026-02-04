@@ -13,7 +13,13 @@ impl Plugin for BootPlugin {
         // Register initialization systems sequentially
         app.add_systems(
             OnEnter(AppState::Booting),
-            (setup_config, setup_localization, setup_asset_manifest).chain(),
+            (
+                setup_config,
+                setup_localization,
+                setup_asset_manifest,
+                crate::ui::theme::setup_theme,
+            )
+                .chain(),
         );
 
         // Handle transition to next state
