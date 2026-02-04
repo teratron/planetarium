@@ -371,74 +371,64 @@ pub fn spawn_settings_if_needed(
 }
 
 /// Update UI display values to match current UserSettings.
+// Type aliases for control filters to satisfy clippy's `type_complexity` lint.
+type ResolutionWidthFilter = (
+    With<ResolutionWidthControl>,
+    Without<ResolutionHeightControl>,
+    Without<FullscreenToggle>,
+    Without<MasterVolumeControl>,
+    Without<MusicVolumeControl>,
+    Without<SFXVolumeControl>,
+);
+type ResolutionHeightFilter = (
+    With<ResolutionHeightControl>,
+    Without<ResolutionWidthControl>,
+    Without<FullscreenToggle>,
+    Without<MasterVolumeControl>,
+    Without<MusicVolumeControl>,
+    Without<SFXVolumeControl>,
+);
+type FullscreenFilter = (
+    With<FullscreenToggle>,
+    Without<ResolutionWidthControl>,
+    Without<ResolutionHeightControl>,
+    Without<MasterVolumeControl>,
+    Without<MusicVolumeControl>,
+    Without<SFXVolumeControl>,
+);
+type MasterVolumeFilter = (
+    With<MasterVolumeControl>,
+    Without<ResolutionWidthControl>,
+    Without<ResolutionHeightControl>,
+    Without<FullscreenToggle>,
+    Without<MusicVolumeControl>,
+    Without<SFXVolumeControl>,
+);
+type MusicVolumeFilter = (
+    With<MusicVolumeControl>,
+    Without<ResolutionWidthControl>,
+    Without<ResolutionHeightControl>,
+    Without<FullscreenToggle>,
+    Without<MasterVolumeControl>,
+    Without<SFXVolumeControl>,
+);
+type SfxVolumeFilter = (
+    With<SFXVolumeControl>,
+    Without<ResolutionWidthControl>,
+    Without<ResolutionHeightControl>,
+    Without<FullscreenToggle>,
+    Without<MasterVolumeControl>,
+    Without<MusicVolumeControl>,
+);
+
 pub fn update_settings_ui(
     settings: Res<UserSettings>,
-    mut width_q: Query<
-        &mut Text,
-        (
-            With<ResolutionWidthControl>,
-            Without<ResolutionHeightControl>,
-            Without<FullscreenToggle>,
-            Without<MasterVolumeControl>,
-            Without<MusicVolumeControl>,
-            Without<SFXVolumeControl>,
-        ),
-    >,
-    mut height_q: Query<
-        &mut Text,
-        (
-            With<ResolutionHeightControl>,
-            Without<ResolutionWidthControl>,
-            Without<FullscreenToggle>,
-            Without<MasterVolumeControl>,
-            Without<MusicVolumeControl>,
-            Without<SFXVolumeControl>,
-        ),
-    >,
-    mut fullscreen_q: Query<
-        &mut Text,
-        (
-            With<FullscreenToggle>,
-            Without<ResolutionWidthControl>,
-            Without<ResolutionHeightControl>,
-            Without<MasterVolumeControl>,
-            Without<MusicVolumeControl>,
-            Without<SFXVolumeControl>,
-        ),
-    >,
-    mut master_q: Query<
-        &mut Text,
-        (
-            With<MasterVolumeControl>,
-            Without<ResolutionWidthControl>,
-            Without<ResolutionHeightControl>,
-            Without<FullscreenToggle>,
-            Without<MusicVolumeControl>,
-            Without<SFXVolumeControl>,
-        ),
-    >,
-    mut music_q: Query<
-        &mut Text,
-        (
-            With<MusicVolumeControl>,
-            Without<ResolutionWidthControl>,
-            Without<ResolutionHeightControl>,
-            Without<FullscreenToggle>,
-            Without<MasterVolumeControl>,
-            Without<SFXVolumeControl>,
-        ),
-    >,
-    mut sfx_q: Query<
-        &mut Text,
-        (
-            With<SFXVolumeControl>,
-            Without<ResolutionWidthControl>,
-            Without<ResolutionHeightControl>,
-            Without<FullscreenToggle>,
-            Without<MasterVolumeControl>,
-            Without<MusicVolumeControl>,
-        ),
-    >,
+    mut width_q: Query<&mut Text, ResolutionWidthFilter>,
+    mut height_q: Query<&mut Text, ResolutionHeightFilter>,
+    mut fullscreen_q: Query<&mut Text, FullscreenFilter>,
+    mut master_q: Query<&mut Text, MasterVolumeFilter>,
+    mut music_q: Query<&mut Text, MusicVolumeFilter>,
+    mut sfx_q: Query<&mut Text, SfxVolumeFilter>,
 ) {
     if let Ok(mut text) = width_q.single_mut() {
         text.0 = settings.display.width.to_string();

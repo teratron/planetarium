@@ -136,14 +136,19 @@ fn toggle_debug_overlay(
     }
 }
 
+// Type aliases to reduce clippy `type_complexity` warnings.
+type FpsTextFilter = (With<FpsText>, Without<StateText>, Without<EntityText>);
+type StateTextFilter = (With<StateText>, Without<FpsText>, Without<EntityText>);
+type EntityTextFilter = (With<EntityText>, Without<FpsText>, Without<StateText>);
+
 /// Updates the debug overlay text with real-time performance and engine state data.
 fn update_debug_text(
     diagnostics: Res<DiagnosticsStore>,
     current_state: Res<State<AppState>>,
     entities: Query<Entity>,
-    mut fps_query: Query<&mut Text, (With<FpsText>, Without<StateText>, Without<EntityText>)>,
-    mut state_query: Query<&mut Text, (With<StateText>, Without<FpsText>, Without<EntityText>)>,
-    mut entity_query: Query<&mut Text, (With<EntityText>, Without<FpsText>, Without<StateText>)>,
+    mut fps_query: Query<&mut Text, FpsTextFilter>,
+    mut state_query: Query<&mut Text, StateTextFilter>,
+    mut entity_query: Query<&mut Text, EntityTextFilter>,
 ) {
     // Update FPS
     if let Some(fps) = diagnostics

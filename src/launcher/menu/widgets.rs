@@ -74,19 +74,26 @@ pub fn spawn_primary_button(
     button
 }
 
+/// Small helper to encapsulate slider numeric parameters.
+pub struct SliderSpec {
+    pub min: f32,
+    pub max: f32,
+    pub value: f32,
+}
+
 /// System to create a slider widget.
 pub fn spawn_slider(
     commands: &mut Commands,
     theme: &Theme,
     label: &str,
-    min: f32,
-    max: f32,
-    value: f32,
+    spec: SliderSpec,
     setting_key: &str,
     parent: Entity,
 ) -> Entity {
     let slider_height = 40.0;
     let track_height = 8.0;
+
+    let SliderSpec { min, max, value } = spec;
 
     let slider = commands
         .spawn((
@@ -151,6 +158,61 @@ pub fn spawn_slider(
     slider
 }
 
+// Interaction filter alias to reduce `type_complexity`.
+type PrimaryButtonInteractionFilter = (Changed<Interaction>, With<Button>, With<PrimaryButton>);
+
+/// System to handle button interactions, updating visual state and playing audio feedback.
+///
+/// Visual feedback is handled via `BackgroundColor` and `ButtonHoverState`.
+/// Audio feedback uses paths defined in the `AssetManifest` and respects `RuntimeAudioState` volume.
+pub fn button_interaction_system(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    manifest: Res<AssetManifest>,
+    audio_state: Res<crate::launcher::menu::reactive::RuntimeAudioState>,
+    mut interaction_query: Query<
+        (&Interaction, &mut BackgroundColor, &ButtonHoverState),
+        PrimaryButtonInteractionFilter,
+    >,
+) {
+    for (interaction, mut bg_color, hover_state) in &mut interaction_query {
+        match *interaction {
+            Interaction::Hovered => {
+                *bg_color = BackgroundColor(hover_state.hover_color);
+
+                // Play hover sound if defined in manifest
+                if let Some(path) = manifest.audio("hover") {
+                    commands.spawn((
+                        AudioPlayer::new(asset_server.load(path)),
+                        PlaybackSettings {
+                            mode: bevy::audio::PlaybackMode::Despawn,
+                            volume: bevy::audio::Volume::Linear(audio_state.sfx * 0.5), // Muted hover
+                            ..default()
+                        },
+                    ));
+                }
+            }
+            Interaction::Pressed => {
+                info!("[UI] Button pressed");
+
+                // Play click sound if defined in manifest
+                if let Some(path) = manifest.audio("click") {
+                    commands.spawn((
+                        AudioPlayer::new(asset_server.load(path)),
+                        PlaybackSettings {
+                            mode: bevy::audio::PlaybackMode::Despawn,
+                            volume: bevy::audio::Volume::Linear(audio_state.sfx),
+                            ..default()
+                        },
+                    ));
+                }
+            }
+            Interaction::None => {
+                *bg_color = BackgroundColor(hover_state.base_color);
+            }
+        }
+    }
+}
 /// System to create a dropdown widget.
 pub fn spawn_dropdown(
     commands: &mut Commands,
@@ -216,59 +278,6 @@ pub fn spawn_dropdown(
     }
 
     dropdown
-}
-
-/// System to handle button interactions, updating visual state and playing audio feedback.
-///
-/// Visual feedback is handled via `BackgroundColor` and `ButtonHoverState`.
-/// Audio feedback uses paths defined in the `AssetManifest` and respects `RuntimeAudioState` volume.
-pub fn button_interaction_system(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    manifest: Res<AssetManifest>,
-    audio_state: Res<crate::launcher::menu::reactive::RuntimeAudioState>,
-    mut interaction_query: Query<
-        (&Interaction, &mut BackgroundColor, &ButtonHoverState),
-        (Changed<Interaction>, With<Button>, With<PrimaryButton>),
-    >,
-) {
-    for (interaction, mut bg_color, hover_state) in &mut interaction_query {
-        match *interaction {
-            Interaction::Hovered => {
-                *bg_color = BackgroundColor(hover_state.hover_color);
-
-                // Play hover sound if defined in manifest
-                if let Some(path) = manifest.audio("hover") {
-                    commands.spawn((
-                        AudioPlayer::new(asset_server.load(path)),
-                        PlaybackSettings {
-                            mode: bevy::audio::PlaybackMode::Despawn,
-                            volume: bevy::audio::Volume::Linear(audio_state.sfx * 0.5), // Muted hover
-                            ..default()
-                        },
-                    ));
-                }
-            }
-            Interaction::Pressed => {
-                info!("[UI] Button pressed");
-
-                // Play click sound if defined in manifest
-                if let Some(path) = manifest.audio("click") {
-                    commands.spawn((
-                        AudioPlayer::new(asset_server.load(path)),
-                        PlaybackSettings {
-                            mode: bevy::audio::PlaybackMode::Despawn,
-                            volume: bevy::audio::Volume::Linear(audio_state.sfx),
-                            ..default()
-                        },
-                    ));
-                }
-            }
-            Interaction::None => {
-                *bg_color = BackgroundColor(hover_state.base_color);
-            }
-        }
-    }
 }
 
 /// System to handle slider interactions.

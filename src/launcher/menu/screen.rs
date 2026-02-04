@@ -117,11 +117,14 @@ fn spawn_menu_buttons(commands: &mut Commands, theme: &Theme, container_id: Enti
     }
 }
 
+// Filter alias to reduce clippy `type_complexity` warnings.
+type MenuButtonFilter = (Changed<Interaction>, With<Button>);
+
 /// System to handle main menu button clicks, initiating transitions or opening panels.
 ///
 /// Uses `ScreenFade` for professional visual transitions between application states.
 pub fn handle_menu_button_clicks(
-    interaction_query: Query<(&Interaction, &PrimaryButton), (Changed<Interaction>, With<Button>)>,
+    interaction_query: Query<(&Interaction, &PrimaryButton), MenuButtonFilter>,
     mut settings_open: ResMut<SettingsOpen>,
     mut fade: ResMut<ScreenFade>,
 ) {
