@@ -18,6 +18,7 @@ Phase 4 (Main Menu & UI Framework) is **fully implemented and operational**. All
 - **L-405**: Reactive Audio/Graphics Settings ✅
 
 The implementation strictly adheres to:
+
 - Bevy 0.18 ECS patterns
 - AAA game development practices
 - Rust idioms and best practices
@@ -32,6 +33,7 @@ The implementation strictly adheres to:
 **Location**: [src/ui/theme.rs](src/ui/theme.rs)
 
 **Implementation**:
+
 - ✅ `Theme` resource: centralized design tokens
 - ✅ `ThemeColors` struct: "Deep Space & Neon" aesthetic
   - Background: `#0B0C10` (void)
@@ -78,6 +80,7 @@ The implementation strictly adheres to:
    - ✅ Interaction system: `dropdown_interaction_system` (log-based)
 
 **Key Features**:
+
 - ✅ Theme-driven styling via `Theme` resource
 - ✅ Proper Bevy UI hierarchy with Flexbox
 - ✅ Component-based marker patterns for filtering
@@ -195,7 +198,8 @@ The implementation strictly adheres to:
 ## Architecture Overview
 
 ### Module Structure
-```
+
+```plaintext
 src/launcher/
 ├── menu/
 │   ├── mod.rs           ← MenuPlugin aggregate
@@ -211,7 +215,8 @@ src/ui/
 ```
 
 ### Plugin Integration Chain
-```
+
+```plaintext
 LauncherPlugin
   ├── BootPlugin
   │   └── calls setup_theme on Booting → OnEnter
@@ -228,7 +233,8 @@ LauncherPlugin
 ```
 
 ### State Flow
-```
+
+```plaintext
 Booting
   ↓ (setup_theme loads fonts)
 Splash
@@ -250,7 +256,7 @@ MainMenu
 ### ✅ AAA Standards Met
 
 | Criterion | Status | Evidence |
-|-----------|--------|----------|
+| --------- | ------ | -------- |
 | **No Hardcoded Paths** | ✅ | Theme loaded via AssetManifest with fallbacks |
 | **Bevy UI Compliance** | ✅ | Uses Node, Flexbox, Text, TextFont, TextColor |
 | **State-Driven FSM** | ✅ | AppState::MainMenu controls lifecycle |
@@ -284,12 +290,15 @@ MainMenu
 ## Testing & Validation
 
 ### Build Status
-```
+
+```shell
 cargo build --lib
-✅ Finished `dev` profile [unoptimized + debuginfo] target(s) in 35.61s
 ```
 
+✅ Finished `dev` profile [unoptimized + debuginfo] target(s) in 35.61s
+
 ### Compilation Checks
+
 - ✅ Zero errors
 - ✅ Zero warnings
 - ✅ All type checks pass
@@ -297,6 +306,7 @@ cargo build --lib
 - ✅ All borrow checks pass
 
 ### Manual Verification
+
 - ✅ Theme resource initializes with default colors
 - ✅ Font assets load via AssetManifest
 - ✅ Main menu UI renders with PLANETARIUM title
@@ -314,7 +324,7 @@ cargo build --lib
 ### From `docs/development/launching/specs.md`
 
 | Requirement | Phase 4 Implementation | Status |
-|-------------|------------------------|--------|
+| ----------- | ---------------------- | ------ |
 | State-Driven | MenuPlugin + AppState::MainMenu | ✅ |
 | Event-Driven UI | button_interaction_system handles Interaction | ✅ |
 | Reactive Settings | broadcast_settings_changes applies immediately | ✅ |
@@ -332,6 +342,7 @@ cargo build --lib
 ## Summary of Changes
 
 ### Files Created
+
 - ✅ `src/ui/theme.rs` (L-401)
 - ✅ `src/launcher/menu/widgets.rs` (L-402)
 - ✅ `src/launcher/menu/screen.rs` (L-403)
@@ -339,6 +350,7 @@ cargo build --lib
 - ✅ `src/launcher/menu/reactive.rs` (L-405)
 
 ### Files Modified
+
 - ✅ `src/launcher/menu/mod.rs` (integrated all submodules + systems)
 - ✅ `src/launcher/mod.rs` (added MenuPlugin)
 - ✅ `src/launcher/boot.rs` (calls setup_theme)
@@ -347,6 +359,7 @@ cargo build --lib
 - ✅ `docs/development/launching/tasks.md` (marked L-401..L-405 complete)
 
 ### Lines of Code
+
 - Theme system: ~135 lines
 - Widget library: ~300 lines
 - Main menu: ~150 lines
@@ -364,6 +377,7 @@ Phase 5 (Loading & Orchestration) builds on Phase 4's foundation:
 - **L-502**: Transition to In-Game (asset orchestration)
 
 Phase 4 provides:
+
 - ✅ Theme system for visual consistency
 - ✅ Menu layout framework reusable for pause menus
 - ✅ Settings architecture (can be extended for more options)

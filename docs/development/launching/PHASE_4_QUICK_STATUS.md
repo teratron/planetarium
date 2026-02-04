@@ -3,7 +3,7 @@
 ## ✅ All Tasks Complete
 
 | Task | Title | Status | Lines | File(s) |
-|------|-------|--------|-------|---------|
+| ---- | ----- | ------ | ----- | ------- |
 | L-401 | Theme & Design Tokens | ✅ | 135 | `src/ui/theme.rs` |
 | L-402 | Generic Widget Library | ✅ | 300 | `src/launcher/menu/widgets.rs` |
 | L-403 | Main Menu Layout | ✅ | 150 | `src/launcher/menu/screen.rs` |
@@ -16,7 +16,7 @@
 
 ## Architecture
 
-```
+```plaintext
 MainMenu State
 ├─ spawn_main_menu (OnEnter)
 │  └─ Root (bg)
@@ -46,22 +46,26 @@ MainMenu State
 ## Key Features
 
 ✅ **Theme System** (L-401)
+
 - 7-color palette (Deep Space & Neon aesthetic)
 - Font caching (main/bold)
 - Standard sizes (H1/H2/Body, button height)
 - AssetManifest integration with fallbacks
 
 ✅ **Widget Library** (L-402)
+
 - PrimaryButton: label + action + hover state
 - Slider: range visualization + value tracking
 - Dropdown: option list + selection
 
 ✅ **Menu UI** (L-403)
+
 - Centered 400px panel with card styling
 - PLANETARIUM title (neon cyan accent color)
 - Three main buttons with proper spacing
 
 ✅ **Settings Modal** (L-404)
+
 - 80% overlay with tab headers
 - Graphics section: resolution width/height, fullscreen toggle
 - Audio section: master/music/sfx volumes
@@ -69,6 +73,7 @@ MainMenu State
 - UI values synced to UserSettings
 
 ✅ **Reactive Engine** (L-405)
+
 - `broadcast_settings_changes` system
 - Immediate window resolution changes
 - Immediate window mode changes (fullscreen/windowed)
@@ -99,6 +104,7 @@ MainMenu State
 ## Ready for Phase 5
 
 Phase 5 (Loading & Orchestration) can now:
+
 - Use Theme for loading screen UI
 - Reuse widget patterns for progress displays
 - Leverage reactive pattern for state transitions

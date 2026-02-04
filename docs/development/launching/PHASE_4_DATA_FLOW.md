@@ -2,18 +2,18 @@
 
 ## High-Level Flow Diagram
 
-```
+```plaintext
 ┌─────────────────────────────────────────────────────────────────┐
 │                         Boot State                              │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │ setup_theme (OnEnter)                                    │  │
-│  │  ├─ Load fonts from AssetManifest                        │  │
-│  │  ├─ Initialize Theme resource                            │  │
-│  │  │  ├─ ThemeColors: 7-color palette                      │  │
-│  │  │  ├─ ThemeFonts: main + bold handles                   │  │
-│  │  │  └─ ThemeSizes: typography + spacing                  │  │
-│  │  └─ Log: "[Theme] Hydrating theme assets..."             │  │
-│  └──────────────────────────────────────────────────────────┘  │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │ setup_theme (OnEnter)                                     │  │
+│  │  ├─ Load fonts from AssetManifest                         │  │
+│  │  ├─ Initialize Theme resource                             │  │
+│  │  │  ├─ ThemeColors: 7-color palette                       │  │
+│  │  │  ├─ ThemeFonts: main + bold handles                    │  │
+│  │  │  └─ ThemeSizes: typography + spacing                   │  │
+│  │  └─ Log: "[Theme] Hydrating theme assets..."              │  │
+│  └───────────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────┘
                           ↓ (transition)
 ┌─────────────────────────────────────────────────────────────────┐
@@ -21,87 +21,87 @@
 │ (skipped or displays splash sequence)                           │
 └─────────────────────────────────────────────────────────────────┘
                           ↓ (transition)
-┌────────────────────────────────────────────────────────────────┐
-│                      MainMenu State                            │
-│                                                                │
-│  ┌─ spawn_main_menu (OnEnter) ──────────────────────────────┐  │
-│  │  Creates:                                                │  │
-│  │  ├─ MainMenuRoot (full screen bg)                        │  │
-│  │  ├─ Menu Panel (400px card)                              │  │
-│  │  │  ├─ Title: "PLANETARIUM"                              │  │
-│  │  │  └─ Buttons Container                                 │  │
-│  │  │     ├─ PLAY (ButtonAction::Play)                      │  │
-│  │  │     ├─ SETTINGS (ButtonAction::Settings)              │  │
-│  │  │     └─ EXIT (ButtonAction::Exit)                      │  │
-│  │  │                                                       │  │
-│  │  Resources Created:                                      │  │
-│  │  └─ SettingsOpen(false) → no modal yet                   │  │
-│  │                                                          │  │
-│  └──────────────────────────────────────────────────────────┘  │
-│                                                                │
-│  ┌─ Update Loop (MainMenu state) ───────────────────────────┐  │
-│  │                                                          │  │
-│  │ 1. button_interaction_system                             │  │
-│  │    Filters: Interaction + PrimaryButton                  │  │
-│  │    Effects: Color hover feedback (visual only)           │  │
-│  │                                                          │  │
-│  │ 2. handle_menu_button_clicks                             │  │
-│  │    Filters: Changed<Interaction> + Button                │  │
-│  │    On PLAY Pressed:                                      │  │
-│  │      └─ NextState → Loading                              │  │
-│  │    On SETTINGS Pressed:                                  │  │
-│  │      └─ SettingsOpen.0 = true                            │  │
-│  │    On EXIT Pressed:                                      │  │
-│  │      └─ std::process::exit(0)                            │  │
-│  │    On BACK Pressed:                                      │  │
-│  │      └─ SettingsOpen.0 = false                           │  │
-│  │                                                          │  │
-│  │ 3. spawn_settings_if_needed                              │  │
+┌─────────────────────────────────────────────────────────────────┐
+│                      MainMenu State                             │
+│                                                                 │
+│  ┌─ spawn_main_menu (OnEnter) ───────────────────────────────┐  │
+│  │  Creates:                                                 │  │
+│  │  ├─ MainMenuRoot (full screen bg)                         │  │
+│  │  ├─ Menu Panel (400px card)                               │  │
+│  │  │  ├─ Title: "PLANETARIUM"                               │  │
+│  │  │  └─ Buttons Container                                  │  │
+│  │  │     ├─ PLAY (ButtonAction::Play)                       │  │
+│  │  │     ├─ SETTINGS (ButtonAction::Settings)               │  │
+│  │  │     └─ EXIT (ButtonAction::Exit)                       │  │
+│  │  │                                                        │  │
+│  │  Resources Created:                                       │  │
+│  │  └─ SettingsOpen(false) → no modal yet                    │  │
+│  │                                                           │  │
+│  └───────────────────────────────────────────────────────────┘  │
+│                                                                 │
+│  ┌─ Update Loop (MainMenu state) ────────────────────────────┐  │
+│  │                                                           │  │
+│  │ 1. button_interaction_system                              │  │
+│  │    Filters: Interaction + PrimaryButton                   │  │
+│  │    Effects: Color hover feedback (visual only)            │  │
+│  │                                                           │  │
+│  │ 2. handle_menu_button_clicks                              │  │
+│  │    Filters: Changed<Interaction> + Button                 │  │
+│  │    On PLAY Pressed:                                       │  │
+│  │      └─ NextState → Loading                               │  │
+│  │    On SETTINGS Pressed:                                   │  │
+│  │      └─ SettingsOpen.0 = true                             │  │
+│  │    On EXIT Pressed:                                       │  │
+│  │      └─ std::process::exit(0)                             │  │
+│  │    On BACK Pressed:                                       │  │
+│  │      └─ SettingsOpen.0 = false                            │  │
+│  │                                                           │  │
+│  │ 3. spawn_settings_if_needed                               │  │
 │  │    Condition: SettingsOpen.is_changed()                   │  │
 │  │    If true & empty:                                       │  │
-│  │      └─ spawn_settings_menu (creates SettingsRoot)       │  │
+│  │      └─ spawn_settings_menu (creates SettingsRoot)        │  │
 │  │    If false & exists:                                     │  │
-│  │      └─ despawn SettingsRoot                             │  │
-│  │                                                            │  │
+│  │      └─ despawn SettingsRoot                              │  │
+│  │                                                           │  │
 │  │    Creates (when true):                                   │  │
-│  │    ├─ SettingsRoot overlay (80% modal)                   │  │
+│  │    ├─ SettingsRoot overlay (80% modal)                    │  │
 │  │    ├─ Title: "Settings"                                   │  │
-│  │    ├─ Tab headers: Graphics | Audio | Controls           │  │
+│  │    ├─ Tab headers: Graphics | Audio | Controls            │  │
 │  │    ├─ Graphics Section:                                   │  │
-│  │    │  ├─ Width: 1280 (ResolutionWidthControl)            │  │
-│  │    │  ├─ Height: 720 (ResolutionHeightControl)           │  │
-│  │    │  └─ Fullscreen: OFF (FullscreenToggle)              │  │
+│  │    │  ├─ Width: 1280 (ResolutionWidthControl)             │  │
+│  │    │  ├─ Height: 720 (ResolutionHeightControl)            │  │
+│  │    │  └─ Fullscreen: OFF (FullscreenToggle)               │  │
 │  │    ├─ Audio Section:                                      │  │
-│  │    │  ├─ Master: 0.80 (MasterVolumeControl)              │  │
-│  │    │  ├─ Music: 0.70 (MusicVolumeControl)                │  │
-│  │    │  └─ SFX: 1.00 (SFXVolumeControl)                    │  │
+│  │    │  ├─ Master: 0.80 (MasterVolumeControl)               │  │
+│  │    │  ├─ Music: 0.70 (MusicVolumeControl)                 │  │
+│  │    │  └─ SFX: 1.00 (SFXVolumeControl)                     │  │
 │  │    └─ Back button (ButtonAction::Back)                    │  │
-│  │                                                            │  │
+│  │                                                           │  │
 │  │ 4. update_settings_ui (syncs values)                      │  │
 │  │    Queries: ResolutionWidthControl, etc.                  │  │
-│  │    Updates: Text.0 = UserSettings value                  │  │
-│  │                                                            │  │
-│  │ 5. broadcast_settings_changes (REACTIVE!)                │  │
+│  │    Updates: Text.0 = UserSettings value                   │  │
+│  │                                                           │  │
+│  │ 5. broadcast_settings_changes (REACTIVE!)                 │  │
 │  │    Condition: settings.is_changed()                       │  │
 │  │    Reads: UserSettings resource                           │  │
 │  │    Local State: prev: Option<UserSettings>                │  │
-│  │                                                            │  │
+│  │                                                           │  │
 │  │    If Display Changed:                                    │  │
-│  │      ├─ window.resolution.set(width, height)             │  │
-│  │      ├─ window.mode = Fullscreen | Windowed              │  │
-│  │      └─ Log: "[Settings] Applied display..."             │  │
-│  │                                                            │  │
+│  │      ├─ window.resolution.set(width, height)              │  │
+│  │      ├─ window.mode = Fullscreen | Windowed               │  │
+│  │      └─ Log: "[Settings] Applied display..."              │  │
+│  │                                                           │  │
 │  │    If Audio Changed:                                      │  │
-│  │      ├─ RuntimeAudioState.master = value                 │  │
-│  │      ├─ RuntimeAudioState.music = value                  │  │
-│  │      ├─ RuntimeAudioState.sfx = value                    │  │
-│  │      └─ Log: "[Settings] Applied audio..."               │  │
-│  │                                                            │  │
-│  └────────────────────────────────────────────────────────────┘  │
+│  │      ├─ RuntimeAudioState.master = value                  │  │
+│  │      ├─ RuntimeAudioState.music = value                   │  │
+│  │      ├─ RuntimeAudioState.sfx = value                     │  │
+│  │      └─ Log: "[Settings] Applied audio..."                │  │
+│  │                                                           │  │
+│  └───────────────────────────────────────────────────────────┘  │
 │                                                                 │
 │  ┌─ despawn_main_menu (OnExit) ──────────────────────────────┐  │
 │  │  Despawns MainMenuRoot entity (cascade)                   │  │
-│  └──────────────────────────────────────────────────────────┘  │
+│  └───────────────────────────────────────────────────────────┘  │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
          ↓ (PLAY)              ↓ (SETTINGS)           ↓ (EXIT)
@@ -117,7 +117,7 @@
 
 ### Resources
 
-```
+```plaintext
 UserSettings (from boot)
 ├─ display: DisplaySettings
 │  ├─ width: u32
@@ -160,7 +160,7 @@ RuntimeAudioState (from menu plugin init)
 
 ### Components (Entities)
 
-```
+```plaintext
 MainMenuRoot
 ├─ MainMenuRoot marker
 ├─ Node (full screen)
@@ -239,7 +239,7 @@ SettingsRoot (spawned if SettingsOpen.0)
 
 ## System Execution Order (MainMenu State)
 
-```
+```plaintext
 OnEnter(MainMenu):
   └─ spawn_main_menu
      Creates: MainMenuRoot + menu UI
@@ -269,7 +269,7 @@ OnExit(MainMenu):
 
 ## Data Change Flow (Reactive Path)
 
-```
+```plaintext
 User modifies UserSettings (e.g., toggles fullscreen)
   ↓
 is_changed() flag set on UserSettings resource
@@ -300,7 +300,7 @@ update_settings_ui runs in parallel
 
 ## State Transitions
 
-```
+```plaintext
 MainMenu: PLAY button
   ├─ Detection: Interaction::Pressed + ButtonAction::Play
   ├─ Effect: NextState::set(AppState::Loading)
@@ -331,15 +331,18 @@ MainMenu: EXIT button
 ## Integration Points with Other Phases
 
 ### Phase 1 (Boot) → Phase 4
+
 - `setup_theme` loads from AssetManifest (Phase 2)
 - `UserSettings` loaded by boot config system (Phase 1)
 
 ### Phase 4 → Phase 5 (Loading)
+
 - Theme system ready for loading screen UI
 - Widget patterns reusable for progress displays
 - Reactive pattern available for state transitions
 
 ### Phase 4 ← Game Module
+
 - RuntimeAudioState consumed by audio system
 - Theme colors usable throughout game UI
 - Menu pattern reusable for pause screens
