@@ -5,6 +5,10 @@ use crate::core::states::AppState;
 use crate::ui::theme::Theme;
 use bevy::prelude::*;
 
+/// Plugin managing the loading phase between the menu and the gameplay.
+///
+/// Handles progress tracking, UI updates for the progress bar,
+/// and rotating lore hints to engage the user during load times.
 pub struct LoadingPlugin;
 
 impl Plugin for LoadingPlugin {
@@ -53,6 +57,14 @@ struct LoadingRoot;
 #[derive(Component)]
 struct ProgressBarFill;
 
+/// Marker for the percentage text entity.
+#[derive(Component)]
+struct LoadingPercentText;
+
+/// Marker for the active asset group text entity.
+#[derive(Component)]
+struct LoadingAssetText;
+
 /// Marker for the text entity to update loading hints.
 #[derive(Component)]
 struct LoadingHintText;
@@ -66,6 +78,8 @@ const LOADING_HINTS: &[&str] = &[
     "Optimizing light-speed navigation...",
 ];
 
+/// Spawns the complex loading screen UI.
+/// Includes a title, current asset group info, numerical percentage, progress bar, and lore hints.
 fn setup_loading_screen(mut commands: Commands, theme: Res<Theme>) {
     info!("[LoadingUI] Spawning loading screen...");
 
@@ -93,9 +107,41 @@ fn setup_loading_screen(mut commands: Commands, theme: Res<Theme>) {
                 },
                 TextColor(theme.colors.accent),
                 Node {
-                    margin: UiRect::bottom(Val::Px(40.0)),
+                    margin: UiRect::bottom(Val::Px(10.0)),
                     ..default()
                 },
+            ));
+
+            // ACTIVE ASSET GROUP
+            parent.spawn((
+                Text::new("Initializing..."),
+                TextFont {
+                    font: theme.fonts.main.clone(),
+                    font_size: 14.0,
+                    ..default()
+                },
+                TextColor(theme.colors.text_secondary),
+                Node {
+                    margin: UiRect::bottom(Val::Px(30.0)),
+                    ..default()
+                },
+                LoadingAssetText,
+            ));
+
+            // PERCENTAGE
+            parent.spawn((
+                Text::new("0%"),
+                TextFont {
+                    font: theme.fonts.bold.clone(),
+                    font_size: 18.0,
+                    ..default()
+                },
+                TextColor(theme.colors.text_primary),
+                Node {
+                    margin: UiRect::bottom(Val::Px(5.0)),
+                    ..default()
+                },
+                LoadingPercentText,
             ));
 
             // Progress Bar Container (Track)
@@ -142,24 +188,46 @@ fn setup_loading_screen(mut commands: Commands, theme: Res<Theme>) {
 fn update_loading_progress(
     time: Res<Time>,
     mut tracker: ResMut<LoadingTracker>,
-    mut next_state: ResMut<NextState<AppState>>,
+    mut fade: ResMut<crate::ui::fading::ScreenFade>,
 ) {
     // Mock loading logic: linearly increase progress over 3 seconds
     tracker.progress += time.delta_secs() / 3.0;
 
     if tracker.progress >= 1.0 {
         tracker.progress = 1.0;
-        info!("[LoadingUI] Content loaded. Transitioning to InGame.");
-        next_state.set(AppState::InGame);
+        info!("[LoadingUI] Content loaded. Fading out to InGame.");
+        fade.fade_out(0.5, AppState::InGame);
     }
 }
 
+/// Updates the loading UI elements (bar, percentage, asset info) based on the current progress.
 fn update_loading_ui(
     tracker: Res<LoadingTracker>,
     mut fill_query: Query<&mut Node, With<ProgressBarFill>>,
+    mut percent_query: Query<&mut Text, (With<LoadingPercentText>, Without<LoadingAssetText>)>,
+    mut asset_query: Query<&mut Text, (With<LoadingAssetText>, Without<LoadingPercentText>)>,
 ) {
+    // 1. Update Bar
     for mut node in &mut fill_query {
         node.width = Val::Percent(tracker.progress * 100.0);
+    }
+
+    // 2. Update Numerical Percentage
+    let percent = (tracker.progress * 100.0) as u32;
+    for mut text in &mut percent_query {
+        text.0 = format!("{}%", percent);
+    }
+
+    // 3. Update active asset group (Simulated feedback)
+    let asset_info = match tracker.progress {
+        p if p < 0.2 => "Initializing Engine...",
+        p if p < 0.4 => "Loading Star Catalogs...",
+        p if p < 0.6 => "Synthesizing Planetary Textures...",
+        p if p < 0.8 => "Building Atmospheric Models...",
+        _ => "Finalizing World State...",
+    };
+    for mut text in &mut asset_query {
+        text.0 = asset_info.to_string();
     }
 }
 

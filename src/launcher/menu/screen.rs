@@ -6,6 +6,7 @@
 use super::settings::SettingsOpen;
 use super::widgets::{ButtonAction, PrimaryButton, spawn_primary_button};
 use crate::core::states::AppState;
+use crate::ui::fading::ScreenFade;
 use crate::ui::theme::Theme;
 use bevy::prelude::*;
 
@@ -18,10 +19,8 @@ pub struct MainMenuRoot;
 pub struct MenuBackground;
 
 /// System to spawn the main menu UI.
-pub fn spawn_main_menu(
-    mut commands: Commands,
-    theme: Res<Theme>,
-) {
+/// Includes a title and professional primary buttons (Play, Settings, Exit).
+pub fn spawn_main_menu(mut commands: Commands, theme: Res<Theme>) {
     info!("[MenuPlugin] Spawning main menu...");
 
     // Root container
@@ -112,18 +111,20 @@ pub fn spawn_main_menu(
     commands.entity(root).add_child(menu_panel);
 }
 
-/// System to handle main menu button clicks.
+/// System to handle main menu button clicks, initiating transitions or opening panels.
+///
+/// Uses `ScreenFade` for professional visual transitions between application states.
 pub fn handle_menu_button_clicks(
     interaction_query: Query<(&Interaction, &PrimaryButton), (Changed<Interaction>, With<Button>)>,
-    mut next_state: ResMut<NextState<AppState>>,
     mut settings_open: ResMut<SettingsOpen>,
+    mut fade: ResMut<ScreenFade>,
 ) {
     for (interaction, button) in &interaction_query {
         if *interaction == Interaction::Pressed {
             match button.action {
                 ButtonAction::Play => {
-                    info!("[MainMenu] Play button clicked. Transitioning to Loading...");
-                    next_state.set(AppState::Loading);
+                    info!("[MainMenu] Play button clicked. Fading out to Loading...");
+                    fade.fade_out(0.8, AppState::Loading);
                 }
                 ButtonAction::Settings => {
                     info!("[MainMenu] Settings button clicked. Opening settings...");

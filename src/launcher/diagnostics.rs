@@ -7,6 +7,10 @@ use crate::ui::theme::Theme;
 use bevy::diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin};
 use bevy::prelude::*;
 
+/// Plugin that provides real-time engine diagnostics and performance monitoring.
+///
+/// It registers systems for an on-screen overlay (FPS, State, Entity count)
+/// that can be toggled using the F1 key.
 pub struct DiagnosticsPlugin;
 
 impl Plugin for DiagnosticsPlugin {
@@ -41,6 +45,10 @@ struct FpsText;
 #[derive(Component)]
 struct StateText;
 
+/// Marker for the Entities count text.
+#[derive(Component)]
+struct EntityText;
+
 fn setup_debug_overlay(mut commands: Commands, theme: Res<Theme>) {
     commands
         .spawn((
@@ -72,7 +80,7 @@ fn setup_debug_overlay(mut commands: Commands, theme: Res<Theme>) {
 
             // AppState Label
             parent.spawn((
-                Text::new("STATE: BOOT"),
+                Text::new("STATE: BOOTING"),
                 TextFont {
                     font: theme.fonts.main.clone(),
                     font_size: 14.0,
@@ -80,6 +88,18 @@ fn setup_debug_overlay(mut commands: Commands, theme: Res<Theme>) {
                 },
                 TextColor(theme.colors.accent),
                 StateText,
+            ));
+
+            // Entity Count Label
+            parent.spawn((
+                Text::new("ENTITIES: 0"),
+                TextFont {
+                    font: theme.fonts.main.clone(),
+                    font_size: 12.0,
+                    ..default()
+                },
+                TextColor(theme.colors.text_secondary),
+                EntityText,
             ));
 
             parent.spawn((
@@ -112,11 +132,14 @@ fn toggle_debug_overlay(
     }
 }
 
+/// Updates the debug overlay text with real-time performance and engine state data.
 fn update_debug_text(
     diagnostics: Res<DiagnosticsStore>,
     current_state: Res<State<AppState>>,
-    mut fps_query: Query<&mut Text, (With<FpsText>, Without<StateText>)>,
-    mut state_query: Query<&mut Text, (With<StateText>, Without<FpsText>)>,
+    entities: Query<Entity>,
+    mut fps_query: Query<&mut Text, (With<FpsText>, Without<StateText>, Without<EntityText>)>,
+    mut state_query: Query<&mut Text, (With<StateText>, Without<FpsText>, Without<EntityText>)>,
+    mut entity_query: Query<&mut Text, (With<EntityText>, Without<FpsText>, Without<StateText>)>,
 ) {
     // Update FPS
     if let Some(fps) = diagnostics
@@ -131,5 +154,11 @@ fn update_debug_text(
     // Update State
     for mut text in &mut state_query {
         text.0 = format!("STATE: {:?}", current_state.get()).to_uppercase();
+    }
+
+    // Update Entity Count
+    let entity_count = entities.iter().count();
+    for mut text in &mut entity_query {
+        text.0 = format!("ENTITIES: {}", entity_count);
     }
 }

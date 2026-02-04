@@ -3,8 +3,9 @@
 //! Generic, reusable UI widgets for the main menu and settings screens.
 //! Built on Bevy's native UI system with custom styling and interaction.
 
-use bevy::prelude::*;
+use crate::core::assets::AssetManifest;
 use crate::ui::theme::Theme;
+use bevy::prelude::*;
 
 /// Marker component for primary buttons (Play, Settings, Exit).
 #[derive(Component, Debug, Clone)]
@@ -53,7 +54,14 @@ pub struct Dropdown {
     pub is_open: bool,
 }
 
-/// System to create a primary button widget.
+/// Spawns a high-quality primary button widget.
+///
+/// # Arguments
+/// * `commands` - The entity commands to spawn the button.
+/// * `theme` - Visual design tokens for styling.
+/// * `label` - The text to display on the button.
+/// * `action` - The logic to trigger when clicked.
+/// * `parent` - Optional parent entity to attach the button to.
 pub fn spawn_primary_button(
     commands: &mut Commands,
     theme: &Theme,
@@ -249,8 +257,15 @@ pub fn spawn_dropdown(
     dropdown
 }
 
-/// System to handle button interactions and color changes.
+/// System to handle button interactions, updating visual state and playing audio feedback.
+///
+/// Visual feedback is handled via `BackgroundColor` and `ButtonHoverState`.
+/// Audio feedback uses paths defined in the `AssetManifest` and respects `RuntimeAudioState` volume.
 pub fn button_interaction_system(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    manifest: Res<AssetManifest>,
+    audio_state: Res<crate::launcher::menu::reactive::RuntimeAudioState>,
     mut interaction_query: Query<
         (&Interaction, &mut BackgroundColor, &ButtonHoverState),
         (Changed<Interaction>, With<Button>, With<PrimaryButton>),
@@ -260,9 +275,33 @@ pub fn button_interaction_system(
         match *interaction {
             Interaction::Hovered => {
                 *bg_color = BackgroundColor(hover_state.hover_color);
+
+                // Play hover sound if defined in manifest
+                if let Some(path) = manifest.audio("hover") {
+                    commands.spawn((
+                        AudioPlayer::new(asset_server.load(path)),
+                        PlaybackSettings {
+                            mode: bevy::audio::PlaybackMode::Despawn,
+                            volume: bevy::audio::Volume::Linear(audio_state.sfx * 0.5), // Muted hover
+                            ..default()
+                        },
+                    ));
+                }
             }
             Interaction::Pressed => {
                 info!("[UI] Button pressed");
+
+                // Play click sound if defined in manifest
+                if let Some(path) = manifest.audio("click") {
+                    commands.spawn((
+                        AudioPlayer::new(asset_server.load(path)),
+                        PlaybackSettings {
+                            mode: bevy::audio::PlaybackMode::Despawn,
+                            volume: bevy::audio::Volume::Linear(audio_state.sfx),
+                            ..default()
+                        },
+                    ));
+                }
             }
             Interaction::None => {
                 *bg_color = BackgroundColor(hover_state.base_color);
@@ -273,10 +312,7 @@ pub fn button_interaction_system(
 
 /// System to handle slider interactions.
 pub fn slider_interaction_system(
-    interaction_query: Query<
-        &Interaction,
-        (Changed<Interaction>, With<Button>),
-    >,
+    interaction_query: Query<&Interaction, (Changed<Interaction>, With<Button>)>,
 ) {
     for interaction in &interaction_query {
         if *interaction == Interaction::Pressed {
@@ -287,10 +323,7 @@ pub fn slider_interaction_system(
 
 /// System to handle dropdown open/close toggle.
 pub fn dropdown_interaction_system(
-    interaction_query: Query<
-        &Interaction,
-        (Changed<Interaction>, With<Button>),
-    >,
+    interaction_query: Query<&Interaction, (Changed<Interaction>, With<Button>)>,
 ) {
     for interaction in &interaction_query {
         if *interaction == Interaction::Pressed {
