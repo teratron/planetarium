@@ -62,7 +62,7 @@
 
 - [x] **[L-601]** Debug Overlay
   - Toggleable FPS/Memory/Logs overlay.
-- [ ] **[L-602]** Embedded Fallbacks
+- [x] **[L-602]** Embedded Fallbacks
   - Use `include_bytes!` for emergency fonts and textures.
 - [x] **[L-603]** Logging & Analytics
   - Setup file-based logging in the user data folder.

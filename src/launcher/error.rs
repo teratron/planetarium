@@ -44,7 +44,7 @@ fn setup_error_screen(mut commands: Commands, theme: Res<Theme>, error_state: Re
             parent.spawn((
                 Text::new("SYSTEM CRITICAL ERROR"),
                 TextFont {
-                    font: theme.fonts.bold.clone(),
+                    font: theme.fonts.fallback.clone(),
                     font_size: theme.sizes.font_h1,
                     ..default()
                 },
@@ -69,7 +69,7 @@ fn setup_error_screen(mut commands: Commands, theme: Res<Theme>, error_state: Re
                     box_node.spawn((
                         Text::new(&error_state.message),
                         TextFont {
-                            font: theme.fonts.main.clone(),
+                            font: theme.fonts.fallback.clone(),
                             font_size: theme.sizes.font_body,
                             ..default()
                         },

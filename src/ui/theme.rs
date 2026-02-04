@@ -81,6 +81,7 @@ impl Default for ThemeColors {
 pub struct ThemeFonts {
     pub main: Handle<Font>,
     pub bold: Handle<Font>,
+    pub fallback: Handle<Font>,
 }
 
 /// Standard UI metrics.
@@ -107,15 +108,23 @@ impl Default for ThemeSizes {
     }
 }
 
+/// Embedded fallback font for critical error states.
+const FALLBACK_FONT_BYTES: &[u8] = include_bytes!("../../assets/fonts/FiraSans-Regular.ttf");
+
 /// System to load theme assets (fonts) using paths from the AssetManifest.
 pub fn setup_theme(
     asset_server: Res<AssetServer>,
     manifest: Res<AssetManifest>,
     mut theme: ResMut<Theme>,
+    mut fonts: ResMut<Assets<Font>>,
 ) {
     info!("[Theme] Hydrating theme assets...");
 
-    // Load fonts with fallback paths
+    // 1. Register the embedded fallback font first
+    // This ensures we ALWAYS have a valid font available.
+    theme.fonts.fallback = fonts.add(Font::try_from_bytes(FALLBACK_FONT_BYTES.to_vec()).unwrap());
+
+    // 2. Load primary fonts from disk
     let main_path = manifest
         .font("main")
         .map(|s| s.clone())
