@@ -6,6 +6,7 @@ use bevy::prelude::*;
 use planetarium::core::cli::CliArgs;
 use planetarium::core::config::metadata::APP_TITLE;
 use planetarium::core::states::AppState;
+use planetarium::game::GamePlugin;
 use planetarium::launcher::LauncherPlugin;
 
 fn main() {
@@ -45,6 +46,6 @@ fn main() {
             ..default()
         }))
         // Adding the aggregate Launcher plugin
-        .add_plugins(LauncherPlugin)
+        .add_plugins((LauncherPlugin, GamePlugin))
         .run();
 }

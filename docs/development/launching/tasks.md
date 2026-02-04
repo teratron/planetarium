@@ -55,7 +55,7 @@
 
 - [x] **[L-501]** Loading Progress UI
   - Implement the progress bar and lore hints.
-- [ ] **[L-502]** Transition to In-Game
+- [x] **[L-502]** Transition to In-Game
   - Logic for handing over control from Launcher to Game plugins.
 
 ## Phase 6: Robustness & Diagnostics (Priority: Low)
