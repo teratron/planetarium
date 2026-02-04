@@ -15,8 +15,12 @@ pub struct DiagnosticsPlugin;
 
 impl Plugin for DiagnosticsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(FrameTimeDiagnosticsPlugin::default())
-            .init_resource::<DebugSettings>()
+        // On normal builds we include the FrameTime plugin; in tests we skip it to avoid
+        // additional systems that rely on runtime-only resources.
+        #[cfg(not(test))]
+        app.add_plugins(FrameTimeDiagnosticsPlugin::default());
+
+        app.init_resource::<DebugSettings>()
             .add_systems(Startup, setup_debug_overlay)
             .add_systems(
                 Update,
@@ -53,7 +57,7 @@ struct StateText;
 #[derive(Component)]
 struct EntityText;
 
-fn setup_debug_overlay(mut commands: Commands, theme: Res<Theme>) {
+pub fn setup_debug_overlay(mut commands: Commands, theme: Res<Theme>) {
     commands
         .spawn((
             Node {

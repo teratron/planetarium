@@ -44,4 +44,4 @@ dotenvy = "0.15.7"
 
 [workspace]
 resolver = "2"
-members = ["examples/*"]
+members = []
