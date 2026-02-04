@@ -2,10 +2,10 @@
 //!
 //! Marker components for buttons, sliders, dropdowns, and other interactive widgets.
 
-use bevy::prelude::Color;
+use bevy::prelude::{Color, Component, Entity};
 
 /// Marker component for primary buttons (Play, Settings, Exit).
-#[derive(bevy::prelude::Component, Debug, Clone)]
+#[derive(Component, Debug, Clone)]
 pub struct PrimaryButton {
     pub label: String,
     pub action: ButtonAction,
@@ -21,14 +21,14 @@ pub enum ButtonAction {
 }
 
 /// Marker for button hover state styling.
-#[derive(bevy::prelude::Component, Debug)]
+#[derive(Component, Debug)]
 pub struct ButtonHoverState {
     pub base_color: Color,
     pub hover_color: Color,
 }
 
 /// Marker component for slider widgets (volume, brightness, etc.).
-#[derive(bevy::prelude::Component, Debug, Clone)]
+#[derive(Component, Debug, Clone)]
 pub struct Slider {
     pub label: String,
     pub min: f32,
@@ -38,11 +38,11 @@ pub struct Slider {
 }
 
 /// Marker for interactive slider track.
-#[derive(bevy::prelude::Component, Debug)]
-pub struct SliderTrack(pub bevy::prelude::Entity); // Parent slider entity
+#[derive(Component, Debug)]
+pub struct SliderTrack(pub Entity); // Parent slider entity
 
 /// Marker component for dropdown widgets (quality, resolution, etc.).
-#[derive(bevy::prelude::Component, Debug, Clone)]
+#[derive(Component, Debug, Clone)]
 pub struct Dropdown {
     pub label: String,
     pub options: Vec<String>,

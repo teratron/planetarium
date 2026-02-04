@@ -105,11 +105,7 @@ fn spawn_title(commands: &mut Commands, theme: &Theme, panel_id: Entity) {
 }
 
 /// Spawn all menu buttons (Play, Settings, Exit).
-fn spawn_menu_buttons(
-    commands: &mut Commands,
-    theme: &Theme,
-    container_id: Entity,
-) {
+fn spawn_menu_buttons(commands: &mut Commands, theme: &Theme, container_id: Entity) {
     let buttons = [
         ("PLAY", ButtonAction::Play),
         ("SETTINGS", ButtonAction::Settings),

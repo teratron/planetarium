@@ -10,7 +10,9 @@ use bevy::prelude::*;
 pub mod components;
 pub mod constants;
 
-pub use components::{PrimaryButton, ButtonAction, ButtonHoverState, Slider, SliderTrack, Dropdown};
+pub use components::{
+    ButtonAction, ButtonHoverState, Dropdown, PrimaryButton, Slider, SliderTrack,
+};
 pub use constants::button as button_constants;
 
 /// Spawns a high-quality primary button widget.

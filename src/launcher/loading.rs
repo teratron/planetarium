@@ -14,7 +14,10 @@ pub struct LoadingPlugin;
 impl Plugin for LoadingPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<LoadingTracker>()
-            .add_systems(OnEnter(AppState::Loading), (reset_loading_tracker, setup_loading_screen))
+            .add_systems(
+                OnEnter(AppState::Loading),
+                (reset_loading_tracker, setup_loading_screen),
+            )
             .add_systems(
                 Update,
                 (

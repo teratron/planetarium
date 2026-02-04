@@ -75,10 +75,10 @@ impl Localization {
     ) -> Option<String> {
         let msg = bundle.get_message(key)?;
         let pattern = msg.value()?;
-        
+
         let mut errors = vec![];
         let result = bundle.format_pattern(pattern, args, &mut errors);
-        
+
         if !errors.is_empty() {
             for err in errors {
                 error!(
@@ -87,7 +87,7 @@ impl Localization {
                 );
             }
         }
-        
+
         Some(result.to_string())
     }
 
@@ -150,11 +150,7 @@ fn parse_language_id(lang_str: &str) -> LanguageIdentifier {
 }
 
 /// Load a Fluent Translation List (.ftl) file into a bundle.
-fn load_ftl_into_bundle(
-    bundle: &mut FluentBundleType,
-    locale: &str,
-    file: &str,
-) {
+fn load_ftl_into_bundle(bundle: &mut FluentBundleType, locale: &str, file: &str) {
     let path = format!("assets/locales/{}/text/{}", locale, file);
     match std::fs::read_to_string(&path) {
         Ok(content) => match FluentResource::try_new(content) {
@@ -166,10 +162,7 @@ fn load_ftl_into_bundle(
                 }
             }
             Err(e) => {
-                error!(
-                    "[Localization] Failed to parse FTL file {}: {:?}",
-                    path, e
-                );
+                error!("[Localization] Failed to parse FTL file {}: {:?}", path, e);
             }
         },
         Err(e) => {

@@ -38,25 +38,26 @@ pub fn broadcast_settings_changes(
 
     // Display
     if prev.as_ref().map(|p| &p.display) != Some(&settings.display)
-        && let Ok(mut window) = windows.single_mut() {
-            // Set resolution using provided API
-            window.resolution.set(
-                settings.display.width as f32,
-                settings.display.height as f32,
-            );
-            window.mode = if settings.display.fullscreen {
-                bevy::window::WindowMode::Fullscreen(
-                    bevy::window::MonitorSelection::Current,
-                    bevy::window::VideoModeSelection::Current,
-                )
-            } else {
-                bevy::window::WindowMode::Windowed
-            };
-            info!(
-                "[Settings] Applied display settings: {}x{} fullscreen={}",
-                settings.display.width, settings.display.height, settings.display.fullscreen
-            );
-        }
+        && let Ok(mut window) = windows.single_mut()
+    {
+        // Set resolution using provided API
+        window.resolution.set(
+            settings.display.width as f32,
+            settings.display.height as f32,
+        );
+        window.mode = if settings.display.fullscreen {
+            bevy::window::WindowMode::Fullscreen(
+                bevy::window::MonitorSelection::Current,
+                bevy::window::VideoModeSelection::Current,
+            )
+        } else {
+            bevy::window::WindowMode::Windowed
+        };
+        info!(
+            "[Settings] Applied display settings: {}x{} fullscreen={}",
+            settings.display.width, settings.display.height, settings.display.fullscreen
+        );
+    }
 
     // Audio
     if prev.as_ref().map(|p| &p.audio) != Some(&settings.audio) {

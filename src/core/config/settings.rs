@@ -125,7 +125,8 @@ pub fn load_settings(paths: &AppPaths) -> UserSettings {
 /// Saves settings to disk in TOML format.
 pub fn save_settings(paths: &AppPaths, settings: &UserSettings) {
     if let Ok(toml_string) = toml::to_string_pretty(settings)
-        && let Err(e) = fs::write(&paths.settings_file, toml_string) {
-            error!("[Config] Failed to save settings: {}", e);
-        }
+        && let Err(e) = fs::write(&paths.settings_file, toml_string)
+    {
+        error!("[Config] Failed to save settings: {}", e);
+    }
 }

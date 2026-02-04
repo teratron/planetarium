@@ -32,8 +32,7 @@ fn debug_overlay_visible(settings: Res<DebugSettings>) -> bool {
     settings.visible
 }
 
-#[derive(Resource)]
-#[derive(Default)]
+#[derive(Resource, Default)]
 struct DebugSettings {
     visible: bool,
 }

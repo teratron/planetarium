@@ -40,8 +40,8 @@ fn parse_initial_state(args: &CliArgs) -> AppState {
 /// Initialize logging with file and stdout output.
 fn setup_logging(initial_state: &AppState) {
     let paths = AppPaths::from_env();
-    let env_filter = EnvFilter::try_from_default_env()
-        .unwrap_or_else(|_| EnvFilter::new(DEFAULT_LOG_FILTER));
+    let env_filter =
+        EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new(DEFAULT_LOG_FILTER));
 
     let stdout_layer = fmt::layer().with_ansi(true);
 
@@ -50,12 +50,12 @@ fn setup_logging(initial_state: &AppState) {
         let file_appender = tracing_appender::rolling::never(dir, file);
         let (non_blocking, _guard) = tracing_appender::non_blocking(file_appender);
         let file_layer = fmt::layer().with_ansi(false).with_writer(non_blocking);
-        
+
         let registry = tracing_subscriber::registry()
             .with(env_filter)
             .with(stdout_layer)
             .with(file_layer);
-        
+
         if let Err(e) = tracing::subscriber::set_global_default(registry) {
             eprintln!("[Main] Failed to set tracing subscriber: {}", e);
         }
@@ -63,7 +63,7 @@ fn setup_logging(initial_state: &AppState) {
         let registry = tracing_subscriber::registry()
             .with(env_filter)
             .with(stdout_layer);
-        
+
         if let Err(e) = tracing::subscriber::set_global_default(registry) {
             eprintln!("[Main] Failed to set tracing subscriber: {}", e);
         }
@@ -75,7 +75,7 @@ fn setup_logging(initial_state: &AppState) {
 /// Build the Bevy application with all plugins and systems.
 fn build_app(args: CliArgs, initial_state: AppState) -> App {
     let mut app = App::new();
-    
+
     app.add_plugins(
         DefaultPlugins
             .set(WindowPlugin {
@@ -96,7 +96,7 @@ fn build_app(args: CliArgs, initial_state: AppState) -> App {
     .insert_resource(args)
     .add_systems(Startup, setup_camera)
     .add_plugins((LauncherPlugin, GamePlugin));
-    
+
     app
 }
 

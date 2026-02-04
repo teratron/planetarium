@@ -1,19 +1,19 @@
 //! Stage 3: Main Menu system.
 //! Handles UI layout, interaction, and settings.
 
-use bevy::prelude::*;
 use crate::core::states::AppState;
+use bevy::prelude::*;
 
 pub mod layout;
-pub mod widgets;
+pub mod reactive;
 pub mod screen;
 pub mod settings;
-pub mod reactive;
+pub mod widgets;
 
-use widgets::button_interaction_system;
-use screen::{spawn_main_menu, handle_menu_button_clicks, despawn_main_menu};
-use settings::{SettingsOpen, spawn_settings_if_needed, update_settings_ui};
 use reactive::{RuntimeAudioState, broadcast_settings_changes};
+use screen::{despawn_main_menu, handle_menu_button_clicks, spawn_main_menu};
+use settings::{SettingsOpen, spawn_settings_if_needed, update_settings_ui};
+use widgets::button_interaction_system;
 
 pub struct MenuPlugin;
 
@@ -38,10 +38,16 @@ impl Plugin for MenuPlugin {
         );
 
         // Settings spawn/despawn watcher
-        app.add_systems(Update, spawn_settings_if_needed.run_if(in_state(AppState::MainMenu)));
+        app.add_systems(
+            Update,
+            spawn_settings_if_needed.run_if(in_state(AppState::MainMenu)),
+        );
 
         // Update settings UI display values
-        app.add_systems(Update, update_settings_ui.run_if(in_state(AppState::MainMenu)));
+        app.add_systems(
+            Update,
+            update_settings_ui.run_if(in_state(AppState::MainMenu)),
+        );
 
         // Reactive settings: runtime audio state + apply-on-change system
         app.init_resource::<RuntimeAudioState>();
@@ -51,4 +57,3 @@ impl Plugin for MenuPlugin {
         app.add_systems(OnExit(AppState::MainMenu), despawn_main_menu);
     }
 }
-
