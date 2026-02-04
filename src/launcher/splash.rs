@@ -79,8 +79,8 @@ fn countdown_splash(
         return;
     }
 
-    // Skip logic: Allow skip after 0.5 seconds
-    if timer.0.elapsed_secs() > 0.5 {
+    // Skip logic: Allow skip after 1.0 seconds (as per plan)
+    if timer.0.elapsed_secs() > 1.0 {
         let skip_input = keys.any_just_pressed([KeyCode::Space, KeyCode::Enter, KeyCode::Escape])
             || mouse.any_just_pressed([MouseButton::Left, MouseButton::Right]);
 
