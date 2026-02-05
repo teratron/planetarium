@@ -1,8 +1,11 @@
 ---
-trigger: always_on
+name: Rust SemVer
+description: Guidelines and checklists for maintaining semantic versioning in Rust projects, including breaking change identification and mitigation strategies.
 ---
 
-# Rust SemVer
+# Rust SemVer Skill
+
+This skill provides comprehensive guidance on managing Semantic Versioning (SemVer) in Rust. Use this when planning API changes, performing refactors, or preparing for new releases to ensure backward compatibility or correctly identify breaking changes.
 
 ## Versioning Basics
 
