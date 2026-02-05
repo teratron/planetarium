@@ -97,6 +97,7 @@ fn build_app(args: CliArgs, initial_state: AppState, paths: AppPaths) -> App {
     .insert_resource(args)
     .insert_resource(paths)
     .add_systems(Startup, setup_camera)
+    .add_systems(Startup, diagnose_cameras.after(setup_camera))
     .add_plugins((LauncherPlugin, GamePlugin));
 
     app
@@ -105,5 +106,41 @@ fn build_app(args: CliArgs, initial_state: AppState, paths: AppPaths) -> App {
 /// Global system to spawn the 2D camera required for UI rendering.
 fn setup_camera(mut commands: Commands) {
     info!("[Main] Spawning 2D Camera...");
-    commands.spawn(Camera2d);
+    // Assign a higher camera order for the UI camera so it doesn't share the
+    // same order as 3D cameras (prevents repeated Camera order ambiguity warnings).
+    // Spawn a 2D camera entity and set an explicit order to avoid conflicts
+    commands.spawn((Camera2d, Camera { order: 1, ..default() }));
+}
+
+/// Diagnostic system to help detect duplicate camera orders at startup.
+fn diagnose_cameras(query: Query<(Entity, &Camera, Option<&Camera2d>, Option<&Camera3d>)>) {
+    use std::collections::BTreeMap;
+
+    info!("[Main] Running camera diagnostics...");
+    let mut counts: BTreeMap<isize, Vec<String>> = BTreeMap::new();
+
+    for (entity, camera, cam2d, cam3d) in &query {
+        let kind = if cam2d.is_some() {
+            "Camera2d"
+        } else if cam3d.is_some() {
+            "Camera3d"
+        } else {
+            "Camera"
+        };
+
+        let entry = counts.entry(camera.order).or_default();
+        entry.push(format!("{}(id={:?})", kind, entity));
+
+        info!("[Main] Found camera: entity={:?} order={} kind={}", entity, camera.order, kind);
+    }
+
+    for (order, entities) in counts {
+        if entities.len() > 1 {
+            warn!(
+                "[Main] Duplicate cameras detected with order {}: {:?}. This may cause rendering ambiguities.",
+                order,
+                entities
+            );
+        }
+    }
 }
