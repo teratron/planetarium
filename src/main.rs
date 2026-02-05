@@ -17,10 +17,11 @@ fn main() {
     let initial_state = parse_initial_state(&args);
 
     // 2. Setup logging system
-    setup_logging(&initial_state);
+    let paths = AppPaths::from_env();
+    setup_logging(&initial_state, &paths);
 
     // 3. Configure and run Bevy app
-    build_app(args, initial_state).run();
+    build_app(args, initial_state, paths).run();
 }
 
 /// Parse CLI arguments to determine initial `AppState`.
@@ -38,8 +39,7 @@ fn parse_initial_state(args: &CliArgs) -> AppState {
 }
 
 /// Initialize logging with file and stdout output.
-fn setup_logging(initial_state: &AppState) {
-    let paths = AppPaths::from_env();
+fn setup_logging(initial_state: &AppState, paths: &AppPaths) {
     let env_filter =
         EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new(DEFAULT_LOG_FILTER));
 
@@ -73,8 +73,9 @@ fn setup_logging(initial_state: &AppState) {
 }
 
 /// Build the Bevy application with all plugins and systems.
-fn build_app(args: CliArgs, initial_state: AppState) -> App {
+fn build_app(args: CliArgs, initial_state: AppState, paths: AppPaths) -> App {
     let mut app = App::new();
+    let assets_path = paths.assets_dir.clone();
 
     app.add_plugins(
         DefaultPlugins
@@ -86,7 +87,7 @@ fn build_app(args: CliArgs, initial_state: AppState) -> App {
                 ..default()
             })
             .set(AssetPlugin {
-                file_path: "assets".into(),
+                file_path: assets_path.to_string_lossy().to_string(),
                 ..default()
             })
             .disable::<LogPlugin>(),
@@ -94,6 +95,7 @@ fn build_app(args: CliArgs, initial_state: AppState) -> App {
     .insert_state(initial_state)
     .init_resource::<planetarium::core::states::ErrorState>()
     .insert_resource(args)
+    .insert_resource(paths)
     .add_systems(Startup, setup_camera)
     .add_plugins((LauncherPlugin, GamePlugin));
 

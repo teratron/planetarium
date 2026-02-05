@@ -39,11 +39,12 @@ pub fn setup_asset_manifest(
     mut commands: Commands,
     mut next_state: ResMut<NextState<crate::core::states::AppState>>,
     mut error_state: ResMut<crate::core::states::ErrorState>,
+    paths: Res<crate::core::config::AppPaths>,
 ) {
-    let manifest_path = "assets/assets.toml";
-    info!("[Assets] Loading manifest from {}", manifest_path);
+    let manifest_path = paths.assets_dir.join("assets.toml");
+    info!("[Assets] Loading manifest from {:?}", manifest_path);
 
-    let manifest = match fs::read_to_string(manifest_path) {
+    let manifest = match fs::read_to_string(&manifest_path) {
         Ok(content) => match toml::from_str::<AssetManifest>(&content) {
             Ok(m) => {
                 info!("[Assets] Manifest loaded successfully.");

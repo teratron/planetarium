@@ -12,6 +12,8 @@ pub struct ThemeColors {
     pub background: Color,
     /// Slightly lighter background for panels/cards.
     pub surface: Color,
+    /// Lighter surface for hover states.
+    pub surface_light: Color,
     /// Primary text color (High contrast).
     pub text_primary: Color,
     /// Secondary text color (Muted).
@@ -31,6 +33,8 @@ impl Default for ThemeColors {
             background: Color::srgb_u8(11, 12, 16),
             // #1F2833
             surface: Color::srgb_u8(31, 40, 51),
+            // #2A3542 - Lighter surface for hover
+            surface_light: Color::srgb_u8(42, 53, 66),
             // #E0E0E0 - Bright white/grey
             text_primary: Color::srgb_u8(224, 224, 224),
             // #C5C6C7

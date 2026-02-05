@@ -31,3 +31,27 @@ pub struct MusicVolumeControl;
 /// Marker for SFX volume control.
 #[derive(Component)]
 pub struct SFXVolumeControl;
+
+/// Marker for a settings tab button.
+#[derive(Component)]
+pub struct SettingsTabButton(pub super::SettingsTab);
+
+/// Marker for the container holding tab content.
+#[derive(Component)]
+pub struct SettingsContentArea;
+
+/// Marker for the Graphics category panel.
+#[derive(Component)]
+pub struct GraphicsSettingsPanel;
+
+/// Marker for the Audio category panel.
+#[derive(Component)]
+pub struct AudioSettingsPanel;
+
+/// Marker for the Controls category panel.
+#[derive(Component)]
+pub struct ControlsSettingsPanel;
+
+/// Marker for the General category panel.
+#[derive(Component)]
+pub struct GeneralSettingsPanel;

@@ -21,6 +21,8 @@ pub struct Localization {
     main_bundle: FluentBundleType,
     /// The fallback Fluent bundle (usually en-US).
     fallback_bundle: FluentBundleType,
+    /// Absolute path to the assets directory.
+    assets_dir: std::path::PathBuf,
 }
 
 impl Localization {
@@ -29,11 +31,13 @@ impl Localization {
         locale: LanguageIdentifier,
         main_bundle: FluentBundleType,
         fallback_bundle: FluentBundleType,
+        assets_dir: std::path::PathBuf,
     ) -> Self {
         Self {
             current_locale: locale,
             main_bundle,
             fallback_bundle,
+            assets_dir,
         }
     }
 
@@ -97,8 +101,8 @@ impl Localization {
         let primary_path = format!("locales/{}/{}", self.current_locale, sub_path);
         let fallback_path = format!("locales/en-US/{}", sub_path);
 
-        let full_primary = format!("assets/{}", primary_path);
-        if std::path::Path::new(&full_primary).exists() {
+        let full_primary = self.assets_dir.join(&primary_path);
+        if full_primary.exists() {
             primary_path
         } else {
             fallback_path
@@ -110,6 +114,7 @@ impl Localization {
 pub fn setup_localization(
     mut commands: Commands,
     settings: Res<crate::core::config::UserSettings>,
+    paths: Res<crate::core::config::AppPaths>,
 ) {
     info!(
         "[Localization] Setting up Fluent engine for locale: {}",
@@ -117,25 +122,84 @@ pub fn setup_localization(
     );
 
     let primary_lang = parse_language_id(&settings.language);
-    let fallback_lang: LanguageIdentifier = "en-US".parse().unwrap();
+    // Use the same parsing function to ensure consistent fallback handling for en-US as well.
+    let fallback_lang: LanguageIdentifier = parse_language_id("en-US");
 
     let mut main_bundle = FluentBundle::new_concurrent(vec![primary_lang.clone()]);
     let mut fallback_bundle = FluentBundle::new_concurrent(vec![fallback_lang.clone()]);
 
     // Load common strings (menu.ftl)
-    load_ftl_into_bundle(&mut fallback_bundle, "en-US", "menu.ftl");
+    load_ftl_into_bundle(&mut fallback_bundle, &paths.assets_dir, "en-US", "menu.ftl");
 
     if primary_lang != fallback_lang {
-        load_ftl_into_bundle(&mut main_bundle, &primary_lang.to_string(), "menu.ftl");
+        load_ftl_into_bundle(
+            &mut main_bundle,
+            &paths.assets_dir,
+            &primary_lang.to_string(),
+            "menu.ftl",
+        );
     } else {
-        load_ftl_into_bundle(&mut main_bundle, "en-US", "menu.ftl");
+        load_ftl_into_bundle(&mut main_bundle, &paths.assets_dir, "en-US", "menu.ftl");
     }
 
     commands.insert_resource(Localization::new(
         primary_lang,
         main_bundle,
         fallback_bundle,
+        paths.assets_dir.clone(),
     ));
+}
+
+/// System that applies language changes at runtime when `UserSettings` changes.
+pub fn apply_language_change_system(
+    settings: Res<crate::core::config::UserSettings>,
+    mut prev: Local<Option<String>>,
+    paths: Res<crate::core::config::AppPaths>,
+    mut commands: Commands,
+) {
+    if !settings.is_changed() {
+        return;
+    }
+
+    if prev.as_deref() != Some(settings.language.as_str()) {
+        info!(
+            "[Localization] Applying language change: {}",
+            settings.language
+        );
+
+        let primary_lang = parse_language_id(&settings.language);
+        let fallback_lang: LanguageIdentifier = parse_language_id("en-US");
+
+        let mut main_bundle = FluentBundle::new_concurrent(vec![primary_lang.clone()]);
+        let mut fallback_bundle = FluentBundle::new_concurrent(vec![fallback_lang.clone()]);
+
+        load_ftl_into_bundle(&mut fallback_bundle, &paths.assets_dir, "en-US", "menu.ftl");
+
+        if primary_lang != fallback_lang {
+            load_ftl_into_bundle(
+                &mut main_bundle,
+                &paths.assets_dir,
+                &primary_lang.to_string(),
+                "menu.ftl",
+            );
+        } else {
+            load_ftl_into_bundle(&mut main_bundle, &paths.assets_dir, "en-US", "menu.ftl");
+        }
+
+        commands.insert_resource(Localization::new(
+            primary_lang,
+            main_bundle,
+            fallback_bundle,
+            paths.assets_dir.clone(),
+        ));
+
+        info!(
+            "[Localization] Language resource updated to {}",
+            settings.language
+        );
+    }
+
+    *prev = Some(settings.language.clone());
 }
 
 /// Parse a language string into a `LanguageIdentifier`, with fallback to en-US.
@@ -150,25 +214,39 @@ fn parse_language_id(lang_str: &str) -> LanguageIdentifier {
 }
 
 /// Load a Fluent Translation List (.ftl) file into a bundle.
-fn load_ftl_into_bundle(bundle: &mut FluentBundleType, locale: &str, file: &str) {
-    let path = format!("assets/locales/{}/text/{}", locale, file);
+fn load_ftl_into_bundle(
+    bundle: &mut FluentBundleType,
+    assets_dir: &std::path::Path,
+    locale: &str,
+    file: &str,
+) {
+    let path = assets_dir.join(format!("locales/{}/text/{}", locale, file));
     match std::fs::read_to_string(&path) {
         Ok(content) => match FluentResource::try_new(content) {
             Ok(resource) => {
                 if let Err(e) = bundle.add_resource(resource) {
-                    error!("[Localization] Failed to add {} to bundle: {:?}", path, e);
+                    error!(
+                        "[Localization] Failed to add {} to bundle: {:?}",
+                        path.display(),
+                        e
+                    );
                 } else {
-                    info!("[Localization] Loaded locale resource: {}", path);
+                    info!("[Localization] Loaded locale resource: {}", path.display());
                 }
             }
             Err(e) => {
-                error!("[Localization] Failed to parse FTL file {}: {:?}", path, e);
+                error!(
+                    "[Localization] Failed to parse FTL file {}: {:?}",
+                    path.display(),
+                    e
+                );
             }
         },
         Err(e) => {
             warn!(
                 "[Localization] Missing resource file: {}. Error: {}",
-                path, e
+                path.display(),
+                e
             );
         }
     }

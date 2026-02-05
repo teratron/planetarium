@@ -9,7 +9,7 @@ pub mod settings;
 
 pub use metadata::AppMetadata;
 pub use paths::AppPaths;
-pub use settings::UserSettings;
+pub use settings::{UserSettings, save_settings};
 
 use bevy::prelude::*;
 

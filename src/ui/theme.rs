@@ -46,17 +46,29 @@ pub fn setup_theme(
 
     // 1. Register the embedded fallback font first
     // This ensures we ALWAYS have a valid font available.
-    theme.fonts.fallback = fonts.add(Font::try_from_bytes(FALLBACK_FONT_BYTES.to_vec()).unwrap());
+    match Font::try_from_bytes(FALLBACK_FONT_BYTES.to_vec()) {
+        Ok(font) => {
+            theme.fonts.fallback = fonts.add(font);
+        }
+        Err(e) => {
+            error!(
+                "[Theme] Failed to create fallback font from embedded bytes: {}",
+                e
+            );
+            // Leave fallback as the default handle; disk-loaded fonts will replace it when available.
+        }
+    }
 
     // 2. Load primary fonts from disk
+    // We use FiraSans as the default since it's included in the assets folder.
     let main_path = manifest
         .font("main")
         .cloned()
-        .unwrap_or_else(|| "fonts/Inter-Regular.ttf".to_string());
+        .unwrap_or_else(|| "fonts/FiraSans-Regular.ttf".to_string());
     let bold_path = manifest
         .font("bold")
         .cloned()
-        .unwrap_or_else(|| "fonts/Inter-Bold.ttf".to_string());
+        .unwrap_or_else(|| "fonts/FiraSans-Regular.ttf".to_string());
 
     theme.fonts.main = asset_server.load(main_path);
     theme.fonts.bold = asset_server.load(bold_path);

@@ -2,27 +2,28 @@
 
 ## Phase 1: Infrastructure & Stability (Priority: Critical)
 
-- [ ] **[MM-101]** Fix Path Resolution
+- [x] **[MM-101]** Fix Path Resolution
   - Implement a helper to find the `assets/` directory relative to the executable.
   - Update `AssetManifest` and `Localization` loaders.
-- [ ] **[MM-102]** Setup Menu Localization
+- [x] **[MM-102]** Setup Menu Localization
   - Create `.ftl` files for EN and RU.
   - Integrate `bevy_fluent` or existing localization resource into UI spawning.
-- [ ] **[MM-103]** Embedded Asset Fallbacks
+- [x] **[MM-103]** Embedded Asset Fallbacks ✅
   - Use `include_bytes!` for emergency fonts to prevent "Error State" on startup if assets are missing.
+  - Implemented safe creation of embedded fallback font with error logging instead of panicking.
 
 ## Phase 2: Refined Main Menu (Priority: High)
 
 - [ ] **[MM-201]** Main Menu UI Overhaul
   - Update layout in `screen.rs` for AAA aesthetics (typography, margins).
   - Add smooth hover animations (scaling/color shifts).
-- [ ] **[MM-202]** Audio Feedback
+- [x] **[MM-202]** Audio Feedback
   - Implement systems to play `hover.ogg` and `click.ogg`.
   - Add audio files to `assets/audio/ui/`.
 
 ## Phase 3: Advanced Settings (Priority: High)
 
-- [ ] **[MM-301]** Tabbed Interface Implementation
+- [x] **[MM-301]** Tabbed Interface Implementation
   - Create the tab switching logic.
   - Implement **Graphics** tab (Resolutions, VSync, Fullscreen).
   - Implement **Audio** tab (All volume sliders from `settings.toml`).

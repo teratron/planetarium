@@ -72,3 +72,46 @@ pub fn broadcast_settings_changes(
 
     *prev = Some(settings.clone());
 }
+
+/// Timer to debounce settings saving to disk.
+#[derive(Resource)]
+pub struct SettingsAutoSaveTimer(pub Timer);
+
+impl Default for SettingsAutoSaveTimer {
+    fn default() -> Self {
+        let mut timer = Timer::from_seconds(2.0, TimerMode::Once);
+        timer.pause(); // Start paused
+        Self(timer)
+    }
+}
+
+/// Triggers save to disk when settings change, with a delay.
+pub fn schedule_settings_save(
+    settings: Res<UserSettings>,
+    mut timer: ResMut<SettingsAutoSaveTimer>,
+) {
+    if settings.is_changed() {
+        timer.0.reset();
+        timer.0.unpause();
+    }
+}
+
+/// Writes settings to disk when the timer expires.
+pub fn auto_save_settings(
+    time: Res<Time>,
+    mut timer: ResMut<SettingsAutoSaveTimer>,
+    settings: Res<UserSettings>,
+    paths: Res<crate::core::config::AppPaths>,
+) {
+    if timer.0.is_paused() {
+        return;
+    }
+
+    timer.0.tick(time.delta());
+
+    if timer.0.is_finished() {
+        info!("[Settings] Auto-saving settings to disk...");
+        crate::core::config::save_settings(&paths, &settings);
+        timer.0.pause();
+    }
+}

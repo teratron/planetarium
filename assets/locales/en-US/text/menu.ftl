@@ -1,9 +1,46 @@
 # Main Menu Strings
-menu-start = Start Game
+# This file is part of the reusable launcher template.
+menu-title = PLANETARIUM
+menu-play = Play
 menu-settings = Settings
 menu-exit = Exit
 menu-back = Back
 
-# Common labels
+# Settings Tabs
+settings-title = Settings
+tab-graphics = Graphics
+tab-audio = Audio
+tab-controls = Controls
+tab-general = General
+
+# Graphics Settings
+setting-resolution = Resolution
+setting-fullscreen = Fullscreen
+setting-vsync = VSync
+setting-quality = Quality Preset
+setting-world-detail = World Detail
+
+# Audio Settings
+setting-master-volume = Master Volume
+setting-music-volume = Music Volume
+setting-sfx-volume = Sound Effects
+setting-ui-volume = Interface Volume
+setting-ambience-volume = Ambience
+
+# General Settings
+setting-language = Language
+setting-theme = Interface Theme
+
+# Values & Common
+val-on = ON
+val-off = OFF
 label-version = Version: { $version }
 label-loading = Loading...
+
+val-low = Low
+val-medium = Medium
+val-high = High
+val-ultra = Ultra
+
+lang-en = English
+lang-ru = Russian

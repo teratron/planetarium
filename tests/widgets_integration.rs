@@ -20,7 +20,7 @@ fn spawn_primary_button_creates_primary_button_component() {
         let world = app.world_mut();
         let mut query = world.query::<&planetarium::launcher::menu::widgets::PrimaryButton>();
         let mut found = false;
-        for pb in query.iter(&world) {
+        for pb in query.iter(world) {
             assert_eq!(pb.label, "TEST");
             assert_eq!(pb.action, ButtonAction::Exit);
             found = true;
@@ -53,7 +53,7 @@ fn spawn_slider_creates_slider_component() {
         let world = app.world_mut();
         let mut query = world.query::<&planetarium::launcher::menu::widgets::Slider>();
         let mut found = false;
-        for slider in query.iter(&world) {
+        for slider in query.iter(world) {
             assert_eq!(slider.label, "VOL");
             assert_eq!(slider.min, 0.0);
             assert_eq!(slider.max, 100.0);

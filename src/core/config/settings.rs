@@ -8,7 +8,26 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 
 /// Current version of the settings schema, used for migrations.
-pub const SETTINGS_VERSION: u32 = 2;
+pub const SETTINGS_VERSION: u32 = 3;
+
+/// Quality presets for graphics settings.
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Default)]
+#[serde(rename_all = "lowercase")]
+pub enum Quality {
+    Low,
+    #[default]
+    Medium,
+    High,
+    Ultra,
+}
+
+/// Graphics-related settings.
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Default)]
+#[serde(default)]
+#[non_exhaustive]
+pub struct GraphicsSettings {
+    pub quality: Quality,
+}
 
 /// Global resource holding all user settings.
 #[derive(Resource, Serialize, Deserialize, Debug, Clone)]
@@ -23,6 +42,8 @@ pub struct UserSettings {
     pub display: DisplaySettings,
     #[serde(default)]
     pub audio: AudioSettings,
+    #[serde(default)]
+    pub graphics: GraphicsSettings,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
@@ -70,9 +91,12 @@ impl Default for UserSettings {
             language: "en-US".to_string(),
             display: DisplaySettings::default(),
             audio: AudioSettings::default(),
+            graphics: GraphicsSettings::default(),
         }
     }
 }
+
+// Unit tests moved to bottom of file to satisfy clippy (no items after test module).
 
 /// Loads settings from disk or returns defaults if not found or invalid.
 pub fn load_settings(paths: &AppPaths) -> UserSettings {
@@ -128,5 +152,16 @@ pub fn save_settings(paths: &AppPaths, settings: &UserSettings) {
         && let Err(e) = fs::write(&paths.settings_file, toml_string)
     {
         error!("[Config] Failed to save settings: {}", e);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn default_settings_include_graphics() {
+        let s = UserSettings::default();
+        assert_eq!(s.graphics.quality, Quality::Medium);
     }
 }

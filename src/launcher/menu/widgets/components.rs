@@ -41,6 +41,10 @@ pub struct Slider {
 #[derive(Component, Debug)]
 pub struct SliderTrack(pub Entity); // Parent slider entity
 
+/// Marker for slider fill area (visual feedback).
+#[derive(Component, Debug)]
+pub struct SliderFill(pub Entity); // Parent slider entity
+
 /// Marker component for dropdown widgets (quality, resolution, etc.).
 #[derive(Component, Debug, Clone)]
 pub struct Dropdown {
@@ -50,3 +54,18 @@ pub struct Dropdown {
     pub setting_key: String,
     pub is_open: bool,
 }
+
+/// Marker for an option button within a dropdown list.
+#[derive(Component, Debug, Clone)]
+pub struct DropdownOption {
+    pub parent_dropdown: Entity,
+    pub index: usize,
+}
+
+/// Marker for the container of dropdown options.
+#[derive(Component, Debug)]
+pub struct DropdownOptionsList(pub Entity); // Parent dropdown entity
+
+/// Marker for the text label inside the dropdown button.
+#[derive(Component, Debug)]
+pub struct DropdownText;

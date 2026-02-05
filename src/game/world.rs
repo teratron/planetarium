@@ -32,16 +32,20 @@ fn setup_game_world(
         .spawn((Visibility::default(), Transform::default(), GameWorldRoot))
         .with_children(|parent| {
             // A placeholder planet (Sphere)
-            parent.spawn((
-                Mesh3d(meshes.add(Sphere::new(5.0).mesh().ico(5).unwrap())),
-                MeshMaterial3d(materials.add(StandardMaterial {
-                    base_color: theme.colors.accent,
-                    reflectance: 0.5,
-                    perceptual_roughness: 0.2,
-                    ..default()
-                })),
-                Transform::from_xyz(0.0, 0.0, 0.0),
-            ));
+            if let Ok(sphere_mesh) = Sphere::new(5.0).mesh().ico(5) {
+                parent.spawn((
+                    Mesh3d(meshes.add(sphere_mesh)),
+                    MeshMaterial3d(materials.add(StandardMaterial {
+                        base_color: theme.colors.accent,
+                        reflectance: 0.5,
+                        perceptual_roughness: 0.2,
+                        ..default()
+                    })),
+                    Transform::from_xyz(0.0, 0.0, 0.0),
+                ));
+            } else {
+                warn!("[Game] Failed to generate sphere mesh; skipping planet placeholder.");
+            }
 
             // Let there be light!
             parent.spawn((

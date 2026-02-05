@@ -23,7 +23,7 @@ fn setup_debug_overlay_spawns_expected_texts() {
 
     let world = app.world_mut();
     let mut query = world.query::<&Text>();
-    for text in query.iter(&world) {
+    for text in query.iter(world) {
         let s = text.0.trim();
         if s.starts_with("FPS:") {
             found_fps = true;

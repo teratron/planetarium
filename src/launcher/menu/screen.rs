@@ -23,15 +23,19 @@ use super::layout;
 
 /// System to spawn the main menu UI.
 /// Includes a title and professional primary buttons (Play, Settings, Exit).
-pub fn spawn_main_menu(mut commands: Commands, theme: Res<Theme>) {
+pub fn spawn_main_menu(
+    mut commands: Commands,
+    theme: Res<Theme>,
+    loc: Res<crate::core::localization::Localization>,
+) {
     info!("[MenuPlugin] Spawning main menu...");
 
     let root_id = spawn_root(&mut commands, &theme);
     let panel_id = spawn_panel(&mut commands, &theme);
     let buttons_id = spawn_buttons_container(&mut commands);
 
-    spawn_menu_buttons(&mut commands, &theme, buttons_id);
-    spawn_title(&mut commands, &theme, panel_id);
+    spawn_menu_buttons(&mut commands, &theme, &loc, buttons_id);
+    spawn_title(&mut commands, &theme, &loc, panel_id);
 
     commands.entity(panel_id).add_child(buttons_id);
     commands.entity(root_id).add_child(panel_id);
@@ -87,11 +91,17 @@ fn spawn_buttons_container(commands: &mut Commands) -> Entity {
 }
 
 /// Spawn the menu title.
-fn spawn_title(commands: &mut Commands, theme: &Theme, panel_id: Entity) {
+fn spawn_title(
+    commands: &mut Commands,
+    theme: &Theme,
+    loc: &crate::core::localization::Localization,
+    panel_id: Entity,
+) {
     commands.entity(panel_id).with_children(|parent| {
         parent.spawn((
-            Text::new("PLANETARIUM"),
+            Text::new(loc.t("menu-title")),
             TextFont {
+                font: theme.fonts.bold.clone(),
                 font_size: theme.sizes.font_h1,
                 ..default()
             },
@@ -105,15 +115,20 @@ fn spawn_title(commands: &mut Commands, theme: &Theme, panel_id: Entity) {
 }
 
 /// Spawn all menu buttons (Play, Settings, Exit).
-fn spawn_menu_buttons(commands: &mut Commands, theme: &Theme, container_id: Entity) {
+fn spawn_menu_buttons(
+    commands: &mut Commands,
+    theme: &Theme,
+    loc: &crate::core::localization::Localization,
+    container_id: Entity,
+) {
     let buttons = [
-        ("PLAY", ButtonAction::Play),
-        ("SETTINGS", ButtonAction::Settings),
-        ("EXIT", ButtonAction::Exit),
+        (loc.t("menu-play"), ButtonAction::Play),
+        (loc.t("menu-settings"), ButtonAction::Settings),
+        (loc.t("menu-exit"), ButtonAction::Exit),
     ];
 
     for (label, action) in buttons {
-        spawn_primary_button(commands, theme, label, action, container_id);
+        spawn_primary_button(commands, theme, &label, action, container_id);
     }
 }
 
