@@ -19,3 +19,10 @@ This set of guidelines outlines language preferences for the project, ensuring c
 - Use Russian for conversational responses, clarifications, project planning, and non-technical interactions
 - Project management communications, feature discussions, and strategic decisions should be conducted in Russian
 - Code review comments and technical discussions during development can be in Russian unless collaborating with English-speaking developers
+
+## Related Documentation
+
+- [Agent Lifecycle Workflow](.agent/rules/agent-lifecycle.md) - Mandatory logical sequence of operations for AI agent interactions
+- [Development Rules](.agent/rules/) - Additional development rules and guidelines
+- [Skills](.agent/skills/) - Specialized capabilities and tools for development tasks
+- [Workflows](.agent/workflows/) - Automated workflows and automation scripts

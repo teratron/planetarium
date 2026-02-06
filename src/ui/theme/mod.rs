@@ -33,7 +33,7 @@ pub struct Theme {
 }
 
 /// Embedded fallback font for critical error states.
-const FALLBACK_FONT_BYTES: &[u8] = include_bytes!("../../assets/fonts/FiraSans-Regular.ttf");
+const FALLBACK_FONT_BYTES: &[u8] = include_bytes!("../../../assets/fonts/FiraSans-Regular.ttf");
 
 /// System to load theme assets (fonts) using paths from the AssetManifest.
 pub fn setup_theme(

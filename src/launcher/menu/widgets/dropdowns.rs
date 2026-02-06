@@ -1,213 +1,14 @@
-//! # UI Widgets
+//! Dropdown Widget
 //!
-//! Generic, reusable UI widgets for the main menu and settings screens.
-//! Built on Bevy's native UI system with custom styling and interaction.
+//! Provides dropdown/select widget creation and interaction handling.
 
-use crate::core::assets::AssetManifest;
-use crate::core::config::settings::Quality;
 use crate::ui::theme::Theme;
 use bevy::prelude::*;
 
-pub mod components;
-pub mod constants;
-
-pub use components::{
-    ButtonAction, ButtonHoverState, Dropdown, DropdownOption, DropdownOptionsList, DropdownText,
-    PrimaryButton, Slider, SliderFill, SliderTrack,
+use super::components::{
+    ButtonHoverState, Dropdown, DropdownOption, DropdownOptionsList, DropdownText,
 };
-pub use constants::button as button_constants;
 
-/// Spawns a high-quality primary button widget.
-pub fn spawn_primary_button(
-    commands: &mut Commands,
-    theme: &Theme,
-    label: &str,
-    action: ButtonAction,
-    parent: Entity,
-) -> Entity {
-    let button_color = theme.colors.accent;
-    let button_color_hover = theme.colors.accent_muted;
-
-    let button = commands
-        .spawn((
-            Button,
-            Node {
-                width: Val::Px(200.0),
-                height: theme.sizes.button_height,
-                justify_content: JustifyContent::Center,
-                align_items: AlignItems::Center,
-                margin: UiRect::all(Val::Px(10.0)),
-                ..default()
-            },
-            BackgroundColor(button_color),
-            PrimaryButton {
-                label: label.to_string(),
-                action: action.clone(),
-            },
-            ButtonHoverState {
-                base_color: button_color,
-                hover_color: button_color_hover,
-            },
-        ))
-        .with_children(|parent| {
-            parent.spawn((
-                Text::new(label),
-                TextFont {
-                    font: theme.fonts.main.clone(),
-                    font_size: theme.sizes.font_body,
-                    ..default()
-                },
-                TextColor(theme.colors.text_primary),
-            ));
-        })
-        .id();
-
-    if parent != Entity::PLACEHOLDER {
-        commands.entity(parent).add_child(button);
-    }
-
-    button
-}
-
-/// Small helper to encapsulate slider numeric parameters.
-pub struct SliderSpec {
-    pub min: f32,
-    pub max: f32,
-    pub value: f32,
-}
-
-/// Helper to spawn a slider widget.
-pub fn spawn_slider(
-    commands: &mut Commands,
-    theme: &Theme,
-    label: &str,
-    spec: SliderSpec,
-    setting_key: &str,
-    parent: Entity,
-) -> Entity {
-    let slider_height = 40.0;
-    let track_height = 8.0;
-
-    let SliderSpec { min, max, value } = spec;
-
-    let slider_id = commands
-        .spawn((
-            Button, // Make it interactive
-            Node {
-                width: Val::Percent(100.0),
-                height: Val::Px(slider_height),
-                flex_direction: FlexDirection::Column,
-                justify_content: JustifyContent::Center,
-                align_items: AlignItems::Stretch,
-                padding: UiRect::all(Val::Px(10.0)),
-                ..default()
-            },
-            Slider {
-                label: label.to_string(),
-                min,
-                max,
-                value,
-                setting_key: setting_key.to_string(),
-            },
-        ))
-        .id();
-
-    commands.entity(slider_id).with_children(|parent| {
-        // Label
-        parent.spawn((
-            Text::new(label),
-            TextFont {
-                font: theme.fonts.main.clone(),
-                font_size: theme.sizes.font_body,
-                ..default()
-            },
-            TextColor(theme.colors.text_primary),
-        ));
-
-        // Track container
-        parent
-            .spawn((
-                Node {
-                    width: Val::Percent(100.0),
-                    height: Val::Px(track_height),
-                    margin: UiRect::top(Val::Px(5.0)),
-                    ..default()
-                },
-                BackgroundColor(theme.colors.surface),
-            ))
-            .with_children(|p| {
-                // Progress fill
-                let progress = (value - min) / (max - min).max(0.001);
-                p.spawn((
-                    Node {
-                        width: Val::Percent(progress * 100.0),
-                        height: Val::Percent(100.0),
-                        ..default()
-                    },
-                    BackgroundColor(theme.colors.accent),
-                    SliderFill(slider_id),
-                ));
-            });
-    });
-
-    if parent != Entity::PLACEHOLDER {
-        commands.entity(parent).add_child(slider_id);
-    }
-
-    slider_id
-}
-
-/// System to handle button interactions, updating visual state and playing audio feedback.
-#[allow(clippy::type_complexity)]
-pub fn button_interaction_system(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    manifest: Res<AssetManifest>,
-    audio_state: Res<crate::launcher::menu::reactive::RuntimeAudioState>,
-    mut interaction_query: Query<
-        (&Interaction, &mut BackgroundColor, &ButtonHoverState),
-        (
-            Changed<Interaction>,
-            With<Button>,
-            Or<(With<PrimaryButton>, With<Slider>)>,
-        ),
-    >,
-) {
-    for (interaction, mut bg_color, hover_state) in &mut interaction_query {
-        match *interaction {
-            Interaction::Hovered => {
-                *bg_color = BackgroundColor(hover_state.hover_color);
-                if let Some(path) = manifest.audio("hover") {
-                    commands.spawn((
-                        AudioPlayer::new(asset_server.load(path)),
-                        PlaybackSettings {
-                            mode: bevy::audio::PlaybackMode::Despawn,
-                            volume: bevy::audio::Volume::Linear(audio_state.sfx * 0.5),
-                            ..default()
-                        },
-                    ));
-                }
-            }
-            Interaction::Pressed => {
-                if let Some(path) = manifest.audio("click") {
-                    commands.spawn((
-                        AudioPlayer::new(asset_server.load(path)),
-                        PlaybackSettings {
-                            mode: bevy::audio::PlaybackMode::Despawn,
-                            volume: bevy::audio::Volume::Linear(audio_state.sfx),
-                            ..default()
-                        },
-                    ));
-                }
-            }
-            Interaction::None => {
-                *bg_color = BackgroundColor(hover_state.base_color);
-            }
-        }
-    }
-}
-
-// ...
 /// Configuration for a dropdown. Grouping related arguments makes the API
 /// easier to maintain and keeps function signatures small (fewer than 7 args).
 pub struct DropdownSpec {
@@ -309,64 +110,6 @@ pub fn spawn_dropdown(
     }
 
     dropdown_node
-}
-
-/// System to handle slider interaction and update UserSettings.
-pub fn slider_interaction_system(
-    mut interaction_query: Query<(&Interaction, &GlobalTransform, &ComputedNode, &mut Slider)>,
-    mut settings: ResMut<crate::core::config::UserSettings>,
-    windows: Query<&Window>,
-) {
-    let window = if let Ok(w) = windows.single() {
-        w
-    } else {
-        return;
-    };
-    let mouse_pos = if let Some(pos) = window.cursor_position() {
-        pos
-    } else {
-        return;
-    };
-
-    for (interaction, transform, computed, mut slider) in &mut interaction_query {
-        if *interaction == Interaction::Pressed {
-            let width = computed.size().x;
-            if width <= 0.0 {
-                continue;
-            }
-
-            let node_pos = transform.translation().truncate();
-            let half_width = width / 2.0;
-            let min_x = node_pos.x - half_width;
-
-            let relative_x = (mouse_pos.x - min_x) / width;
-            let relative_x = relative_x.clamp(0.0, 1.0);
-
-            let new_value = slider.min + (slider.max - slider.min) * relative_x;
-            slider.value = new_value;
-
-            // Apply to settings
-            match slider.setting_key.as_str() {
-                "master_volume" => settings.audio.master_volume = new_value,
-                "music_volume" => settings.audio.music_volume = new_value,
-                "sfx_volume" => settings.audio.sfx_volume = new_value,
-                _ => warn!("[UI] Unknown slider setting key: {}", slider.setting_key),
-            }
-        }
-    }
-}
-
-/// System to update slider fill width based on current value.
-pub fn update_slider_visuals(
-    slider_query: Query<&Slider>,
-    mut fill_query: Query<(&mut Node, &SliderFill)>,
-) {
-    for (mut node, fill) in &mut fill_query {
-        if let Ok(slider) = slider_query.get(fill.0) {
-            let progress = (slider.value - slider.min) / (slider.max - slider.min).max(0.001);
-            node.width = Val::Percent(progress * 100.0);
-        }
-    }
 }
 
 /// System to handle dropdown toggle.
@@ -488,19 +231,13 @@ pub fn dropdown_option_interaction_system(
             match dropdown.setting_key.as_str() {
                 "quality" => {
                     // Map index to Quality enum and apply to settings
-                    let quality = match option.index {
-                        0 => Quality::Low,
-                        1 => Quality::Medium,
-                        2 => Quality::High,
-                        3 => Quality::Ultra,
-                        _ => Quality::Medium,
-                    };
+                    let quality = super::quality_from_index(option.index);
                     settings.graphics.quality = quality.clone();
                     info!("[Settings] Quality set to {:?}", quality);
                 }
                 "resolution" => {
                     let res_str = &dropdown.options[option.index];
-                    if let Some((w, h)) = parse_resolution(res_str) {
+                    if let Some((w, h)) = super::parse_resolution(res_str) {
                         settings.display.width = w;
                         settings.display.height = h;
                         info!("[Settings] Resolution set to {}x{}", w, h);
@@ -523,41 +260,5 @@ pub fn dropdown_option_interaction_system(
                 }
             }
         }
-    }
-}
-
-/// Helper to convert dropdown index into a `Quality` value.
-pub fn quality_from_index(index: usize) -> Quality {
-    match index {
-        0 => Quality::Low,
-        1 => Quality::Medium,
-        2 => Quality::High,
-        3 => Quality::Ultra,
-        _ => Quality::Medium,
-    }
-}
-
-fn parse_resolution(res: &str) -> Option<(u32, u32)> {
-    let parts: Vec<&str> = res.split('x').collect();
-    if parts.len() == 2 {
-        let w = parts[0].parse().ok()?;
-        let h = parts[1].parse().ok()?;
-        Some((w, h))
-    } else {
-        None
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn quality_mapping() {
-        assert_eq!(quality_from_index(0), Quality::Low);
-        assert_eq!(quality_from_index(1), Quality::Medium);
-        assert_eq!(quality_from_index(2), Quality::High);
-        assert_eq!(quality_from_index(3), Quality::Ultra);
-        assert_eq!(quality_from_index(999), Quality::Medium);
     }
 }
