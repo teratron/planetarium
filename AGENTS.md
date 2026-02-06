@@ -23,6 +23,6 @@ This set of guidelines outlines language preferences for the project, ensuring c
 ## Related Documentation
 
 - [Agent Lifecycle Workflow](.agent/rules/agent-lifecycle.md) - Mandatory logical sequence of operations for AI agent interactions
-- [Development Rules](.agent/rules/) - Additional development rules and guidelines
+- [Rules](.agent/rules/) - Additional development rules and guidelines
 - [Skills](.agent/skills/) - Specialized capabilities and tools for development tasks
 - [Workflows](.agent/workflows/) - Automated workflows and automation scripts
