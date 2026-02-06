@@ -6,8 +6,8 @@ use planetarium::core::config::metadata::APP_TITLE;
 use planetarium::core::states::AppState;
 use planetarium::game::GamePlugin;
 use planetarium::launcher::LauncherPlugin;
-use tracing_subscriber::{EnvFilter, fmt, prelude::*};
 use tracing_appender::non_blocking::WorkerGuard;
+use tracing_subscriber::{EnvFilter, fmt, prelude::*};
 
 /// Thin `Resource` wrapper so the app can keep the worker guard alive for the
 /// duration of the application's lifetime and prevent it from being dropped.
@@ -61,7 +61,11 @@ fn setup_logging(
     // 1. `RUST_LOG` environment variable
     // 2. CLI `--log-filter` if provided
     // 3. Default filter (depends on --debug)
-    let default_filter = if debug { DEBUG_LOG_FILTER } else { DEFAULT_LOG_FILTER };
+    let default_filter = if debug {
+        DEBUG_LOG_FILTER
+    } else {
+        DEFAULT_LOG_FILTER
+    };
 
     let env_filter = match EnvFilter::try_from_default_env() {
         Ok(filter) => filter,
@@ -96,7 +100,10 @@ fn setup_logging(
             return None;
         }
 
-        info!("[Main] Logging initialized with file output: {:?}", paths.log_file);
+        info!(
+            "[Main] Logging initialized with file output: {:?}",
+            paths.log_file
+        );
         if debug {
             info!("[Main] Debug logging enabled via CLI flag (--debug)");
         }
@@ -172,7 +179,13 @@ fn setup_camera(mut commands: Commands) {
     // Assign a higher camera order for the UI camera so it doesn't share the
     // same order as 3D cameras (prevents repeated Camera order ambiguity warnings).
     // Spawn a 2D camera entity and set an explicit order to avoid conflicts
-    commands.spawn((Camera2d, Camera { order: 1, ..default() }));
+    commands.spawn((
+        Camera2d,
+        Camera {
+            order: 1,
+            ..default()
+        },
+    ));
 }
 
 /// Diagnostic system to help detect duplicate camera orders at startup.
@@ -194,15 +207,17 @@ fn diagnose_cameras(query: Query<(Entity, &Camera, Option<&Camera2d>, Option<&Ca
         let entry = counts.entry(camera.order).or_default();
         entry.push(format!("{}(id={:?})", kind, entity));
 
-        info!("[Main] Found camera: entity={:?} order={} kind={}", entity, camera.order, kind);
+        info!(
+            "[Main] Found camera: entity={:?} order={} kind={}",
+            entity, camera.order, kind
+        );
     }
 
     for (order, entities) in counts {
         if entities.len() > 1 {
             warn!(
                 "[Main] Duplicate cameras detected with order {}: {:?}. This may cause rendering ambiguities.",
-                order,
-                entities
+                order, entities
             );
         }
     }

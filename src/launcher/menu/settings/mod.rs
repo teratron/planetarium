@@ -12,6 +12,7 @@ use bevy::prelude::*;
 
 pub mod components;
 pub mod layout;
+pub mod tabs;
 
 pub use components::*;
 pub use layout::panel as panel_layout;
@@ -135,6 +136,7 @@ pub fn spawn_settings_menu(commands: &mut Commands, theme: &Theme, loc: &Localiz
     root
 }
 
+/// Internal helper to spawn a single tab button.
 fn spawn_tab_button(
     parent: &mut bevy::ecs::hierarchy::ChildSpawnerCommands,
     theme: &Theme,
@@ -208,210 +210,12 @@ pub fn update_settings_tab_content(
         commands
             .entity(content_area)
             .with_children(|parent| match active_tab.0 {
-                SettingsTab::Graphics => spawn_graphics_tab(parent, &theme, &loc, &settings),
-                SettingsTab::Audio => spawn_audio_tab(parent, &theme, &loc, &settings),
-                SettingsTab::Controls => spawn_controls_tab(parent, &theme, &loc, &settings),
-                SettingsTab::General => spawn_general_tab(parent, &theme, &loc, &settings),
+                SettingsTab::Graphics => tabs::spawn_graphics_tab(parent, &theme, &loc, &settings),
+                SettingsTab::Audio => tabs::spawn_audio_tab(parent, &theme, &loc, &settings),
+                SettingsTab::Controls => tabs::spawn_controls_tab(parent, &theme, &loc, &settings),
+                SettingsTab::General => tabs::spawn_general_tab(parent, &theme, &loc, &settings),
             });
     }
-}
-
-fn spawn_graphics_tab(
-    parent: &mut bevy::ecs::hierarchy::ChildSpawnerCommands,
-    theme: &Theme,
-    loc: &Localization,
-    _settings: &UserSettings,
-) {
-    parent
-        .spawn((
-            GraphicsSettingsPanel,
-            Node {
-                width: Val::Percent(100.0),
-                flex_direction: FlexDirection::Column,
-                row_gap: Val::Px(15.0),
-                ..default()
-            },
-        ))
-        .with_children(|p| {
-            // Quality Dropdown
-            let parent_entity = p.target_entity();
-            let commands = p.commands_mut();
-
-            super::widgets::spawn_dropdown(
-                commands,
-                theme,
-                super::widgets::DropdownSpec {
-                    label: loc.t("setting-quality"),
-                    options: vec![
-                        loc.t("val-low"),
-                        loc.t("val-medium"),
-                        loc.t("val-high"),
-                        loc.t("val-ultra"),
-                    ],
-                    display_values: Some(vec![
-                        loc.t("val-low"),
-                        loc.t("val-medium"),
-                        loc.t("val-high"),
-                        loc.t("val-ultra"),
-                    ]),
-                    selected_index: 2,
-                    setting_key: "quality".to_string(),
-                },
-                parent_entity,
-            );
-
-            // Resolution Dropdown
-            super::widgets::spawn_dropdown(
-                commands,
-                theme,
-                super::widgets::DropdownSpec {
-                    label: loc.t("setting-resolution"),
-                    options: vec![
-                        "1280x720".to_string(),
-                        "1920x1080".to_string(),
-                        "2560x1440".to_string(),
-                    ],
-                    display_values: Some(vec![
-                        "1280x720".to_string(),
-                        "1920x1080".to_string(),
-                        "2560x1440".to_string(),
-                    ]),
-                    selected_index: 1,
-                    setting_key: "resolution".to_string(),
-                },
-                parent_entity,
-            );
-        });
-}
-
-fn spawn_audio_tab(
-    parent: &mut bevy::ecs::hierarchy::ChildSpawnerCommands,
-    theme: &Theme,
-    loc: &Localization,
-    settings: &UserSettings,
-) {
-    parent
-        .spawn((
-            AudioSettingsPanel,
-            Node {
-                flex_direction: FlexDirection::Column,
-                row_gap: Val::Px(15.0),
-                ..default()
-            },
-        ))
-        .with_children(|p| {
-            spawn_volume_slider(
-                p,
-                theme,
-                loc,
-                "setting-master-volume",
-                settings.audio.master_volume,
-                "master_volume",
-            );
-            spawn_volume_slider(
-                p,
-                theme,
-                loc,
-                "setting-music-volume",
-                settings.audio.music_volume,
-                "music_volume",
-            );
-            spawn_volume_slider(
-                p,
-                theme,
-                loc,
-                "setting-sfx-volume",
-                settings.audio.sfx_volume,
-                "sfx_volume",
-            );
-        });
-}
-
-fn spawn_volume_slider(
-    parent: &mut bevy::ecs::hierarchy::ChildSpawnerCommands,
-    theme: &Theme,
-    loc: &Localization,
-    key: &str,
-    value: f32,
-    setting_key: &str,
-) {
-    let parent_entity = parent.target_entity();
-    let commands = parent.commands_mut();
-    super::widgets::spawn_slider(
-        commands,
-        theme,
-        &loc.t(key),
-        super::widgets::SliderSpec {
-            min: 0.0,
-            max: 1.0,
-            value,
-        },
-        setting_key,
-        parent_entity,
-    );
-}
-
-fn spawn_controls_tab(
-    parent: &mut bevy::ecs::hierarchy::ChildSpawnerCommands,
-    theme: &Theme,
-    _loc: &Localization,
-    _settings: &UserSettings,
-) {
-    parent
-        .spawn((ControlsSettingsPanel, Node { ..default() }))
-        .with_children(|p| {
-            p.spawn((
-                Text::new("Controls tab - coming soon"),
-                TextFont {
-                    font: theme.fonts.main.clone(),
-                    font_size: theme.sizes.font_body,
-                    ..default()
-                },
-                TextColor(theme.colors.text_secondary),
-            ));
-        });
-}
-
-fn spawn_general_tab(
-    parent: &mut bevy::ecs::hierarchy::ChildSpawnerCommands,
-    theme: &Theme,
-    loc: &Localization,
-    settings: &UserSettings,
-) {
-    parent
-        .spawn((
-            GeneralSettingsPanel,
-            Node {
-                width: Val::Percent(100.0),
-                ..default()
-            },
-        ))
-        .with_children(|p| {
-            let parent_entity = p.target_entity();
-            let commands = p.commands_mut();
-
-            // Language dropdown: internal options are locale IDs, display values are localized names
-            let lang_options = vec!["en-US".to_string(), "ru-RU".to_string()];
-            let lang_display = vec![loc.t("lang-en"), loc.t("lang-ru")];
-            // Determine selected index by matching settings language
-            let selected_index = lang_options
-                .iter()
-                .position(|s| s == &settings.language)
-                .unwrap_or(0);
-
-            super::widgets::spawn_dropdown(
-                commands,
-                theme,
-                super::widgets::DropdownSpec {
-                    label: loc.t("setting-language"),
-                    options: lang_options,
-                    display_values: Some(lang_display),
-                    selected_index,
-                    setting_key: "language".to_string(),
-                },
-                parent_entity,
-            );
-        });
 }
 
 /// Spawns or despawns settings depending on `SettingsOpen` resource.
