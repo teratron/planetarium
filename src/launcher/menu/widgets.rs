@@ -214,12 +214,15 @@ pub fn spawn_dropdown(
     theme: &Theme,
     label: &str,
     options: Vec<String>,
+    display_values: Option<Vec<String>>,
     selected_index: usize,
     setting_key: &str,
     parent: Entity,
 ) -> Entity {
-    let selected_text = options
-        .get(selected_index)
+    let selected_text = display_values
+        .as_ref()
+        .and_then(|d| d.get(selected_index))
+        .or_else(|| options.get(selected_index))
         .map(|s| s.as_str())
         .unwrap_or("Select");
 
@@ -262,6 +265,7 @@ pub fn spawn_dropdown(
                 Dropdown {
                     label: label.to_string(),
                     options: options.clone(),
+                    display_values: display_values.clone(),
                     selected_index,
                     setting_key: setting_key.to_string(),
                     is_open: false,
@@ -450,7 +454,15 @@ pub fn dropdown_option_interaction_system(
             dropdown.is_open = false;
 
             // Update text
-            if let Some(selected_text) = dropdown.options.get(option.index) {
+            // Update button text to use display values when available, otherwise use option value
+            let display_text = dropdown
+                .display_values
+                .as_ref()
+                .and_then(|d| d.get(option.index))
+                .or_else(|| dropdown.options.get(option.index))
+                .cloned();
+
+            if let Some(selected_text) = display_text {
                 for child in children.iter() {
                     if let Ok(mut text) = text_query.get_mut(child) {
                         text.0 = selected_text.clone();

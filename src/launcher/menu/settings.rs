@@ -247,6 +247,12 @@ fn spawn_graphics_tab(
                     loc.t("val-high"),
                     loc.t("val-ultra"),
                 ],
+                Some(vec![
+                    loc.t("val-low"),
+                    loc.t("val-medium"),
+                    loc.t("val-high"),
+                    loc.t("val-ultra"),
+                ]),
                 2, // Default to High for now
                 "quality",
                 parent_entity,
@@ -262,6 +268,11 @@ fn spawn_graphics_tab(
                     "1920x1080".to_string(),
                     "2560x1440".to_string(),
                 ],
+                Some(vec![
+                    "1280x720".to_string(),
+                    "1920x1080".to_string(),
+                    "2560x1440".to_string(),
+                ]),
                 1, // Default to 1080p for now
                 "resolution",
                 parent_entity,
@@ -361,7 +372,7 @@ fn spawn_general_tab(
     parent: &mut bevy::ecs::hierarchy::ChildSpawnerCommands,
     theme: &Theme,
     loc: &Localization,
-    _settings: &UserSettings,
+    settings: &UserSettings,
 ) {
     parent
         .spawn((
@@ -375,12 +386,22 @@ fn spawn_general_tab(
             let parent_entity = p.target_entity();
             let commands = p.commands_mut();
 
+            // Language dropdown: internal options are locale IDs, display values are localized names
+            let lang_options = vec!["en-US".to_string(), "ru-RU".to_string()];
+            let lang_display = vec![loc.t("lang-en"), loc.t("lang-ru")];
+            // Determine selected index by matching settings language
+            let selected_index = lang_options
+                .iter()
+                .position(|s| s == &settings.language)
+                .unwrap_or(0);
+
             super::widgets::spawn_dropdown(
                 commands,
                 theme,
                 &loc.t("setting-language"),
-                vec![loc.t("lang-en"), loc.t("lang-ru")],
-                0, // Default to English for now needs to be synced
+                lang_options,
+                Some(lang_display),
+                selected_index, // Default to English for now needs to be synced
                 "language",
                 parent_entity,
             );

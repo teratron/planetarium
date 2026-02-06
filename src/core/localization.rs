@@ -131,15 +131,24 @@ pub fn setup_localization(
     // Load common strings (menu.ftl)
     load_ftl_into_bundle(&mut fallback_bundle, &paths.assets_dir, "en-US", "menu.ftl");
 
-    if primary_lang != fallback_lang {
-        load_ftl_into_bundle(
-            &mut main_bundle,
-            &paths.assets_dir,
-            &primary_lang.to_string(),
-            "menu.ftl",
+    // Resolve and log the chosen locale directory for clarity (helps explain missing-file warnings).
+    let requested_locale = settings.language.clone();
+    let resolved = resolve_locale_dir(&paths.assets_dir, &requested_locale);
+    if !resolved.eq_ignore_ascii_case(&requested_locale) {
+        info!(
+            "[Localization] Resolved requested locale '{}' -> '{}'",
+            requested_locale, resolved
         );
+    }
+
+    // Only attempt to load locale files if the assets locales directory exists.
+    if paths.assets_dir.join("locales").exists() {
+        load_ftl_into_bundle(&mut main_bundle, &paths.assets_dir, &resolved, "menu.ftl");
     } else {
-        load_ftl_into_bundle(&mut main_bundle, &paths.assets_dir, "en-US", "menu.ftl");
+        warn!(
+            "[Localization] Locales directory not present under assets ({}); skipping per-locale load and using fallback en-US",
+            paths.assets_dir.display()
+        );
     }
 
     commands.insert_resource(Localization::new(
@@ -175,15 +184,23 @@ pub fn apply_language_change_system(
 
         load_ftl_into_bundle(&mut fallback_bundle, &paths.assets_dir, "en-US", "menu.ftl");
 
-        if primary_lang != fallback_lang {
-            load_ftl_into_bundle(
-                &mut main_bundle,
-                &paths.assets_dir,
-                &primary_lang.to_string(),
-                "menu.ftl",
+        let requested_locale = settings.language.clone();
+        let resolved = resolve_locale_dir(&paths.assets_dir, &requested_locale);
+        if !resolved.eq_ignore_ascii_case(&requested_locale) {
+            info!(
+                "[Localization] Resolved requested locale '{}' -> '{}'",
+                requested_locale, resolved
             );
+        }
+
+        // Only attempt to load locale files if the assets locales directory exists.
+        if paths.assets_dir.join("locales").exists() {
+            load_ftl_into_bundle(&mut main_bundle, &paths.assets_dir, &resolved, "menu.ftl");
         } else {
-            load_ftl_into_bundle(&mut main_bundle, &paths.assets_dir, "en-US", "menu.ftl");
+            warn!(
+                "[Localization] Locales directory not present under assets ({}); skipping per-locale load and using fallback en-US",
+                paths.assets_dir.display()
+            );
         }
 
         commands.insert_resource(Localization::new(
@@ -220,7 +237,10 @@ fn load_ftl_into_bundle(
     locale: &str,
     file: &str,
 ) {
-    let path = assets_dir.join(format!("locales/{}/text/{}", locale, file));
+    // Resolve the best matching locale directory in the assets folder.
+    let resolved_locale = resolve_locale_dir(assets_dir, locale);
+    let path = assets_dir.join(format!("locales/{}/text/{}", resolved_locale, file));
+
     match std::fs::read_to_string(&path) {
         Ok(content) => match FluentResource::try_new(content) {
             Ok(resource) => {
@@ -231,7 +251,11 @@ fn load_ftl_into_bundle(
                         e
                     );
                 } else {
-                    info!("[Localization] Loaded locale resource: {}", path.display());
+                    info!(
+                        "[Localization] Loaded locale resource: {} (resolved from '{}')",
+                        path.display(),
+                        locale
+                    );
                 }
             }
             Err(e) => {
@@ -242,12 +266,109 @@ fn load_ftl_into_bundle(
                 );
             }
         },
-        Err(e) => {
-            warn!(
-                "[Localization] Missing resource file: {}. Error: {}",
-                path.display(),
-                e
-            );
+        Err(_e) => {
+            // Do not print raw OS errors (they may be localized). Give a clear,
+            // actionable warning that avoids noisy or confusing OS messages.
+            if !assets_dir.join("locales").exists() {
+                warn!(
+                    "[Localization] Locales directory not found under assets ({}). Ensure locale files are present in the assets folder. Falling back to 'en-US'.",
+                    assets_dir.display()
+                );
+            } else {
+                warn!(
+                    "[Localization] Locale '{}' not found at '{}'. Falling back to 'en-US'.",
+                    resolved_locale,
+                    path.display()
+                );
+            }
         }
+    }
+}
+
+/// Attempt to map a requested locale string to an available locale directory.
+fn resolve_locale_dir(assets_dir: &std::path::Path, locale: &str) -> String {
+    let locales_dir = assets_dir.join("locales");
+
+    // 1. Direct match
+    let direct = locales_dir.join(locale);
+    if direct.exists() {
+        return locale.to_string();
+    }
+
+    // 2. Try short code (e.g., 'ru' from 'russian' or 'ru-RU').
+    let short = locale
+        .split(|c: char| c == '-' || c == '_')
+        .next()
+        .unwrap_or(locale)
+        .to_lowercase();
+
+    // Common mappings for user-friendly names
+    let common_map = [
+        ("russian", "ru-RU"),
+        ("russian (russian)", "ru-RU"),
+        ("english", "en-US"),
+        ("en", "en-US"),
+    ];
+
+    for (k, v) in &common_map {
+        if locale.eq_ignore_ascii_case(k) || short.eq_ignore_ascii_case(k) {
+            let candidate = locales_dir.join(v);
+            if candidate.exists() {
+                info!(
+                    "[Localization] Mapped locale '{}' -> '{}' using common map",
+                    locale, v
+                );
+                return v.to_string();
+            }
+        }
+    }
+
+    // 3. Fallback: try to find any locale folder that starts with the short code.
+    if let Ok(entries) = std::fs::read_dir(&locales_dir) {
+        for entry in entries.flatten() {
+            if let Ok(ft) = entry.file_type() {
+                if ft.is_dir() {
+                    if let Some(name_os) = entry.file_name().to_str() {
+                        if name_os.to_lowercase().starts_with(&short) {
+                            info!(
+                                "[Localization] Mapped locale '{}' -> '{}' by prefix match",
+                                locale, name_os
+                            );
+                            return name_os.to_string();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // 4. As a last resort, return the original locale (so the caller will log missing file as before).
+    locale.to_string()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+
+    #[test]
+    fn resolve_locale_dir_maps_russian() {
+        let base = std::env::temp_dir().join("planetarium_loc_test");
+        let _ = fs::remove_dir_all(&base);
+        let locales = base.join("locales");
+        fs::create_dir_all(locales.join("en-US/text")).unwrap();
+        fs::create_dir_all(locales.join("ru-RU/text")).unwrap();
+
+        let resolved = resolve_locale_dir(&base, "russian");
+        assert_eq!(resolved, "ru-RU");
+
+        let resolved_short = resolve_locale_dir(&base, "ru");
+        assert_eq!(resolved_short, "ru-RU");
+
+        let resolved_exact = resolve_locale_dir(&base, "en-US");
+        assert_eq!(resolved_exact, "en-US");
+
+        // Clean up
+        let _ = fs::remove_dir_all(&base);
     }
 }

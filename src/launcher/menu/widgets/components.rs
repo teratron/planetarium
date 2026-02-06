@@ -50,6 +50,9 @@ pub struct SliderFill(pub Entity); // Parent slider entity
 pub struct Dropdown {
     pub label: String,
     pub options: Vec<String>,
+    /// Optional user-facing display values for options. If present, these are
+    /// used for visual labels while `options` contains internal values (e.g., locale IDs).
+    pub display_values: Option<Vec<String>>,
     pub selected_index: usize,
     pub setting_key: String,
     pub is_open: bool,
