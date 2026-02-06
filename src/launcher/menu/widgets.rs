@@ -208,17 +208,31 @@ pub fn button_interaction_system(
 }
 
 // ...
+/// Configuration for a dropdown. Grouping related arguments makes the API
+/// easier to maintain and keeps function signatures small (fewer than 7 args).
+pub struct DropdownSpec {
+    pub label: String,
+    pub options: Vec<String>,
+    pub display_values: Option<Vec<String>>,
+    pub selected_index: usize,
+    pub setting_key: String,
+}
+
 /// System to create a dropdown widget.
 pub fn spawn_dropdown(
     commands: &mut Commands,
     theme: &Theme,
-    label: &str,
-    options: Vec<String>,
-    display_values: Option<Vec<String>>,
-    selected_index: usize,
-    setting_key: &str,
+    spec: DropdownSpec,
     parent: Entity,
 ) -> Entity {
+    let DropdownSpec {
+        label,
+        options,
+        display_values,
+        selected_index,
+        setting_key,
+    } = spec;
+
     let selected_text = display_values
         .as_ref()
         .and_then(|d| d.get(selected_index))
@@ -239,7 +253,7 @@ pub fn spawn_dropdown(
     commands.entity(dropdown_node).with_children(|parent| {
         // Label
         parent.spawn((
-            Text::new(label),
+            Text::new(label.clone()),
             TextFont {
                 font: theme.fonts.main.clone(),
                 font_size: theme.sizes.font_body,

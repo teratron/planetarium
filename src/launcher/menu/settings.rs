@@ -240,21 +240,23 @@ fn spawn_graphics_tab(
             super::widgets::spawn_dropdown(
                 commands,
                 theme,
-                &loc.t("setting-quality"),
-                vec![
-                    loc.t("val-low"),
-                    loc.t("val-medium"),
-                    loc.t("val-high"),
-                    loc.t("val-ultra"),
-                ],
-                Some(vec![
-                    loc.t("val-low"),
-                    loc.t("val-medium"),
-                    loc.t("val-high"),
-                    loc.t("val-ultra"),
-                ]),
-                2, // Default to High for now
-                "quality",
+                super::widgets::DropdownSpec {
+                    label: loc.t("setting-quality"),
+                    options: vec![
+                        loc.t("val-low"),
+                        loc.t("val-medium"),
+                        loc.t("val-high"),
+                        loc.t("val-ultra"),
+                    ],
+                    display_values: Some(vec![
+                        loc.t("val-low"),
+                        loc.t("val-medium"),
+                        loc.t("val-high"),
+                        loc.t("val-ultra"),
+                    ]),
+                    selected_index: 2,
+                    setting_key: "quality".to_string(),
+                },
                 parent_entity,
             );
 
@@ -262,19 +264,21 @@ fn spawn_graphics_tab(
             super::widgets::spawn_dropdown(
                 commands,
                 theme,
-                &loc.t("setting-resolution"),
-                vec![
-                    "1280x720".to_string(),
-                    "1920x1080".to_string(),
-                    "2560x1440".to_string(),
-                ],
-                Some(vec![
-                    "1280x720".to_string(),
-                    "1920x1080".to_string(),
-                    "2560x1440".to_string(),
-                ]),
-                1, // Default to 1080p for now
-                "resolution",
+                super::widgets::DropdownSpec {
+                    label: loc.t("setting-resolution"),
+                    options: vec![
+                        "1280x720".to_string(),
+                        "1920x1080".to_string(),
+                        "2560x1440".to_string(),
+                    ],
+                    display_values: Some(vec![
+                        "1280x720".to_string(),
+                        "1920x1080".to_string(),
+                        "2560x1440".to_string(),
+                    ]),
+                    selected_index: 1,
+                    setting_key: "resolution".to_string(),
+                },
                 parent_entity,
             );
         });
@@ -398,11 +402,13 @@ fn spawn_general_tab(
             super::widgets::spawn_dropdown(
                 commands,
                 theme,
-                &loc.t("setting-language"),
-                lang_options,
-                Some(lang_display),
-                selected_index, // Default to English for now needs to be synced
-                "language",
+                super::widgets::DropdownSpec {
+                    label: loc.t("setting-language"),
+                    options: lang_options,
+                    display_values: Some(lang_display),
+                    selected_index,
+                    setting_key: "language".to_string(),
+                },
                 parent_entity,
             );
         });

@@ -297,7 +297,7 @@ fn resolve_locale_dir(assets_dir: &std::path::Path, locale: &str) -> String {
 
     // 2. Try short code (e.g., 'ru' from 'russian' or 'ru-RU').
     let short = locale
-        .split(|c: char| c == '-' || c == '_')
+        .split(|c: char| ['-', '_'].contains(&c))
         .next()
         .unwrap_or(locale)
         .to_lowercase();
@@ -326,18 +326,16 @@ fn resolve_locale_dir(assets_dir: &std::path::Path, locale: &str) -> String {
     // 3. Fallback: try to find any locale folder that starts with the short code.
     if let Ok(entries) = std::fs::read_dir(&locales_dir) {
         for entry in entries.flatten() {
-            if let Ok(ft) = entry.file_type() {
-                if ft.is_dir() {
-                    if let Some(name_os) = entry.file_name().to_str() {
-                        if name_os.to_lowercase().starts_with(&short) {
-                            info!(
-                                "[Localization] Mapped locale '{}' -> '{}' by prefix match",
-                                locale, name_os
-                            );
-                            return name_os.to_string();
-                        }
-                    }
-                }
+            if let Ok(ft) = entry.file_type()
+                && ft.is_dir()
+                && let Some(name_os) = entry.file_name().to_str()
+                && name_os.to_lowercase().starts_with(&short)
+            {
+                info!(
+                    "[Localization] Mapped locale '{}' -> '{}' by prefix match",
+                    locale, name_os
+                );
+                return name_os.to_string();
             }
         }
     }

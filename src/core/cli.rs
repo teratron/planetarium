@@ -27,6 +27,11 @@ pub struct CliArgs {
     /// Enable verbose logging for debugging.
     #[arg(short, long, default_value_t = false)]
     pub debug: bool,
+
+    /// Custom log filter (e.g. "debug,planetarium=info"). Overrides default when provided
+    /// unless the `RUST_LOG` environment variable is set.
+    #[arg(long)]
+    pub log_filter: Option<String>,
 }
 
 impl CliArgs {
