@@ -11,6 +11,7 @@ pub mod constants;
 pub mod dropdowns;
 pub mod sliders;
 
+pub use buttons::animate_button_hover;
 pub use buttons::button_interaction_system;
 pub use buttons::spawn_primary_button;
 pub use components::{

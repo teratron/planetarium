@@ -19,7 +19,7 @@ use settings::{
     ActiveSettingsTab, SettingsOpen, handle_settings_tab_clicks, spawn_settings_if_needed,
     update_settings_tab_content, update_settings_ui,
 };
-use widgets::button_interaction_system;
+use widgets::{animate_button_hover, button_interaction_system};
 
 pub struct MenuPlugin;
 
@@ -36,7 +36,7 @@ impl Plugin for MenuPlugin {
         // Update systems while in MainMenu
         app.add_systems(
             Update,
-            button_interaction_system.run_if(in_state(AppState::MainMenu)),
+            (button_interaction_system, animate_button_hover).run_if(in_state(AppState::MainMenu)),
         );
 
         app.add_systems(

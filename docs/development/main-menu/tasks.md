@@ -14,7 +14,7 @@
 
 ## Phase 2: Refined Main Menu (Priority: High)
 
-- [ ] **[MM-201]** Main Menu UI Overhaul
+- [x] **[MM-201]** Main Menu UI Overhaul
   - Update layout in `screen.rs` for AAA aesthetics (typography, margins).
   - Add smooth hover animations (scaling/color shifts).
 - [x] **[MM-202]** Audio Feedback
@@ -41,3 +41,4 @@
   - Create a "Controls" tab that shows currently bound keys from `settings.toml`.
 - [ ] **[MM-403]** Final Design Review
   - Polish colors, fonts, and alignment to match AAA standards.
+  

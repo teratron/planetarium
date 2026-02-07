@@ -29,6 +29,16 @@ Before implementing new features, we must stabilize the asset loading and path r
 - Register `hover.ogg` and `click.ogg` in the asset manifest.
 - Add systems to play these sounds on relevant `Interaction` changes.
 
+### 2.3 AAA Visual Enhancements (MM-201)
+
+- Increase title font size from 48px to 64px for better readability
+- Optimize margins and spacing (increase panel padding from 16px to 24px, title margin bottom from 40px to 60px)
+- Update panel width from 400px to 500px for more modern look
+- Add smooth hover animations:
+  - Scale animation on button hover (scale 1.0 -> 1.05)
+  - Smooth color transitions for visual feedback
+- Improve typography and spacing for AAA aesthetics
+
 ---
 
 ## 3. Settings Sub-system (AAA Upgrade)

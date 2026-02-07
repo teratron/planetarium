@@ -8,6 +8,15 @@ use bevy::prelude::*;
 
 use super::components::{ButtonHoverState, PrimaryButton};
 
+/// Component to track button hover animation state
+#[derive(Component)]
+pub struct HoverAnimationState {
+    pub base_scale: Vec3,
+    pub target_scale: Vec3,
+    pub current_scale: Vec3,
+    pub is_hovered: bool,
+}
+
 /// Spawns a high-quality primary button widget.
 pub fn spawn_primary_button(
     commands: &mut Commands,
@@ -39,6 +48,13 @@ pub fn spawn_primary_button(
                 base_color: button_color,
                 hover_color: button_color_hover,
             },
+            Transform::from_scale(Vec3::ONE),
+            HoverAnimationState {
+                base_scale: Vec3::ONE,
+                target_scale: Vec3::splat(1.05),
+                current_scale: Vec3::ONE,
+                is_hovered: false,
+            },
         ))
         .with_children(|parent| {
             parent.spawn((
@@ -68,7 +84,12 @@ pub fn button_interaction_system(
     manifest: Res<AssetManifest>,
     audio_state: Res<crate::launcher::menu::reactive::RuntimeAudioState>,
     mut interaction_query: Query<
-        (&Interaction, &mut BackgroundColor, &ButtonHoverState),
+        (
+            &Interaction,
+            &mut BackgroundColor,
+            &ButtonHoverState,
+            &mut HoverAnimationState,
+        ),
         (
             Changed<Interaction>,
             With<Button>,
@@ -76,10 +97,12 @@ pub fn button_interaction_system(
         ),
     >,
 ) {
-    for (interaction, mut bg_color, hover_state) in &mut interaction_query {
+    for (interaction, mut bg_color, hover_state, mut anim_state) in &mut interaction_query {
         match *interaction {
             Interaction::Hovered => {
                 *bg_color = BackgroundColor(hover_state.hover_color);
+                anim_state.is_hovered = true;
+
                 if let Some(path) = manifest.audio("hover") {
                     commands.spawn((
                         AudioPlayer::new(asset_server.load(path)),
@@ -105,7 +128,38 @@ pub fn button_interaction_system(
             }
             Interaction::None => {
                 *bg_color = BackgroundColor(hover_state.base_color);
+                anim_state.is_hovered = false;
             }
+        }
+    }
+}
+
+/// System to handle hover animations for buttons
+pub fn animate_button_hover(
+    mut query: Query<(&mut Transform, &HoverAnimationState)>,
+    time: Res<Time>,
+) {
+    for (mut transform, anim_state) in &mut query {
+        // Define interpolation speed
+        let lerp_speed = 0.25; // Time in seconds for full transition
+
+        // Calculate target scale based on hover state
+        let target_scale = if anim_state.is_hovered {
+            anim_state.target_scale
+        } else {
+            anim_state.base_scale
+        };
+
+        // Linear interpolation between current and target scale
+        let new_scale = transform
+            .scale
+            .lerp(target_scale, lerp_speed * time.delta_secs());
+
+        // Ensure we don't go past the target
+        if (transform.scale - target_scale).length() > 0.01 {
+            transform.scale = new_scale;
+        } else {
+            transform.scale = target_scale;
         }
     }
 }

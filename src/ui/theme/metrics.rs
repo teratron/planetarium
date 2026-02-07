@@ -29,11 +29,11 @@ impl Default for ThemeSizes {
     fn default() -> Self {
         Self {
             margin: Val::Px(20.0),
-            padding: Val::Px(16.0),
-            font_h1: 48.0,
+            padding: Val::Px(24.0),
+            font_h1: 64.0,
             font_h2: 32.0,
             font_body: 18.0,
-            button_height: Val::Px(50.0),
+            button_height: Val::Px(60.0),
         }
     }
 }
