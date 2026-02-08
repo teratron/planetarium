@@ -7,6 +7,7 @@
 ### 1. Обработка ошибок
 
 **Проблема в `src/ui/theme/mod.rs`:**
+
 ```rust
 // Строка 47: Потенциальный panic
 match Font::try_from_bytes(FALLBACK_FONT_BYTES.to_vec()) {
@@ -21,6 +22,7 @@ match Font::try_from_bytes(FALLBACK_FONT_BYTES.to_vec()) {
 ```
 
 **Рекомендация:**
+
 ```rust
 match Font::try_from_bytes(FALLBACK_FONT_BYTES.to_vec()) {
     Ok(font) => {
@@ -43,6 +45,7 @@ match Font::try_from_bytes(FALLBACK_FONT_BYTES.to_vec()) {
 Система `broadcast_settings_changes` и `auto_save_settings` могут конфликтовать при быстрых изменениях.
 
 **Рекомендация:**
+
 ```rust
 // Добавить debounce механизм
 #[derive(Resource)]
@@ -79,6 +82,7 @@ pub fn debounced_settings_broadcast(
 **Проблема:** Слишком много систем в Update loop проверяют `is_changed()` каждый кадр.
 
 **Рекомендация - использовать run conditions:**
+
 ```rust
 // В src/launcher/menu/mod.rs
 app.add_systems(
@@ -94,6 +98,7 @@ app.add_systems(
 **Проблема в `src/launcher/menu/widgets/`:** Слишком сложная иерархия компонентов и дублирование логики.
 
 **Рекомендация - создать базовый трейт:**
+
 ```rust
 // src/launcher/menu/widgets/base.rs
 pub trait Widget {
@@ -121,6 +126,7 @@ impl Widget for PrimaryButton {
 **Проблема:** Множественные вызовы `loc.t()` при каждом spawn.
 
 **Рекомендация - кэширование:**
+
 ```rust
 #[derive(Resource)]
 pub struct LocalizedStrings {
@@ -147,7 +153,8 @@ impl LocalizedStrings {
 **Файл `src/launcher/menu/settings/mod.rs` слишком большой (200+ строк).**
 
 **Рекомендация - разбить на модули:**
-```
+
+```plaintext
 src/launcher/menu/settings/
 ├── mod.rs (только exports и ресурсы)
 ├── ui.rs (spawn функции)
@@ -160,6 +167,7 @@ src/launcher/menu/settings/
 ### 7. Использование новых возможностей Bevy
 
 **Bevy 0.18 поддерживает Required Components:**
+
 ```rust
 // Вместо:
 #[derive(Component)]
@@ -182,6 +190,7 @@ pub struct PrimaryButton {
 **Проблема:** Строковые ключи в настройках могут привести к опечаткам.
 
 **Рекомендация - использовать enum:**
+
 ```rust
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum SettingKey {
@@ -209,6 +218,7 @@ impl SettingKey {
 ### 9. Документация
 
 **Добавить примеры использования в документацию:**
+
 ```rust
 /// System to spawn the main menu UI.
 ///
@@ -230,6 +240,7 @@ pub fn spawn_main_menu(/* ... */) {
 **Проблема:** Разбросанные magic numbers по коду.
 
 **Рекомендация - централизовать:**
+
 ```rust
 // src/ui/theme/constants.rs
 pub mod animation {
@@ -370,6 +381,7 @@ pub fn batch_update_settings_ui(
 ## 🎯 Приоритеты
 
 **Высокий приоритет:**
+
 1. Обработка ошибок fallback шрифта (#1)
 2. Race conditions в настройках (#2)
 3. Типобезопасные ключи (#8)
