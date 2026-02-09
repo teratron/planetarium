@@ -56,6 +56,7 @@ pub struct DisplaySettings {
     pub width: u32,
     pub height: u32,
     pub fullscreen: bool,
+    pub vsync: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
@@ -73,6 +74,7 @@ impl Default for DisplaySettings {
             width: 1280,
             height: 720,
             fullscreen: false,
+            vsync: true,
         }
     }
 }
@@ -177,5 +179,11 @@ mod tests {
     fn default_settings_include_theme() {
         let s = UserSettings::default();
         assert_eq!(s.theme, "dark");
+    }
+
+    #[test]
+    fn default_settings_include_vsync() {
+        let s = UserSettings::default();
+        assert!(s.display.vsync);
     }
 }

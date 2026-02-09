@@ -209,6 +209,17 @@ pub fn dropdown_interaction_system(
     }
 }
 
+fn parse_resolution_string(s: &str) -> Option<(u32, u32)> {
+    let parts: Vec<&str> = s.split('x').collect();
+    if parts.len() != 2 {
+        return None;
+    }
+    match (parts[0].parse(), parts[1].parse()) {
+        (Ok(w), Ok(h)) => Some((w, h)),
+        _ => None,
+    }
+}
+
 /// System to handle dropdown option selection.
 #[allow(clippy::type_complexity)]
 #[allow(clippy::too_many_arguments)]
@@ -268,11 +279,34 @@ pub fn dropdown_option_interaction_system(
                     info!("[Settings] Quality set to {:?}", quality);
                 }
                 "resolution" => {
-                    let res_str = &dropdown.options[option.index];
-                    if let Some((w, h)) = super::parse_resolution(res_str) {
+                    if let Some((w, h)) = dropdown
+                        .options
+                        .get(option.index)
+                        .and_then(|res_str| parse_resolution_string(res_str))
+                    {
                         settings.display.width = w;
                         settings.display.height = h;
                         info!("[Settings] Resolution set to {}x{}", w, h);
+                    }
+                }
+                "fullscreen" => {
+                    if let Some(val) = dropdown
+                        .options
+                        .get(option.index)
+                        .and_then(|s| s.parse::<bool>().ok())
+                    {
+                        settings.display.fullscreen = val;
+                        info!("[Settings] Fullscreen set to {}", val);
+                    }
+                }
+                "vsync" => {
+                    if let Some(val) = dropdown
+                        .options
+                        .get(option.index)
+                        .and_then(|s| s.parse::<bool>().ok())
+                    {
+                        settings.display.vsync = val;
+                        info!("[Settings] VSync set to {}", val);
                     }
                 }
                 "language" => {

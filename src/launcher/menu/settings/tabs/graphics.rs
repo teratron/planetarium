@@ -27,10 +27,10 @@ pub fn spawn_graphics_tab(
             },
         ))
         .with_children(|p| {
-            // Quality Dropdown
             let parent_entity = p.target_entity();
             let commands = p.commands_mut();
 
+            // Quality Dropdown
             super::super::super::widgets::spawn_dropdown(
                 commands,
                 theme,
@@ -72,6 +72,42 @@ pub fn spawn_graphics_tab(
                     ]),
                     selected_index: 1,
                     setting_key: "resolution".to_string(),
+                },
+                parent_entity,
+            );
+
+            // Fullscreen Dropdown
+            let fullscreen_options = vec!["false".to_string(), "true".to_string()];
+            let fullscreen_display = vec![loc.t("val-off"), loc.t("val-on")];
+            let fullscreen_index = if _settings.display.fullscreen { 1 } else { 0 };
+
+            super::super::super::widgets::spawn_dropdown(
+                commands,
+                theme,
+                super::super::super::widgets::DropdownSpec {
+                    label: loc.t("setting-fullscreen"),
+                    options: fullscreen_options,
+                    display_values: Some(fullscreen_display),
+                    selected_index: fullscreen_index,
+                    setting_key: "fullscreen".to_string(),
+                },
+                parent_entity,
+            );
+
+            // VSync Dropdown
+            let vsync_options = vec!["false".to_string(), "true".to_string()];
+            let vsync_display = vec![loc.t("val-off"), loc.t("val-on")];
+            let vsync_index = if _settings.display.vsync { 1 } else { 0 };
+
+            super::super::super::widgets::spawn_dropdown(
+                commands,
+                theme,
+                super::super::super::widgets::DropdownSpec {
+                    label: loc.t("setting-vsync"),
+                    options: vsync_options,
+                    display_values: Some(vsync_display),
+                    selected_index: vsync_index,
+                    setting_key: "vsync".to_string(),
                 },
                 parent_entity,
             );

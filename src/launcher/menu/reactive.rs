@@ -54,9 +54,16 @@ pub fn broadcast_settings_changes(
         } else {
             bevy::window::WindowMode::Windowed
         };
+
+        window.present_mode = if settings.display.vsync {
+            bevy::window::PresentMode::AutoVsync
+        } else {
+            bevy::window::PresentMode::AutoNoVsync
+        };
+
         info!(
-            "[Settings] Applied display settings: {}x{} fullscreen={}",
-            settings.display.width, settings.display.height, settings.display.fullscreen
+            "[Settings] Applied display settings: {}x{} fullscreen={} vsync={}",
+            settings.display.width, settings.display.height, settings.display.fullscreen, settings.display.vsync
         );
     }
 
