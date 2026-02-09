@@ -12,7 +12,7 @@ pub mod widgets;
 
 use reactive::{
     RuntimeAudioState, SettingsAutoSaveTimer, auto_save_settings, broadcast_settings_changes,
-    schedule_settings_save,
+    broadcast_theme_changes, schedule_settings_save,
 };
 use screen::{despawn_main_menu, handle_menu_button_clicks, spawn_main_menu};
 use settings::{
@@ -75,6 +75,7 @@ impl Plugin for MenuPlugin {
             Update,
             (
                 broadcast_settings_changes,
+                broadcast_theme_changes,
                 schedule_settings_save,
                 auto_save_settings,
                 crate::core::localization::apply_language_change_system,

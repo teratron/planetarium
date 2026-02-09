@@ -26,6 +26,29 @@ pub struct ThemeColors {
     pub danger: Color,
 }
 
+impl ThemeColors {
+    pub fn light() -> Self {
+        Self {
+            // #F0F2F5 - Light Grey
+            background: Color::srgb_u8(240, 242, 245),
+            // #FFFFFF - White
+            surface: Color::srgb_u8(255, 255, 255),
+            // #E4E6EB - Slightly darker surface
+            surface_light: Color::srgb_u8(228, 230, 235),
+            // #050505 - Almost Black
+            text_primary: Color::srgb_u8(5, 5, 5),
+            // #65676B - Dark Grey
+            text_secondary: Color::srgb_u8(101, 103, 107),
+            // #0066CC - Blue
+            accent: Color::srgb_u8(0, 102, 204),
+            // #0052A3
+            accent_muted: Color::srgb_u8(0, 82, 163),
+            // #DC3545
+            danger: Color::srgb_u8(220, 53, 69),
+        }
+    }
+}
+
 impl Default for ThemeColors {
     fn default() -> Self {
         Self {

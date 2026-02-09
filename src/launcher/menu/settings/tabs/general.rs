@@ -49,5 +49,26 @@ pub fn spawn_general_tab(
                 },
                 parent_entity,
             );
+
+            // Theme dropdown
+            let theme_options = vec!["dark".to_string(), "light".to_string()];
+            let theme_display = vec![loc.t("theme-dark"), loc.t("theme-light")];
+            let theme_index = theme_options
+                .iter()
+                .position(|t| t == &settings.theme)
+                .unwrap_or(0);
+
+            super::super::super::widgets::spawn_dropdown(
+                commands,
+                theme,
+                super::super::super::widgets::DropdownSpec {
+                    label: loc.t("setting-theme"),
+                    options: theme_options,
+                    display_values: Some(theme_display),
+                    selected_index: theme_index,
+                    setting_key: "theme".to_string(),
+                },
+                parent_entity,
+            );
         });
 }

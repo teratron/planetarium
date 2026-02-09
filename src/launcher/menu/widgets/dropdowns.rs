@@ -117,6 +117,9 @@ pub fn spawn_dropdown(
 pub fn dropdown_interaction_system(
     mut commands: Commands,
     theme: Res<Theme>,
+    asset_server: Res<AssetServer>,
+    manifest: Res<crate::core::assets::AssetManifest>,
+    audio_state: Res<crate::launcher::menu::reactive::RuntimeAudioState>,
     mut dropdown_query: Query<
         (Entity, &Interaction, &mut Dropdown, &mut BackgroundColor),
         (Changed<Interaction>, With<Button>),
@@ -127,6 +130,19 @@ pub fn dropdown_interaction_system(
         if *interaction == Interaction::Pressed {
             dropdown.is_open = !dropdown.is_open;
             *bg_color = BackgroundColor(theme.colors.surface_light); // Visual feedback
+
+            // Play open/close sound
+            let sound_key = if dropdown.is_open { "open" } else { "close" };
+            if let Some(path) = manifest.audio(sound_key) {
+                commands.spawn((
+                    AudioPlayer::new(asset_server.load(path)),
+                    PlaybackSettings {
+                        mode: bevy::audio::PlaybackMode::Despawn,
+                        volume: bevy::audio::Volume::Linear(audio_state.sfx),
+                        ..default()
+                    },
+                ));
+            }
 
             if dropdown.is_open {
                 // Spawn options
@@ -195,9 +211,13 @@ pub fn dropdown_interaction_system(
 
 /// System to handle dropdown option selection.
 #[allow(clippy::type_complexity)]
+#[allow(clippy::too_many_arguments)]
 pub fn dropdown_option_interaction_system(
     mut commands: Commands,
     mut settings: ResMut<crate::core::config::UserSettings>,
+    asset_server: Res<AssetServer>,
+    manifest: Res<crate::core::assets::AssetManifest>,
+    audio_state: Res<crate::launcher::menu::reactive::RuntimeAudioState>,
     mut dropdown_query: Query<(&mut Dropdown, &Children)>,
     mut text_query: Query<&mut Text, With<DropdownText>>,
     option_query: Query<(&Interaction, &DropdownOption), (Changed<Interaction>, With<Button>)>,
@@ -209,6 +229,18 @@ pub fn dropdown_option_interaction_system(
         {
             dropdown.selected_index = option.index;
             dropdown.is_open = false;
+
+            // Play select sound
+            if let Some(path) = manifest.audio("select") {
+                commands.spawn((
+                    AudioPlayer::new(asset_server.load(path)),
+                    PlaybackSettings {
+                        mode: bevy::audio::PlaybackMode::Despawn,
+                        volume: bevy::audio::Volume::Linear(audio_state.sfx),
+                        ..default()
+                    },
+                ));
+            }
 
             // Update text
             // Update button text to use display values when available, otherwise use option value
@@ -248,6 +280,12 @@ pub fn dropdown_option_interaction_system(
                     if let Some(lang) = dropdown.options.get(option.index) {
                         settings.language = lang.clone();
                         info!("[Settings] Language set to {}", lang);
+                    }
+                }
+                "theme" => {
+                    if let Some(theme) = dropdown.options.get(option.index) {
+                        settings.theme = theme.clone();
+                        info!("[Settings] Theme set to {}", theme);
                     }
                 }
                 _ => warn!("[Settings] Unknown dropdown key: {}", dropdown.setting_key),

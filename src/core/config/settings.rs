@@ -38,6 +38,9 @@ pub struct UserSettings {
     /// Preferred language (e.g., "en-US", "ru-RU").
     #[serde(default)]
     pub language: String,
+    /// Preferred theme ("dark", "light").
+    #[serde(default = "default_theme")]
+    pub theme: String,
     #[serde(default)]
     pub display: DisplaySettings,
     #[serde(default)]
@@ -89,11 +92,16 @@ impl Default for UserSettings {
         Self {
             version: SETTINGS_VERSION,
             language: "en-US".to_string(),
+            theme: default_theme(),
             display: DisplaySettings::default(),
             audio: AudioSettings::default(),
             graphics: GraphicsSettings::default(),
         }
     }
+}
+
+fn default_theme() -> String {
+    "dark".to_string()
 }
 
 // Unit tests moved to bottom of file to satisfy clippy (no items after test module).
@@ -163,5 +171,11 @@ mod tests {
     fn default_settings_include_graphics() {
         let s = UserSettings::default();
         assert_eq!(s.graphics.quality, Quality::Medium);
+    }
+
+    #[test]
+    fn default_settings_include_theme() {
+        let s = UserSettings::default();
+        assert_eq!(s.theme, "dark");
     }
 }

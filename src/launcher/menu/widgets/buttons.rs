@@ -13,7 +13,6 @@ use super::components::{ButtonHoverState, PrimaryButton};
 pub struct HoverAnimationState {
     pub base_scale: Vec3,
     pub target_scale: Vec3,
-    pub current_scale: Vec3,
     pub is_hovered: bool,
 }
 
@@ -52,7 +51,6 @@ pub fn spawn_primary_button(
             HoverAnimationState {
                 base_scale: Vec3::ONE,
                 target_scale: Vec3::splat(1.05),
-                current_scale: Vec3::ONE,
                 is_hovered: false,
             },
         ))
@@ -84,12 +82,7 @@ pub fn button_interaction_system(
     manifest: Res<AssetManifest>,
     audio_state: Res<crate::launcher::menu::reactive::RuntimeAudioState>,
     mut interaction_query: Query<
-        (
-            &Interaction,
-            &mut BackgroundColor,
-            &ButtonHoverState,
-            &mut HoverAnimationState,
-        ),
+        (&Interaction, &mut HoverAnimationState),
         (
             Changed<Interaction>,
             With<Button>,
@@ -97,10 +90,9 @@ pub fn button_interaction_system(
         ),
     >,
 ) {
-    for (interaction, mut bg_color, hover_state, mut anim_state) in &mut interaction_query {
+    for (interaction, mut anim_state) in &mut interaction_query {
         match *interaction {
             Interaction::Hovered => {
-                *bg_color = BackgroundColor(hover_state.hover_color);
                 anim_state.is_hovered = true;
 
                 if let Some(path) = manifest.audio("hover") {
@@ -127,39 +119,53 @@ pub fn button_interaction_system(
                 }
             }
             Interaction::None => {
-                *bg_color = BackgroundColor(hover_state.base_color);
                 anim_state.is_hovered = false;
             }
         }
     }
 }
 
-/// System to handle hover animations for buttons
+/// System to handle hover animations for buttons (scale and color)
 pub fn animate_button_hover(
-    mut query: Query<(&mut Transform, &HoverAnimationState)>,
+    mut query: Query<(
+        &mut Transform,
+        &mut BackgroundColor,
+        &HoverAnimationState,
+        &ButtonHoverState,
+    )>,
     time: Res<Time>,
 ) {
-    for (mut transform, anim_state) in &mut query {
-        // Define interpolation speed
-        let lerp_speed = 0.25; // Time in seconds for full transition
+    let dt = time.delta_secs();
+    // Fast interpolation speed for snappy but smooth feel (approx 0.2s full transition)
+    let lerp_speed = 15.0;
+    let t = (lerp_speed * dt).min(1.0);
 
-        // Calculate target scale based on hover state
+    for (mut transform, mut bg, anim_state, color_state) in &mut query {
+        // --- Scale Animation ---
         let target_scale = if anim_state.is_hovered {
             anim_state.target_scale
         } else {
             anim_state.base_scale
         };
 
-        // Linear interpolation between current and target scale
-        let new_scale = transform
-            .scale
-            .lerp(target_scale, lerp_speed * time.delta_secs());
+        transform.scale = transform.scale.lerp(target_scale, t);
 
-        // Ensure we don't go past the target
-        if (transform.scale - target_scale).length() > 0.01 {
-            transform.scale = new_scale;
+        // --- Color Animation ---
+        let target_color = if anim_state.is_hovered {
+            color_state.hover_color
         } else {
-            transform.scale = target_scale;
-        }
+            color_state.base_color
+        };
+
+        let current: LinearRgba = bg.0.into();
+        let target: LinearRgba = target_color.into();
+
+        // Manual lerp for Color (safe and explicit)
+        let r = current.red + (target.red - current.red) * t;
+        let g = current.green + (target.green - current.green) * t;
+        let b = current.blue + (target.blue - current.blue) * t;
+        let a = current.alpha + (target.alpha - current.alpha) * t;
+
+        bg.0 = Color::LinearRgba(LinearRgba::new(r, g, b, a));
     }
 }

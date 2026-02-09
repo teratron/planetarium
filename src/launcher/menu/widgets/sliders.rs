@@ -97,6 +97,10 @@ pub fn spawn_slider(
 
 /// System to handle slider interaction and update UserSettings.
 pub fn slider_interaction_system(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    manifest: Res<crate::core::assets::AssetManifest>,
+    audio_state: Res<crate::launcher::menu::reactive::RuntimeAudioState>,
     mut interaction_query: Query<(&Interaction, &GlobalTransform, &ComputedNode, &mut Slider)>,
     mut settings: ResMut<crate::core::config::UserSettings>,
     windows: Query<&Window>,
@@ -127,14 +131,30 @@ pub fn slider_interaction_system(
             let relative_x = relative_x.clamp(0.0, 1.0);
 
             let new_value = slider.min + (slider.max - slider.min) * relative_x;
-            slider.value = new_value;
 
-            // Apply to settings
-            match slider.setting_key.as_str() {
-                "master_volume" => settings.audio.master_volume = new_value,
-                "music_volume" => settings.audio.music_volume = new_value,
-                "sfx_volume" => settings.audio.sfx_volume = new_value,
-                _ => warn!("[UI] Unknown slider setting key: {}", slider.setting_key),
+            // Only update and play sound if value changed significantly
+            if (slider.value - new_value).abs() > 0.001 {
+                slider.value = new_value;
+
+                // Play subtle scroll sound on value change
+                if let Some(path) = manifest.audio("scroll") {
+                    commands.spawn((
+                        AudioPlayer::new(asset_server.load(path)),
+                        PlaybackSettings {
+                            mode: bevy::audio::PlaybackMode::Despawn,
+                            volume: bevy::audio::Volume::Linear(audio_state.sfx * 0.3), // Lower volume for slider
+                            ..default()
+                        },
+                    ));
+                }
+
+                // Apply to settings
+                match slider.setting_key.as_str() {
+                    "master_volume" => settings.audio.master_volume = new_value,
+                    "music_volume" => settings.audio.music_volume = new_value,
+                    "sfx_volume" => settings.audio.sfx_volume = new_value,
+                    _ => warn!("[UI] Unknown slider setting key: {}", slider.setting_key),
+                }
             }
         }
     }

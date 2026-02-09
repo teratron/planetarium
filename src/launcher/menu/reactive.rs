@@ -1,4 +1,5 @@
 use crate::core::config::UserSettings;
+use crate::ui::theme::{Theme, ThemeColors};
 use bevy::prelude::*;
 
 /// Runtime audio state resource (consumed by audio systems).
@@ -71,6 +72,28 @@ pub fn broadcast_settings_changes(
     }
 
     *prev = Some(settings.clone());
+}
+
+/// Watches for theme changes and updates the global Theme resource.
+pub fn broadcast_theme_changes(
+    settings: Res<UserSettings>,
+    mut prev: Local<Option<String>>,
+    mut theme: ResMut<Theme>,
+) {
+    if !settings.is_changed() {
+        return;
+    }
+
+    if prev.as_ref() != Some(&settings.theme) {
+        info!("[Settings] Applying theme change: {}", settings.theme);
+
+        match settings.theme.as_str() {
+            "light" => theme.colors = ThemeColors::light(),
+            _ => theme.colors = ThemeColors::default(), // dark
+        }
+    }
+
+    *prev = Some(settings.theme.clone());
 }
 
 /// Timer to debounce settings saving to disk.

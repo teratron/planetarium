@@ -44,3 +44,6 @@ val-ultra = Ультра
 
 lang-en = Английский
 lang-ru = Русский
+
+theme-dark = Тёмная
+theme-light = Светлая

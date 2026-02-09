@@ -28,7 +28,7 @@
   - Implement **Graphics** tab (Resolutions, VSync, Fullscreen).
   - Implement **Audio** tab (All volume sliders from `settings.toml`).
   - Implement **General** tab (Language/Theme toggle).
-- [ ] **[MM-302]** Configuration Bridge
+- [x] **[MM-302]** Configuration Bridge
   - Link UI widgets to `UserSettings` resource.
   - Implement `SettingChangedEvent` and immediate engine updates.
   - Implement throttled saving to `settings.toml`.
