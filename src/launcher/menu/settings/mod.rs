@@ -56,7 +56,12 @@ pub fn spawn_settings_menu(commands: &mut Commands, theme: &Theme, loc: &Localiz
                 padding: UiRect::all(theme.sizes.padding),
                 ..default()
             },
-            BackgroundColor(theme.colors.surface),
+            BackgroundColor(theme.colors.surface.with_alpha(0.0)), // Start transparent
+            Transform::from_scale(Vec3::splat(0.9)),               // Start slightly smaller
+            SettingsFade {
+                timer: Timer::from_seconds(0.3, TimerMode::Once),
+                direction: FadeDirection::In,
+            },
         ))
         .id();
 
@@ -233,9 +238,69 @@ pub fn spawn_settings_if_needed(
             active_tab.0 = SettingsTab::default();
             spawn_settings_menu(&mut commands, &theme, &loc);
         } else if !settings_open.0 && !query.is_empty() {
+            // Trigger fade out instead of immediate despawn
             for e in &query {
-                commands.entity(e).despawn();
+                commands.entity(e).insert(SettingsFade {
+                    timer: Timer::from_seconds(0.2, TimerMode::Once),
+                    direction: FadeDirection::Out,
+                });
             }
+        }
+    }
+}
+
+/// System to animate settings fade transition.
+pub fn animate_settings_fade(
+    mut commands: Commands,
+    time: Res<Time>,
+    theme: Res<Theme>,
+    mut query: Query<(
+        Entity,
+        &mut BackgroundColor,
+        &mut Transform,
+        &mut SettingsFade,
+    )>,
+) {
+    for (entity, mut bg_color, mut transform, mut fade) in &mut query {
+        fade.timer.tick(time.delta());
+        let progress = fade.timer.fraction(); // 0.0 to 1.0
+
+        let (alpha, scale) = match fade.direction {
+            FadeDirection::In => {
+                // Ease out cubic
+                let t = 1.0 - (1.0 - progress).powi(3);
+                (t, 0.9 + 0.1 * t)
+            }
+            FadeDirection::Out => {
+                // Ease in cubic
+                let t = 1.0 - progress.powi(3);
+                (t, 0.9 + 0.1 * t)
+            }
+        };
+
+        // Update visual state
+        // Note: This only fades the panel background.
+        // For a full fade we'd need to propagate alpha to children or use a shader.
+        // Given constraints, panel fade + scale is a good approximation of "professional".
+        *bg_color = BackgroundColor(
+            theme
+                .colors
+                .surface
+                .with_alpha(theme.colors.surface.alpha() * alpha),
+        );
+        transform.scale = Vec3::splat(scale);
+
+        // Despawn on finish if fading out
+        if fade.direction == FadeDirection::Out && fade.timer.just_finished() {
+            commands.entity(entity).despawn();
+        }
+
+        // Remove Fade component if fading in finished
+        if fade.direction == FadeDirection::In && fade.timer.just_finished() {
+            commands.entity(entity).remove::<SettingsFade>();
+            // Ensure final state
+            *bg_color = BackgroundColor(theme.colors.surface);
+            transform.scale = Vec3::ONE;
         }
     }
 }

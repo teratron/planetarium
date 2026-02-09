@@ -31,6 +31,15 @@ setting-ambience-volume = Ambience
 setting-language = Language
 setting-theme = Interface Theme
 
+# Controls
+control-forward = Move Forward
+control-backward = Move Backward
+control-left = Move Left
+control-right = Move Right
+control-jump = Jump
+control-sprint = Sprint
+control-interact = Interact
+
 # Values & Common
 val-on = ON
 val-off = OFF

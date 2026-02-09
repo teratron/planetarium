@@ -16,8 +16,8 @@ use reactive::{
 };
 use screen::{despawn_main_menu, handle_menu_button_clicks, spawn_main_menu};
 use settings::{
-    ActiveSettingsTab, SettingsOpen, handle_settings_tab_clicks, spawn_settings_if_needed,
-    update_settings_tab_content, update_settings_ui,
+    ActiveSettingsTab, SettingsOpen, animate_settings_fade, handle_settings_tab_clicks,
+    spawn_settings_if_needed, update_settings_tab_content, update_settings_ui,
 };
 use widgets::{animate_button_hover, button_interaction_system};
 
@@ -63,6 +63,7 @@ impl Plugin for MenuPlugin {
                 handle_settings_tab_clicks,
                 update_settings_tab_content,
                 update_settings_ui,
+                animate_settings_fade,
             )
                 .chain()
                 .run_if(in_state(AppState::MainMenu)),

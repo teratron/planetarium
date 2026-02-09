@@ -31,6 +31,15 @@ setting-ambience-volume = Громкость окружения
 setting-language = Язык
 setting-theme = Тема интерфейса
 
+# Управление
+control-forward = Вперед
+control-backward = Назад
+control-left = Влево
+control-right = Вправо
+control-jump = Прыжок
+control-sprint = Спринт
+control-interact = Взаимодействие
+
 # Значения и общее
 val-on = ВКЛ
 val-off = ВЫКЛ

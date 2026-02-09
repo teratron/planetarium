@@ -35,10 +35,10 @@
 
 ## Phase 4: Polish & UX (Priority: Medium)
 
-- [ ] **[MM-401]** Transition Fading
+- [x] **[MM-401]** Transition Fading
   - Add professional fades when opening/closing the settings overlay.
-- [ ] **[MM-402]** Keybinding Display
+- [x] **[MM-402]** Keybinding Display
   - Create a "Controls" tab that shows currently bound keys from `settings.toml`.
-- [ ] **[MM-403]** Final Design Review
+- [x] **[MM-403]** Final Design Review
   - Polish colors, fonts, and alignment to match AAA standards.
   

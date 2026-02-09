@@ -2,7 +2,7 @@
 //!
 //! Marker components for settings controls (resolution, volume, etc.).
 
-use bevy::prelude::Component;
+use bevy::prelude::{Component, Timer};
 
 /// Marker for the settings panel root.
 #[derive(Component)]
@@ -55,3 +55,16 @@ pub struct ControlsSettingsPanel;
 /// Marker for the General category panel.
 #[derive(Component)]
 pub struct GeneralSettingsPanel;
+
+/// Component to handle fade transitions for the settings menu.
+#[derive(Component)]
+pub struct SettingsFade {
+    pub timer: Timer,
+    pub direction: FadeDirection,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum FadeDirection {
+    In,
+    Out,
+}

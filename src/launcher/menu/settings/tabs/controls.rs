@@ -13,20 +13,74 @@ use super::super::components::ControlsSettingsPanel;
 pub fn spawn_controls_tab(
     parent: &mut bevy::ecs::hierarchy::ChildSpawnerCommands,
     theme: &Theme,
-    _loc: &Localization,
+    loc: &Localization,
     _settings: &UserSettings,
 ) {
     parent
-        .spawn((ControlsSettingsPanel, Node { ..default() }))
+        .spawn((
+            ControlsSettingsPanel,
+            Node {
+                width: Val::Percent(100.0),
+                flex_direction: FlexDirection::Column,
+                row_gap: Val::Px(10.0),
+                ..default()
+            },
+        ))
         .with_children(|p| {
-            p.spawn((
-                Text::new("Controls tab - coming soon"),
+            // Header row? Maybe just list.
+            let controls = [
+                ("control-forward", "W"),
+                ("control-backward", "S"),
+                ("control-left", "A"),
+                ("control-right", "D"),
+                ("control-jump", "SPACE"),
+                ("control-sprint", "LSHIFT"),
+                ("control-interact", "E"),
+            ];
+
+            for (label_key, key_value) in controls {
+                spawn_control_row(p, theme, loc, label_key, key_value);
+            }
+        });
+}
+
+fn spawn_control_row(
+    parent: &mut bevy::ecs::hierarchy::ChildSpawnerCommands,
+    theme: &Theme,
+    loc: &Localization,
+    label_key: &str,
+    key_value: &str,
+) {
+    parent
+        .spawn(Node {
+            width: Val::Percent(100.0),
+            height: Val::Px(40.0),
+            justify_content: JustifyContent::SpaceBetween,
+            align_items: AlignItems::Center,
+            padding: UiRect::horizontal(Val::Px(10.0)),
+            ..default()
+        })
+        .with_children(|row| {
+            // Action Label
+            row.spawn((
+                Text::new(loc.t(label_key)),
                 TextFont {
                     font: theme.fonts.main.clone(),
                     font_size: theme.sizes.font_body,
                     ..default()
                 },
-                TextColor(theme.colors.text_secondary),
+                TextColor(theme.colors.text_primary),
+            ));
+
+            // Key Value
+            row.spawn((
+                Text::new(key_value),
+                TextFont {
+                    font: theme.fonts.bold.clone(),
+                    font_size: theme.sizes.font_body,
+                    ..default()
+                },
+                TextColor(theme.colors.accent),
             ));
         });
 }

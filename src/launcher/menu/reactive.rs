@@ -63,7 +63,10 @@ pub fn broadcast_settings_changes(
 
         info!(
             "[Settings] Applied display settings: {}x{} fullscreen={} vsync={}",
-            settings.display.width, settings.display.height, settings.display.fullscreen, settings.display.vsync
+            settings.display.width,
+            settings.display.height,
+            settings.display.fullscreen,
+            settings.display.vsync
         );
     }
 
