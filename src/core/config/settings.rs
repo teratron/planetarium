@@ -21,6 +21,20 @@ pub enum Quality {
     Ultra,
 }
 
+/// Type-safe keys for settings that can be modified via UI.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Reflect)]
+pub enum SettingKey {
+    MasterVolume,
+    MusicVolume,
+    SfxVolume,
+    Fullscreen,
+    Vsync,
+    Resolution,
+    Quality,
+    Language,
+    Theme,
+}
+
 /// Graphics-related settings.
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Default)]
 #[serde(default)]
@@ -168,6 +182,7 @@ pub fn save_settings(paths: &AppPaths, settings: &UserSettings) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use proptest::prelude::*;
 
     #[test]
     fn default_settings_include_graphics() {
@@ -185,5 +200,19 @@ mod tests {
     fn default_settings_include_vsync() {
         let s = UserSettings::default();
         assert!(s.display.vsync);
+    }
+
+    proptest! {
+        #[test]
+        fn volume_settings_remain_in_range(volume in 0.0f32..=1.0) {
+            let mut s = UserSettings::default();
+            s.audio.master_volume = volume;
+            s.audio.music_volume = volume;
+            s.audio.sfx_volume = volume;
+
+            prop_assert!((0.0..=1.0).contains(&s.audio.master_volume));
+            prop_assert!((0.0..=1.0).contains(&s.audio.music_volume));
+            prop_assert!((0.0..=1.0).contains(&s.audio.sfx_volume));
+        }
     }
 }

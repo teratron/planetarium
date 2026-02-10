@@ -2,16 +2,46 @@
 //!
 //! Provides slider widget creation and interaction handling for numeric values.
 
+use crate::core::assets::AssetCache;
+use crate::core::config::settings::SettingKey;
 use crate::ui::theme::Theme;
 use bevy::prelude::*;
 
+use super::base::Widget;
 use super::components::{Slider, SliderFill};
 
 /// Small helper to encapsulate slider numeric parameters.
+#[derive(Debug, Clone)]
 pub struct SliderSpec {
     pub min: f32,
     pub max: f32,
     pub value: f32,
+}
+
+/// Spec for spawning a slider widget.
+#[derive(Debug, Clone)]
+pub struct SliderWidgetSpec {
+    pub label: String,
+    pub spec: SliderSpec,
+    pub setting_key: SettingKey,
+}
+
+/// Widget adapter for sliders.
+pub struct SliderWidget;
+
+impl Widget for SliderWidget {
+    type Spec = SliderWidgetSpec;
+
+    fn spawn(commands: &mut Commands, theme: &Theme, spec: Self::Spec, parent: Entity) -> Entity {
+        spawn_slider(
+            commands,
+            theme,
+            &spec.label,
+            spec.spec,
+            spec.setting_key,
+            parent,
+        )
+    }
 }
 
 /// Helper to spawn a slider widget.
@@ -20,7 +50,7 @@ pub fn spawn_slider(
     theme: &Theme,
     label: &str,
     spec: SliderSpec,
-    setting_key: &str,
+    setting_key: SettingKey,
     parent: Entity,
 ) -> Entity {
     let slider_height = 40.0;
@@ -45,7 +75,7 @@ pub fn spawn_slider(
                 min,
                 max,
                 value,
-                setting_key: setting_key.to_string(),
+                setting_key,
             },
         ))
         .id();
@@ -96,10 +126,12 @@ pub fn spawn_slider(
 }
 
 /// System to handle slider interaction and update UserSettings.
+#[allow(clippy::too_many_arguments)]
 pub fn slider_interaction_system(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     manifest: Res<crate::core::assets::AssetManifest>,
+    mut cache: ResMut<AssetCache>,
     audio_state: Res<crate::launcher::menu::reactive::RuntimeAudioState>,
     mut interaction_query: Query<(&Interaction, &GlobalTransform, &ComputedNode, &mut Slider)>,
     mut settings: ResMut<crate::core::config::UserSettings>,
@@ -137,9 +169,9 @@ pub fn slider_interaction_system(
                 slider.value = new_value;
 
                 // Play subtle scroll sound on value change
-                if let Some(path) = manifest.audio("scroll") {
+                if let Some(handle) = cache.get_or_load_audio("scroll", &asset_server, &manifest) {
                     commands.spawn((
-                        AudioPlayer::new(asset_server.load(path)),
+                        AudioPlayer::new(handle),
                         PlaybackSettings {
                             mode: bevy::audio::PlaybackMode::Despawn,
                             volume: bevy::audio::Volume::Linear(audio_state.sfx * 0.3), // Lower volume for slider
@@ -149,11 +181,11 @@ pub fn slider_interaction_system(
                 }
 
                 // Apply to settings
-                match slider.setting_key.as_str() {
-                    "master_volume" => settings.audio.master_volume = new_value,
-                    "music_volume" => settings.audio.music_volume = new_value,
-                    "sfx_volume" => settings.audio.sfx_volume = new_value,
-                    _ => warn!("[UI] Unknown slider setting key: {}", slider.setting_key),
+                match slider.setting_key {
+                    SettingKey::MasterVolume => settings.audio.master_volume = new_value,
+                    SettingKey::MusicVolume => settings.audio.music_volume = new_value,
+                    SettingKey::SfxVolume => settings.audio.sfx_volume = new_value,
+                    _ => warn!("[UI] Unknown slider setting key: {:?}", slider.setting_key),
                 }
             }
         }

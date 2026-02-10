@@ -3,7 +3,8 @@
 //! Provides UI controls for audio-related settings (volume levels, etc.).
 
 use crate::core::config::UserSettings;
-use crate::core::localization::Localization;
+use crate::core::config::settings::SettingKey;
+use crate::core::localization::{Localization, LocalizedStrings};
 use crate::ui::theme::Theme;
 use bevy::prelude::*;
 
@@ -14,6 +15,7 @@ pub fn spawn_audio_tab(
     parent: &mut bevy::ecs::hierarchy::ChildSpawnerCommands,
     theme: &Theme,
     loc: &Localization,
+    strings: &mut LocalizedStrings,
     settings: &UserSettings,
 ) {
     parent
@@ -30,25 +32,28 @@ pub fn spawn_audio_tab(
                 p,
                 theme,
                 loc,
+                strings,
                 "setting-master-volume",
                 settings.audio.master_volume,
-                "master_volume",
+                SettingKey::MasterVolume,
             );
             spawn_volume_slider(
                 p,
                 theme,
                 loc,
+                strings,
                 "setting-music-volume",
                 settings.audio.music_volume,
-                "music_volume",
+                SettingKey::MusicVolume,
             );
             spawn_volume_slider(
                 p,
                 theme,
                 loc,
+                strings,
                 "setting-sfx-volume",
                 settings.audio.sfx_volume,
-                "sfx_volume",
+                SettingKey::SfxVolume,
             );
         });
 }
@@ -58,16 +63,17 @@ fn spawn_volume_slider(
     parent: &mut bevy::ecs::hierarchy::ChildSpawnerCommands,
     theme: &Theme,
     loc: &Localization,
+    strings: &mut LocalizedStrings,
     key: &str,
     value: f32,
-    setting_key: &str,
+    setting_key: SettingKey,
 ) {
     let parent_entity = parent.target_entity();
     let commands = parent.commands_mut();
     super::super::super::widgets::spawn_slider(
         commands,
         theme,
-        &loc.t(key),
+        &strings.get(key, loc),
         super::super::super::widgets::SliderSpec {
             min: 0.0,
             max: 1.0,

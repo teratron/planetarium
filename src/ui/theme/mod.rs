@@ -2,11 +2,13 @@
 //!
 //! Centralizes design tokens (colors, fonts, sizes) for the application.
 
-use crate::core::assets::AssetManifest;
+use crate::core::assets::{AssetCache, AssetManifest};
+use crate::core::states::{AppState, ErrorState};
 use bevy::asset::AssetServer;
 use bevy::prelude::*;
 
 pub mod colors;
+pub mod constants;
 pub mod metrics;
 
 pub use colors::ThemeColors;
@@ -39,8 +41,11 @@ const FALLBACK_FONT_BYTES: &[u8] = include_bytes!("../../../assets/fonts/FiraSan
 pub fn setup_theme(
     asset_server: Res<AssetServer>,
     manifest: Res<AssetManifest>,
+    mut cache: ResMut<AssetCache>,
     mut theme: ResMut<Theme>,
     mut fonts: ResMut<Assets<Font>>,
+    mut next_state: ResMut<NextState<AppState>>,
+    mut error_state: ResMut<ErrorState>,
 ) {
     info!("[Theme] Hydrating theme assets...");
 
@@ -49,13 +54,16 @@ pub fn setup_theme(
     match Font::try_from_bytes(FALLBACK_FONT_BYTES.to_vec()) {
         Ok(font) => {
             theme.fonts.fallback = fonts.add(font);
+            info!("[Theme] Embedded fallback font loaded successfully");
         }
         Err(e) => {
             error!(
-                "[Theme] Failed to create fallback font from embedded bytes: {}",
+                "[Theme] CRITICAL: Failed to create fallback font from embedded bytes: {}",
                 e
             );
-            // Leave fallback as the default handle; disk-loaded fonts will replace it when available.
+            error_state.message = format!("Failed to initialize UI fonts: {}", e);
+            next_state.set(AppState::Error);
+            return;
         }
     }
 
@@ -70,8 +78,8 @@ pub fn setup_theme(
         .cloned()
         .unwrap_or_else(|| "fonts/FiraSans-Regular.ttf".to_string());
 
-    theme.fonts.main = asset_server.load(main_path);
-    theme.fonts.bold = asset_server.load(bold_path);
+    theme.fonts.main = cache.get_or_load_font("main", &main_path, &asset_server, &manifest);
+    theme.fonts.bold = cache.get_or_load_font("bold", &bold_path, &asset_server, &manifest);
 
     // Force initialization of colors and sizes if not already set (re-applying defaults is cheap)
     theme.colors = ThemeColors::default();

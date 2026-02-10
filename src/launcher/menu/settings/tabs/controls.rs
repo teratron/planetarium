@@ -3,7 +3,7 @@
 //! Provides UI controls for input-related settings (keybindings, controller config, etc.).
 
 use crate::core::config::UserSettings;
-use crate::core::localization::Localization;
+use crate::core::localization::{Localization, LocalizedStrings};
 use crate::ui::theme::Theme;
 use bevy::prelude::*;
 
@@ -14,6 +14,7 @@ pub fn spawn_controls_tab(
     parent: &mut bevy::ecs::hierarchy::ChildSpawnerCommands,
     theme: &Theme,
     loc: &Localization,
+    strings: &mut LocalizedStrings,
     _settings: &UserSettings,
 ) {
     parent
@@ -39,7 +40,7 @@ pub fn spawn_controls_tab(
             ];
 
             for (label_key, key_value) in controls {
-                spawn_control_row(p, theme, loc, label_key, key_value);
+                spawn_control_row(p, theme, loc, strings, label_key, key_value);
             }
         });
 }
@@ -48,6 +49,7 @@ fn spawn_control_row(
     parent: &mut bevy::ecs::hierarchy::ChildSpawnerCommands,
     theme: &Theme,
     loc: &Localization,
+    strings: &mut LocalizedStrings,
     label_key: &str,
     key_value: &str,
 ) {
@@ -63,7 +65,7 @@ fn spawn_control_row(
         .with_children(|row| {
             // Action Label
             row.spawn((
-                Text::new(loc.t(label_key)),
+                Text::new(strings.get(label_key, loc)),
                 TextFont {
                     font: theme.fonts.main.clone(),
                     font_size: theme.sizes.font_body,

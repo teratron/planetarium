@@ -34,6 +34,54 @@ impl AssetManifest {
     }
 }
 
+/// Runtime cache for frequently used asset handles.
+#[derive(Resource, Debug, Default)]
+#[non_exhaustive]
+pub struct AssetCache {
+    fonts: HashMap<String, Handle<Font>>,
+    audio: HashMap<String, Handle<AudioSource>>,
+}
+
+impl AssetCache {
+    /// Get or load a font by manifest key, falling back to the provided path.
+    pub fn get_or_load_font(
+        &mut self,
+        key: &str,
+        fallback_path: &str,
+        asset_server: &AssetServer,
+        manifest: &AssetManifest,
+    ) -> Handle<Font> {
+        if let Some(handle) = self.fonts.get(key) {
+            return handle.clone();
+        }
+
+        let path = manifest
+            .font(key)
+            .cloned()
+            .unwrap_or_else(|| fallback_path.to_string());
+        let handle: Handle<Font> = asset_server.load(path);
+        self.fonts.insert(key.to_string(), handle.clone());
+        handle
+    }
+
+    /// Get or load an audio asset by manifest key.
+    pub fn get_or_load_audio(
+        &mut self,
+        key: &str,
+        asset_server: &AssetServer,
+        manifest: &AssetManifest,
+    ) -> Option<Handle<AudioSource>> {
+        if let Some(handle) = self.audio.get(key) {
+            return Some(handle.clone());
+        }
+
+        let path = manifest.audio(key)?.to_string();
+        let handle: Handle<AudioSource> = asset_server.load(path);
+        self.audio.insert(key.to_string(), handle.clone());
+        Some(handle)
+    }
+}
+
 /// System to load the asset manifest from disk.
 pub fn setup_asset_manifest(
     mut commands: Commands,
@@ -68,4 +116,5 @@ pub fn setup_asset_manifest(
     };
 
     commands.insert_resource(manifest);
+    commands.insert_resource(AssetCache::default());
 }

@@ -3,7 +3,8 @@
 //! Provides UI controls for graphics-related settings (quality, resolution, etc.).
 
 use crate::core::config::UserSettings;
-use crate::core::localization::Localization;
+use crate::core::config::settings::SettingKey;
+use crate::core::localization::{Localization, LocalizedStrings};
 use crate::ui::theme::Theme;
 use bevy::prelude::*;
 
@@ -14,7 +15,8 @@ pub fn spawn_graphics_tab(
     parent: &mut bevy::ecs::hierarchy::ChildSpawnerCommands,
     theme: &Theme,
     loc: &Localization,
-    _settings: &UserSettings,
+    strings: &mut LocalizedStrings,
+    settings: &UserSettings,
 ) {
     parent
         .spawn((
@@ -35,21 +37,21 @@ pub fn spawn_graphics_tab(
                 commands,
                 theme,
                 super::super::super::widgets::DropdownSpec {
-                    label: loc.t("setting-quality"),
+                    label: strings.get("setting-quality", loc),
                     options: vec![
-                        loc.t("val-low"),
-                        loc.t("val-medium"),
-                        loc.t("val-high"),
-                        loc.t("val-ultra"),
+                        strings.get("val-low", loc),
+                        strings.get("val-medium", loc),
+                        strings.get("val-high", loc),
+                        strings.get("val-ultra", loc),
                     ],
                     display_values: Some(vec![
-                        loc.t("val-low"),
-                        loc.t("val-medium"),
-                        loc.t("val-high"),
-                        loc.t("val-ultra"),
+                        strings.get("val-low", loc),
+                        strings.get("val-medium", loc),
+                        strings.get("val-high", loc),
+                        strings.get("val-ultra", loc),
                     ]),
                     selected_index: 2,
-                    setting_key: "quality".to_string(),
+                    setting_key: SettingKey::Quality,
                 },
                 parent_entity,
             );
@@ -59,7 +61,7 @@ pub fn spawn_graphics_tab(
                 commands,
                 theme,
                 super::super::super::widgets::DropdownSpec {
-                    label: loc.t("setting-resolution"),
+                    label: strings.get("setting-resolution", loc),
                     options: vec![
                         "1280x720".to_string(),
                         "1920x1080".to_string(),
@@ -71,43 +73,43 @@ pub fn spawn_graphics_tab(
                         "2560x1440".to_string(),
                     ]),
                     selected_index: 1,
-                    setting_key: "resolution".to_string(),
+                    setting_key: SettingKey::Resolution,
                 },
                 parent_entity,
             );
 
             // Fullscreen Dropdown
             let fullscreen_options = vec!["false".to_string(), "true".to_string()];
-            let fullscreen_display = vec![loc.t("val-off"), loc.t("val-on")];
-            let fullscreen_index = if _settings.display.fullscreen { 1 } else { 0 };
+            let fullscreen_display = vec![strings.get("val-off", loc), strings.get("val-on", loc)];
+            let fullscreen_index = if settings.display.fullscreen { 1 } else { 0 };
 
             super::super::super::widgets::spawn_dropdown(
                 commands,
                 theme,
                 super::super::super::widgets::DropdownSpec {
-                    label: loc.t("setting-fullscreen"),
+                    label: strings.get("setting-fullscreen", loc),
                     options: fullscreen_options,
                     display_values: Some(fullscreen_display),
                     selected_index: fullscreen_index,
-                    setting_key: "fullscreen".to_string(),
+                    setting_key: SettingKey::Fullscreen,
                 },
                 parent_entity,
             );
 
             // VSync Dropdown
             let vsync_options = vec!["false".to_string(), "true".to_string()];
-            let vsync_display = vec![loc.t("val-off"), loc.t("val-on")];
-            let vsync_index = if _settings.display.vsync { 1 } else { 0 };
+            let vsync_display = vec![strings.get("val-off", loc), strings.get("val-on", loc)];
+            let vsync_index = if settings.display.vsync { 1 } else { 0 };
 
             super::super::super::widgets::spawn_dropdown(
                 commands,
                 theme,
                 super::super::super::widgets::DropdownSpec {
-                    label: loc.t("setting-vsync"),
+                    label: strings.get("setting-vsync", loc),
                     options: vsync_options,
                     display_values: Some(vsync_display),
                     selected_index: vsync_index,
-                    setting_key: "vsync".to_string(),
+                    setting_key: SettingKey::Vsync,
                 },
                 parent_entity,
             );

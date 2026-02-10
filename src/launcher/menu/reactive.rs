@@ -1,4 +1,5 @@
 use crate::core::config::UserSettings;
+use crate::ui::theme::constants;
 use crate::ui::theme::{Theme, ThemeColors};
 use bevy::prelude::*;
 
@@ -23,6 +24,24 @@ impl Default for RuntimeAudioState {
     }
 }
 
+/// Tracks pending settings changes to debounce expensive operations.
+#[derive(Resource)]
+pub struct SettingsChangeTracker {
+    pub pending_display_changes: bool,
+    pub last_change_time: f32,
+    pub debounce_duration: f32,
+}
+
+impl Default for SettingsChangeTracker {
+    fn default() -> Self {
+        Self {
+            pending_display_changes: false,
+            last_change_time: 0.0,
+            debounce_duration: constants::timing::SETTINGS_DISPLAY_DEBOUNCE, // Debounce for expensive display changes
+        }
+    }
+}
+
 /// Watches the `UserSettings` resource and applies changes immediately to the engine.
 ///
 /// Specifically handles window resolution/mode changes and synchronizes
@@ -32,45 +51,41 @@ pub fn broadcast_settings_changes(
     mut prev: Local<Option<UserSettings>>,
     mut windows: Query<&mut Window>,
     mut runtime: ResMut<RuntimeAudioState>,
+    mut tracker: ResMut<SettingsChangeTracker>,
+    time: Res<Time>,
 ) {
-    if !settings.is_changed() {
+    // Initialize prev if None (first run)
+    if prev.is_none() {
+        // Apply everything immediately on startup
+        if let Ok(mut window) = windows.single_mut() {
+            window.resolution.set(
+                settings.display.width as f32,
+                settings.display.height as f32,
+            );
+            window.mode = if settings.display.fullscreen {
+                bevy::window::WindowMode::Fullscreen(
+                    bevy::window::MonitorSelection::Current,
+                    bevy::window::VideoModeSelection::Current,
+                )
+            } else {
+                bevy::window::WindowMode::Windowed
+            };
+            window.present_mode = if settings.display.vsync {
+                bevy::window::PresentMode::AutoVsync
+            } else {
+                bevy::window::PresentMode::AutoNoVsync
+            };
+        }
+
+        runtime.master = settings.audio.master_volume;
+        runtime.music = settings.audio.music_volume;
+        runtime.sfx = settings.audio.sfx_volume;
+
+        *prev = Some(settings.clone());
         return;
     }
 
-    // Display
-    if prev.as_ref().map(|p| &p.display) != Some(&settings.display)
-        && let Ok(mut window) = windows.single_mut()
-    {
-        // Set resolution using provided API
-        window.resolution.set(
-            settings.display.width as f32,
-            settings.display.height as f32,
-        );
-        window.mode = if settings.display.fullscreen {
-            bevy::window::WindowMode::Fullscreen(
-                bevy::window::MonitorSelection::Current,
-                bevy::window::VideoModeSelection::Current,
-            )
-        } else {
-            bevy::window::WindowMode::Windowed
-        };
-
-        window.present_mode = if settings.display.vsync {
-            bevy::window::PresentMode::AutoVsync
-        } else {
-            bevy::window::PresentMode::AutoNoVsync
-        };
-
-        info!(
-            "[Settings] Applied display settings: {}x{} fullscreen={} vsync={}",
-            settings.display.width,
-            settings.display.height,
-            settings.display.fullscreen,
-            settings.display.vsync
-        );
-    }
-
-    // Audio
+    // Audio - Apply immediately (low cost, needs responsiveness)
     if prev.as_ref().map(|p| &p.audio) != Some(&settings.audio) {
         runtime.master = settings.audio.master_volume;
         runtime.music = settings.audio.music_volume;
@@ -79,9 +94,59 @@ pub fn broadcast_settings_changes(
             "[Settings] Applied audio settings: master={} music={} sfx={}",
             runtime.master, runtime.music, runtime.sfx
         );
+        // Update cached audio settings
+        if let Some(p) = prev.as_mut() {
+            p.audio = settings.audio.clone();
+        }
     }
 
-    *prev = Some(settings.clone());
+    // Display - Debounce expensive changes
+    if prev.as_ref().map(|p| &p.display) != Some(&settings.display) {
+        tracker.pending_display_changes = true;
+        tracker.last_change_time = time.elapsed_secs();
+        // Do NOT update prev.display yet
+    }
+
+    // Apply pending display changes if debounce timer expired
+    if tracker.pending_display_changes
+        && (time.elapsed_secs() - tracker.last_change_time) > tracker.debounce_duration
+    {
+        if let Ok(mut window) = windows.single_mut() {
+            // Set resolution using provided API
+            window.resolution.set(
+                settings.display.width as f32,
+                settings.display.height as f32,
+            );
+            window.mode = if settings.display.fullscreen {
+                bevy::window::WindowMode::Fullscreen(
+                    bevy::window::MonitorSelection::Current,
+                    bevy::window::VideoModeSelection::Current,
+                )
+            } else {
+                bevy::window::WindowMode::Windowed
+            };
+
+            window.present_mode = if settings.display.vsync {
+                bevy::window::PresentMode::AutoVsync
+            } else {
+                bevy::window::PresentMode::AutoNoVsync
+            };
+
+            info!(
+                "[Settings] Applied display settings (debounced): {}x{} fullscreen={} vsync={}",
+                settings.display.width,
+                settings.display.height,
+                settings.display.fullscreen,
+                settings.display.vsync
+            );
+        }
+
+        // Update cached display settings
+        if let Some(p) = prev.as_mut() {
+            p.display = settings.display.clone();
+        }
+        tracker.pending_display_changes = false;
+    }
 }
 
 /// Watches for theme changes and updates the global Theme resource.
@@ -147,4 +212,9 @@ pub fn auto_save_settings(
         crate::core::config::save_settings(&paths, &settings);
         timer.0.pause();
     }
+}
+
+/// Run condition: only tick auto-save when the timer is active.
+pub fn settings_auto_save_active(timer: Res<SettingsAutoSaveTimer>) -> bool {
+    !timer.0.is_paused()
 }

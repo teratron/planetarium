@@ -3,7 +3,8 @@
 //! Provides UI controls for general settings (language, accessibility, etc.).
 
 use crate::core::config::UserSettings;
-use crate::core::localization::Localization;
+use crate::core::config::settings::SettingKey;
+use crate::core::localization::{Localization, LocalizedStrings};
 use crate::ui::theme::Theme;
 use bevy::prelude::*;
 
@@ -14,6 +15,7 @@ pub fn spawn_general_tab(
     parent: &mut bevy::ecs::hierarchy::ChildSpawnerCommands,
     theme: &Theme,
     loc: &Localization,
+    strings: &mut LocalizedStrings,
     settings: &UserSettings,
 ) {
     parent
@@ -30,7 +32,7 @@ pub fn spawn_general_tab(
 
             // Language dropdown: internal options are locale IDs, display values are localized names
             let lang_options = vec!["en-US".to_string(), "ru-RU".to_string()];
-            let lang_display = vec![loc.t("lang-en"), loc.t("lang-ru")];
+            let lang_display = vec![strings.get("lang-en", loc), strings.get("lang-ru", loc)];
             // Determine selected index by matching settings language
             let selected_index = lang_options
                 .iter()
@@ -41,18 +43,21 @@ pub fn spawn_general_tab(
                 commands,
                 theme,
                 super::super::super::widgets::DropdownSpec {
-                    label: loc.t("setting-language"),
+                    label: strings.get("setting-language", loc),
                     options: lang_options,
                     display_values: Some(lang_display),
                     selected_index,
-                    setting_key: "language".to_string(),
+                    setting_key: SettingKey::Language,
                 },
                 parent_entity,
             );
 
             // Theme dropdown
             let theme_options = vec!["dark".to_string(), "light".to_string()];
-            let theme_display = vec![loc.t("theme-dark"), loc.t("theme-light")];
+            let theme_display = vec![
+                strings.get("theme-dark", loc),
+                strings.get("theme-light", loc),
+            ];
             let theme_index = theme_options
                 .iter()
                 .position(|t| t == &settings.theme)
@@ -62,11 +67,11 @@ pub fn spawn_general_tab(
                 commands,
                 theme,
                 super::super::super::widgets::DropdownSpec {
-                    label: loc.t("setting-theme"),
+                    label: strings.get("setting-theme", loc),
                     options: theme_options,
                     display_values: Some(theme_display),
                     selected_index: theme_index,
-                    setting_key: "theme".to_string(),
+                    setting_key: SettingKey::Theme,
                 },
                 parent_entity,
             );

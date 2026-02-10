@@ -5,6 +5,7 @@
 
 use super::settings::SettingsOpen;
 use super::widgets::{ButtonAction, PrimaryButton, spawn_primary_button};
+use crate::core::localization::LocalizedStrings;
 use crate::core::states::AppState;
 use crate::ui::fading::ScreenFade;
 use crate::ui::theme::Theme;
@@ -23,10 +24,27 @@ use super::layout;
 
 /// System to spawn the main menu UI.
 /// Includes a title and professional primary buttons (Play, Settings, Exit).
+///
+/// # Examples
+/// ```no_run
+/// # use bevy::prelude::*;
+/// # use planetarium::launcher::menu::screen::spawn_main_menu;
+/// # use planetarium::ui::theme::Theme;
+/// # use planetarium::core::localization::{Localization, LocalizedStrings};
+/// fn example_system(
+///     mut commands: Commands,
+///     theme: Res<Theme>,
+///     loc: Res<Localization>,
+///     mut strings: ResMut<LocalizedStrings>,
+/// ) {
+///     spawn_main_menu(commands, theme, loc, strings);
+/// }
+/// ```
 pub fn spawn_main_menu(
     mut commands: Commands,
     theme: Res<Theme>,
     loc: Res<crate::core::localization::Localization>,
+    mut strings: ResMut<LocalizedStrings>,
 ) {
     info!("[MenuPlugin] Spawning main menu...");
 
@@ -34,8 +52,8 @@ pub fn spawn_main_menu(
     let panel_id = spawn_panel(&mut commands, &theme);
     let buttons_id = spawn_buttons_container(&mut commands);
 
-    spawn_menu_buttons(&mut commands, &theme, &loc, buttons_id);
-    spawn_title(&mut commands, &theme, &loc, panel_id);
+    spawn_menu_buttons(&mut commands, &theme, &loc, &mut strings, buttons_id);
+    spawn_title(&mut commands, &theme, &loc, &mut strings, panel_id);
 
     commands.entity(panel_id).add_child(buttons_id);
     commands.entity(root_id).add_child(panel_id);
@@ -95,11 +113,12 @@ fn spawn_title(
     commands: &mut Commands,
     theme: &Theme,
     loc: &crate::core::localization::Localization,
+    strings: &mut LocalizedStrings,
     panel_id: Entity,
 ) {
     commands.entity(panel_id).with_children(|parent| {
         parent.spawn((
-            Text::new(loc.t("menu-title")),
+            Text::new(strings.get("menu-title", loc)),
             TextFont {
                 font: theme.fonts.bold.clone(),
                 font_size: theme.sizes.font_h1,
@@ -119,12 +138,13 @@ fn spawn_menu_buttons(
     commands: &mut Commands,
     theme: &Theme,
     loc: &crate::core::localization::Localization,
+    strings: &mut LocalizedStrings,
     container_id: Entity,
 ) {
     let buttons = [
-        (loc.t("menu-play"), ButtonAction::Play),
-        (loc.t("menu-settings"), ButtonAction::Settings),
-        (loc.t("menu-exit"), ButtonAction::Exit),
+        (strings.get("menu-play", loc), ButtonAction::Play),
+        (strings.get("menu-settings", loc), ButtonAction::Settings),
+        (strings.get("menu-exit", loc), ButtonAction::Exit),
     ];
 
     for (label, action) in buttons {

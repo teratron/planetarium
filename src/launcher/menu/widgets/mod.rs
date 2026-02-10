@@ -5,15 +5,18 @@
 
 use crate::core::config::settings::Quality;
 
+pub mod base;
 pub mod buttons;
 pub mod components;
 pub mod constants;
 pub mod dropdowns;
 pub mod sliders;
 
+pub use base::Widget;
 pub use buttons::animate_button_hover;
 pub use buttons::button_interaction_system;
 pub use buttons::spawn_primary_button;
+pub use buttons::{PrimaryButtonSpec, PrimaryButtonWidget};
 pub use components::{
     ButtonAction, ButtonHoverState, Dropdown, DropdownOption, DropdownOptionsList, DropdownText,
     PrimaryButton, Slider, SliderFill, SliderTrack,
@@ -21,10 +24,10 @@ pub use components::{
 pub use constants::button as button_constants;
 pub use dropdowns::dropdown_interaction_system;
 pub use dropdowns::dropdown_option_interaction_system;
-pub use dropdowns::{DropdownSpec, spawn_dropdown};
+pub use dropdowns::{DropdownSpec, DropdownWidget, spawn_dropdown};
 pub use sliders::slider_interaction_system;
 pub use sliders::update_slider_visuals;
-pub use sliders::{SliderSpec, spawn_slider};
+pub use sliders::{SliderSpec, SliderWidget, SliderWidgetSpec, spawn_slider};
 
 /// Helper to convert dropdown index into a `Quality` value.
 pub fn quality_from_index(index: usize) -> Quality {

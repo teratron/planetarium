@@ -2,6 +2,7 @@
 //!
 //! Marker components for buttons, sliders, dropdowns, and other interactive widgets.
 
+use crate::core::config::settings::SettingKey;
 use bevy::prelude::{Color, Component, Entity};
 
 /// Marker component for primary buttons (Play, Settings, Exit).
@@ -34,7 +35,7 @@ pub struct Slider {
     pub min: f32,
     pub max: f32,
     pub value: f32,
-    pub setting_key: String,
+    pub setting_key: SettingKey,
 }
 
 /// Marker for interactive slider track.
@@ -54,7 +55,7 @@ pub struct Dropdown {
     /// used for visual labels while `options` contains internal values (e.g., locale IDs).
     pub display_values: Option<Vec<String>>,
     pub selected_index: usize,
-    pub setting_key: String,
+    pub setting_key: SettingKey,
     pub is_open: bool,
 }
 

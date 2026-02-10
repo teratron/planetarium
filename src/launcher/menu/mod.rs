@@ -11,8 +11,9 @@ pub mod settings;
 pub mod widgets;
 
 use reactive::{
-    RuntimeAudioState, SettingsAutoSaveTimer, auto_save_settings, broadcast_settings_changes,
-    broadcast_theme_changes, schedule_settings_save,
+    RuntimeAudioState, SettingsAutoSaveTimer, SettingsChangeTracker, auto_save_settings,
+    broadcast_settings_changes, broadcast_theme_changes, schedule_settings_save,
+    settings_auto_save_active,
 };
 use screen::{despawn_main_menu, handle_menu_button_clicks, spawn_main_menu};
 use settings::{
@@ -62,24 +63,34 @@ impl Plugin for MenuPlugin {
                 spawn_settings_if_needed,
                 handle_settings_tab_clicks,
                 update_settings_tab_content,
-                update_settings_ui,
                 animate_settings_fade,
             )
                 .chain()
+                .run_if(in_state(AppState::MainMenu)),
+        );
+        app.add_systems(
+            Update,
+            update_settings_ui
+                .run_if(resource_changed::<crate::core::config::UserSettings>)
                 .run_if(in_state(AppState::MainMenu)),
         );
 
         // Reactive settings: runtime audio state + apply-on-change system
         app.init_resource::<RuntimeAudioState>();
         app.init_resource::<SettingsAutoSaveTimer>();
+        app.init_resource::<SettingsChangeTracker>();
         app.add_systems(
             Update,
             (
-                broadcast_settings_changes,
-                broadcast_theme_changes,
-                schedule_settings_save,
-                auto_save_settings,
-                crate::core::localization::apply_language_change_system,
+                broadcast_settings_changes
+                    .run_if(resource_changed::<crate::core::config::UserSettings>),
+                broadcast_theme_changes
+                    .run_if(resource_changed::<crate::core::config::UserSettings>),
+                schedule_settings_save
+                    .run_if(resource_changed::<crate::core::config::UserSettings>),
+                auto_save_settings.run_if(settings_auto_save_active),
+                crate::core::localization::apply_language_change_system
+                    .run_if(resource_changed::<crate::core::config::UserSettings>),
             ),
         );
 

@@ -2,9 +2,12 @@
 //!
 //! Provides dropdown/select widget creation and interaction handling.
 
+use crate::core::assets::AssetCache;
+use crate::core::config::settings::SettingKey;
 use crate::ui::theme::Theme;
 use bevy::prelude::*;
 
+use super::base::Widget;
 use super::components::{
     ButtonHoverState, Dropdown, DropdownOption, DropdownOptionsList, DropdownText,
 };
@@ -16,7 +19,18 @@ pub struct DropdownSpec {
     pub options: Vec<String>,
     pub display_values: Option<Vec<String>>,
     pub selected_index: usize,
-    pub setting_key: String,
+    pub setting_key: SettingKey,
+}
+
+/// Widget adapter for dropdowns.
+pub struct DropdownWidget;
+
+impl Widget for DropdownWidget {
+    type Spec = DropdownSpec;
+
+    fn spawn(commands: &mut Commands, theme: &Theme, spec: Self::Spec, parent: Entity) -> Entity {
+        spawn_dropdown(commands, theme, spec, parent)
+    }
 }
 
 /// System to create a dropdown widget.
@@ -77,14 +91,14 @@ pub fn spawn_dropdown(
                     ..default()
                 },
                 BackgroundColor(theme.colors.surface),
-                Dropdown {
-                    label: label.to_string(),
-                    options: options.clone(),
-                    display_values: display_values.clone(),
-                    selected_index,
-                    setting_key: setting_key.to_string(),
-                    is_open: false,
-                },
+                    Dropdown {
+                        label: label.to_string(),
+                        options: options.clone(),
+                        display_values: display_values.clone(),
+                        selected_index,
+                        setting_key,
+                        is_open: false,
+                    },
                 ButtonHoverState {
                     base_color: theme.colors.surface,
                     hover_color: theme.colors.surface_light,
@@ -114,11 +128,13 @@ pub fn spawn_dropdown(
 
 /// System to handle dropdown toggle.
 #[allow(clippy::type_complexity)]
+#[allow(clippy::too_many_arguments)]
 pub fn dropdown_interaction_system(
     mut commands: Commands,
     theme: Res<Theme>,
     asset_server: Res<AssetServer>,
     manifest: Res<crate::core::assets::AssetManifest>,
+    mut cache: ResMut<AssetCache>,
     audio_state: Res<crate::launcher::menu::reactive::RuntimeAudioState>,
     mut dropdown_query: Query<
         (Entity, &Interaction, &mut Dropdown, &mut BackgroundColor),
@@ -133,9 +149,9 @@ pub fn dropdown_interaction_system(
 
             // Play open/close sound
             let sound_key = if dropdown.is_open { "open" } else { "close" };
-            if let Some(path) = manifest.audio(sound_key) {
+            if let Some(handle) = cache.get_or_load_audio(sound_key, &asset_server, &manifest) {
                 commands.spawn((
-                    AudioPlayer::new(asset_server.load(path)),
+                    AudioPlayer::new(handle),
                     PlaybackSettings {
                         mode: bevy::audio::PlaybackMode::Despawn,
                         volume: bevy::audio::Volume::Linear(audio_state.sfx),
@@ -228,6 +244,7 @@ pub fn dropdown_option_interaction_system(
     mut settings: ResMut<crate::core::config::UserSettings>,
     asset_server: Res<AssetServer>,
     manifest: Res<crate::core::assets::AssetManifest>,
+    mut cache: ResMut<AssetCache>,
     audio_state: Res<crate::launcher::menu::reactive::RuntimeAudioState>,
     mut dropdown_query: Query<(&mut Dropdown, &Children)>,
     mut text_query: Query<&mut Text, With<DropdownText>>,
@@ -242,9 +259,9 @@ pub fn dropdown_option_interaction_system(
             dropdown.is_open = false;
 
             // Play select sound
-            if let Some(path) = manifest.audio("select") {
+            if let Some(handle) = cache.get_or_load_audio("select", &asset_server, &manifest) {
                 commands.spawn((
-                    AudioPlayer::new(asset_server.load(path)),
+                    AudioPlayer::new(handle),
                     PlaybackSettings {
                         mode: bevy::audio::PlaybackMode::Despawn,
                         volume: bevy::audio::Volume::Linear(audio_state.sfx),
@@ -271,14 +288,14 @@ pub fn dropdown_option_interaction_system(
             }
 
             // Apply setting
-            match dropdown.setting_key.as_str() {
-                "quality" => {
+            match dropdown.setting_key {
+                SettingKey::Quality => {
                     // Map index to Quality enum and apply to settings
                     let quality = super::quality_from_index(option.index);
                     settings.graphics.quality = quality.clone();
                     info!("[Settings] Quality set to {:?}", quality);
                 }
-                "resolution" => {
+                SettingKey::Resolution => {
                     if let Some((w, h)) = dropdown
                         .options
                         .get(option.index)
@@ -289,7 +306,7 @@ pub fn dropdown_option_interaction_system(
                         info!("[Settings] Resolution set to {}x{}", w, h);
                     }
                 }
-                "fullscreen" => {
+                SettingKey::Fullscreen => {
                     if let Some(val) = dropdown
                         .options
                         .get(option.index)
@@ -299,7 +316,7 @@ pub fn dropdown_option_interaction_system(
                         info!("[Settings] Fullscreen set to {}", val);
                     }
                 }
-                "vsync" => {
+                SettingKey::Vsync => {
                     if let Some(val) = dropdown
                         .options
                         .get(option.index)
@@ -309,20 +326,23 @@ pub fn dropdown_option_interaction_system(
                         info!("[Settings] VSync set to {}", val);
                     }
                 }
-                "language" => {
+                SettingKey::Language => {
                     // Apply language string directly (options should contain locale IDs like "en-US"/"ru-RU")
                     if let Some(lang) = dropdown.options.get(option.index) {
                         settings.language = lang.clone();
                         info!("[Settings] Language set to {}", lang);
                     }
                 }
-                "theme" => {
+                SettingKey::Theme => {
                     if let Some(theme) = dropdown.options.get(option.index) {
                         settings.theme = theme.clone();
                         info!("[Settings] Theme set to {}", theme);
                     }
                 }
-                _ => warn!("[Settings] Unknown dropdown key: {}", dropdown.setting_key),
+                _ => warn!(
+                    "[Settings] Unknown dropdown key: {:?}",
+                    dropdown.setting_key
+                ),
             }
 
             // Close dropdown (despawn list)

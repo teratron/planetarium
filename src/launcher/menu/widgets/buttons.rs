@@ -2,11 +2,14 @@
 //!
 //! Provides primary button widget creation and interaction handling.
 
+use crate::core::assets::AssetCache;
 use crate::core::assets::AssetManifest;
 use crate::ui::theme::Theme;
+use crate::ui::theme::constants::animation;
 use bevy::prelude::*;
 
-use super::components::{ButtonHoverState, PrimaryButton};
+use super::base::Widget;
+use super::components::{ButtonAction, ButtonHoverState, PrimaryButton};
 
 /// Component to track button hover animation state
 #[derive(Component)]
@@ -16,12 +19,30 @@ pub struct HoverAnimationState {
     pub is_hovered: bool,
 }
 
+/// Spec for spawning a primary button widget.
+#[derive(Debug, Clone)]
+pub struct PrimaryButtonSpec {
+    pub label: String,
+    pub action: ButtonAction,
+}
+
+/// Widget adapter for primary buttons.
+pub struct PrimaryButtonWidget;
+
+impl Widget for PrimaryButtonWidget {
+    type Spec = PrimaryButtonSpec;
+
+    fn spawn(commands: &mut Commands, theme: &Theme, spec: Self::Spec, parent: Entity) -> Entity {
+        spawn_primary_button(commands, theme, &spec.label, spec.action, parent)
+    }
+}
+
 /// Spawns a high-quality primary button widget.
 pub fn spawn_primary_button(
     commands: &mut Commands,
     theme: &Theme,
     label: &str,
-    action: super::components::ButtonAction,
+    action: ButtonAction,
     parent: Entity,
 ) -> Entity {
     let button_color = theme.colors.accent;
@@ -50,7 +71,7 @@ pub fn spawn_primary_button(
             Transform::from_scale(Vec3::ONE),
             HoverAnimationState {
                 base_scale: Vec3::ONE,
-                target_scale: Vec3::splat(1.05),
+                target_scale: Vec3::splat(animation::BUTTON_HOVER_SCALE),
                 is_hovered: false,
             },
         ))
@@ -80,6 +101,7 @@ pub fn button_interaction_system(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     manifest: Res<AssetManifest>,
+    mut cache: ResMut<AssetCache>,
     audio_state: Res<crate::launcher::menu::reactive::RuntimeAudioState>,
     mut interaction_query: Query<
         (&Interaction, &mut HoverAnimationState),
@@ -95,9 +117,9 @@ pub fn button_interaction_system(
             Interaction::Hovered => {
                 anim_state.is_hovered = true;
 
-                if let Some(path) = manifest.audio("hover") {
+                if let Some(handle) = cache.get_or_load_audio("hover", &asset_server, &manifest) {
                     commands.spawn((
-                        AudioPlayer::new(asset_server.load(path)),
+                        AudioPlayer::new(handle),
                         PlaybackSettings {
                             mode: bevy::audio::PlaybackMode::Despawn,
                             volume: bevy::audio::Volume::Linear(audio_state.sfx * 0.5),
@@ -107,9 +129,9 @@ pub fn button_interaction_system(
                 }
             }
             Interaction::Pressed => {
-                if let Some(path) = manifest.audio("click") {
+                if let Some(handle) = cache.get_or_load_audio("click", &asset_server, &manifest) {
                     commands.spawn((
-                        AudioPlayer::new(asset_server.load(path)),
+                        AudioPlayer::new(handle),
                         PlaybackSettings {
                             mode: bevy::audio::PlaybackMode::Despawn,
                             volume: bevy::audio::Volume::Linear(audio_state.sfx),
@@ -137,7 +159,7 @@ pub fn animate_button_hover(
 ) {
     let dt = time.delta_secs();
     // Fast interpolation speed for snappy but smooth feel (approx 0.2s full transition)
-    let lerp_speed = 15.0;
+    let lerp_speed = animation::BUTTON_HOVER_LERP_SPEED;
     let t = (lerp_speed * dt).min(1.0);
 
     for (mut transform, mut bg, anim_state, color_state) in &mut query {

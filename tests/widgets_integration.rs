@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use planetarium::core::config::settings::SettingKey;
 use planetarium::launcher::menu::widgets::{
     ButtonAction, SliderSpec, spawn_primary_button, spawn_slider,
 };
@@ -44,7 +45,14 @@ fn spawn_slider_creates_slider_component() {
             max: 100.0,
             value: 42.0,
         };
-        spawn_slider(&mut commands, &theme, "VOL", spec, "audio.master", parent);
+        spawn_slider(
+            &mut commands,
+            &theme,
+            "VOL",
+            spec,
+            SettingKey::MasterVolume,
+            parent,
+        );
     });
 
     app.update();
@@ -58,7 +66,7 @@ fn spawn_slider_creates_slider_component() {
             assert_eq!(slider.min, 0.0);
             assert_eq!(slider.max, 100.0);
             assert_eq!(slider.value, 42.0);
-            assert_eq!(slider.setting_key, "audio.master");
+            assert_eq!(slider.setting_key, SettingKey::MasterVolume);
             found = true;
         }
         assert!(found, "Slider was not spawned by spawn_slider");

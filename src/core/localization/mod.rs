@@ -5,6 +5,7 @@
 
 use bevy::prelude::*;
 use fluent_bundle::FluentArgs;
+use std::collections::HashMap;
 use unic_langid::LanguageIdentifier;
 
 pub mod systems;
@@ -25,6 +26,46 @@ pub struct Localization {
     fallback_bundle: FluentBundleType,
     /// Absolute path to the assets directory.
     assets_dir: std::path::PathBuf,
+}
+
+/// Cache for localized strings to avoid repeated bundle lookups during UI spawn.
+#[derive(Resource, Debug, Default)]
+#[non_exhaustive]
+pub struct LocalizedStrings {
+    cache: HashMap<String, String>,
+    locale_tag: String,
+}
+
+impl LocalizedStrings {
+    pub fn new(locale: &LanguageIdentifier) -> Self {
+        Self {
+            cache: HashMap::new(),
+            locale_tag: locale.to_string(),
+        }
+    }
+
+    /// Fetch a localized string, caching results for the current locale.
+    pub fn get(&mut self, key: &str, loc: &Localization) -> String {
+        let current = loc.current_locale.to_string();
+        if self.locale_tag != current {
+            self.locale_tag = current;
+            self.cache.clear();
+        }
+
+        if let Some(value) = self.cache.get(key) {
+            return value.clone();
+        }
+
+        let value = loc.t(key);
+        self.cache.insert(key.to_string(), value.clone());
+        value
+    }
+
+    /// Clears the cache and updates the tracked locale.
+    pub fn invalidate(&mut self, locale: &LanguageIdentifier) {
+        self.locale_tag = locale.to_string();
+        self.cache.clear();
+    }
 }
 
 impl Localization {

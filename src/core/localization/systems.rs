@@ -5,8 +5,8 @@
 use bevy::prelude::*;
 use fluent_bundle::bundle::FluentBundle;
 
-use super::Localization;
 use super::utils::{load_ftl_into_bundle, parse_language_id};
+use super::{Localization, LocalizedStrings};
 
 /// System to load initial locales based on user settings.
 pub fn setup_localization(
@@ -56,11 +56,12 @@ pub fn setup_localization(
     }
 
     commands.insert_resource(Localization::new(
-        primary_lang,
+        primary_lang.clone(),
         main_bundle,
         fallback_bundle,
         paths.assets_dir.clone(),
     ));
+    commands.insert_resource(LocalizedStrings::new(&primary_lang));
 }
 
 /// System that applies language changes at runtime when `UserSettings` changes.
@@ -69,6 +70,7 @@ pub fn apply_language_change_system(
     mut prev: Local<Option<String>>,
     paths: Res<crate::core::config::AppPaths>,
     mut commands: Commands,
+    mut strings: ResMut<LocalizedStrings>,
 ) {
     if !settings.is_changed() {
         return;
@@ -114,11 +116,12 @@ pub fn apply_language_change_system(
         }
 
         commands.insert_resource(Localization::new(
-            primary_lang,
+            primary_lang.clone(),
             main_bundle,
             fallback_bundle,
             paths.assets_dir.clone(),
         ));
+        strings.invalidate(&primary_lang);
 
         info!(
             "[Localization] Language resource updated to {}",
