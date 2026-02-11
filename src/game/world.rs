@@ -11,6 +11,12 @@ pub struct WorldPlugin;
 impl Plugin for WorldPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(AppState::InGame), setup_game_world)
+            .add_systems(
+                Update,
+                rotate_planet
+                    .run_if(in_state(AppState::InGame))
+                    .run_if(crate::game::pause_menu::state::gameplay_active),
+            )
             .add_systems(OnExit(AppState::InGame), cleanup_game_world);
     }
 }
@@ -18,6 +24,10 @@ impl Plugin for WorldPlugin {
 /// Marker component for the game world entities.
 #[derive(Component)]
 pub struct GameWorldRoot;
+
+/// Marker for entities with idle rotation while gameplay is active.
+#[derive(Component)]
+struct Rotates;
 
 fn setup_game_world(
     mut commands: Commands,
@@ -42,6 +52,7 @@ fn setup_game_world(
                         ..default()
                     })),
                     Transform::from_xyz(0.0, 0.0, 0.0),
+                    Rotates,
                 ));
             } else {
                 warn!("[Game] Failed to generate sphere mesh; skipping planet placeholder.");
@@ -65,6 +76,13 @@ fn setup_game_world(
         });
 
     info!("[Game] Handover complete. Enjoy the Cosmos!");
+}
+
+fn rotate_planet(mut query: Query<&mut Transform, With<Rotates>>, time: Res<Time>) {
+    let delta = time.delta_secs() * 0.3;
+    for mut transform in &mut query {
+        transform.rotate_y(delta);
+    }
 }
 
 fn cleanup_game_world(mut commands: Commands, query: Query<Entity, With<GameWorldRoot>>) {

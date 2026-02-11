@@ -56,3 +56,10 @@ lang-ru = Русский
 
 theme-dark = Тёмная
 theme-light = Светлая
+
+# Pause Menu
+pause-title = Пауза
+pause-resume = Продолжить
+pause-settings = Настройки
+pause-main-menu = Выход в главное меню
+pause-exit-game = Выход из игры

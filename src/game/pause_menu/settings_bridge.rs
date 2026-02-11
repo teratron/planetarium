@@ -1,0 +1,98 @@
+//! Bridge systems reusing launcher settings UI inside the in-game pause flow.
+
+use crate::launcher::menu::settings::{
+    ActiveSettingsTab, SettingsOpen, animate_settings_fade, handle_settings_tab_clicks,
+    spawn_settings_if_needed, update_settings_tab_content, update_settings_ui,
+};
+use bevy::prelude::*;
+
+/// Reuse launcher settings spawn/despawn logic for the pause flow.
+pub fn spawn_settings_if_needed_bridge(
+    commands: Commands,
+    theme: Res<crate::ui::theme::Theme>,
+    loc: Res<crate::core::localization::Localization>,
+    strings: ResMut<crate::core::localization::LocalizedStrings>,
+    settings_open: Res<SettingsOpen>,
+    query: Query<Entity, With<crate::launcher::menu::settings::components::SettingsRoot>>,
+    active_tab: ResMut<ActiveSettingsTab>,
+) {
+    spawn_settings_if_needed(
+        commands,
+        theme,
+        loc,
+        strings,
+        settings_open,
+        query,
+        active_tab,
+    );
+}
+
+/// Reuse launcher tab click handling.
+#[allow(clippy::type_complexity)]
+pub fn handle_settings_tab_clicks_bridge(
+    tab_query: Query<
+        (
+            &Interaction,
+            &crate::launcher::menu::settings::components::SettingsTabButton,
+        ),
+        (Changed<Interaction>, With<Button>),
+    >,
+    active_tab: ResMut<ActiveSettingsTab>,
+) {
+    handle_settings_tab_clicks(tab_query, active_tab);
+}
+
+/// Reuse launcher dynamic tab content rendering.
+#[allow(clippy::too_many_arguments)]
+pub fn update_settings_tab_content_bridge(
+    commands: Commands,
+    active_tab: Res<ActiveSettingsTab>,
+    theme: Res<crate::ui::theme::Theme>,
+    loc: Res<crate::core::localization::Localization>,
+    strings: ResMut<crate::core::localization::LocalizedStrings>,
+    settings: Res<crate::core::config::UserSettings>,
+    content_area_query: Query<
+        Entity,
+        With<crate::launcher::menu::settings::components::SettingsContentArea>,
+    >,
+    children_query: Query<&Children>,
+) {
+    update_settings_tab_content(
+        commands,
+        active_tab,
+        theme,
+        loc,
+        strings,
+        settings,
+        content_area_query,
+        children_query,
+    );
+}
+
+/// Reuse launcher settings fade animation.
+pub fn animate_settings_fade_bridge(
+    commands: Commands,
+    time: Res<Time>,
+    theme: Res<crate::ui::theme::Theme>,
+    query: Query<(
+        Entity,
+        &mut BackgroundColor,
+        &mut Transform,
+        &mut crate::launcher::menu::settings::components::SettingsFade,
+    )>,
+) {
+    animate_settings_fade(commands, time, theme, query);
+}
+
+/// Reuse launcher settings value-to-UI synchronization.
+#[allow(clippy::type_complexity)]
+pub fn update_settings_ui_bridge(
+    settings: Res<crate::core::config::UserSettings>,
+    queries: ParamSet<(
+        Query<&mut Text, With<crate::launcher::menu::settings::components::MasterVolumeControl>>,
+        Query<&mut Text, With<crate::launcher::menu::settings::components::MusicVolumeControl>>,
+        Query<&mut Text, With<crate::launcher::menu::settings::components::SFXVolumeControl>>,
+    )>,
+) {
+    update_settings_ui(settings, queries);
+}
