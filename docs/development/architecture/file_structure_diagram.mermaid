@@ -1,0 +1,286 @@
+graph TB
+    subgraph ProjectRoot["📁 Project Root"]
+        Root[planetarium/]
+        
+        subgraph Assets["📦 Assets"]
+            AssetsRoot[assets/]
+            Textures[textures/]
+            Models[models/]
+            Audio[audio/]
+            Fonts[fonts/]
+            Shaders[shaders/]
+        end
+        
+        subgraph Source["💻 Source Code"]
+            SrcRoot[src/]
+            MainRS[main.rs<br/>🚀 Entry Point]
+            LibRS[lib.rs<br/>📚 Library Root]
+            
+            subgraph FrameworkDir["🔧 Framework Layer"]
+                FWRoot[framework/]
+                FWMod[mod.rs]
+                FWPlugin[plugin.rs]
+                
+                subgraph FWStates["States"]
+                    StatesDir[states/]
+                    AppStateRS[app_state.rs]
+                    TransitionRS[transition.rs]
+                end
+                
+                subgraph FWSplash["Splash"]
+                    SplashDir[splash/]
+                    SplashSys[systems.rs]
+                    SplashRes[resources.rs]
+                end
+                
+                subgraph FWLoading["Loading"]
+                    LoadDir[loading/]
+                    LoadSys[systems.rs]
+                    LoadRes[resources.rs]
+                    LoadAssets[assets.rs]
+                end
+                
+                subgraph FWMenu["Menu"]
+                    MenuDir[menu/]
+                    MenuMain[main_menu/]
+                    MenuPause[pause_menu/]
+                    MenuComp[components.rs]
+                end
+                
+                subgraph FWSettings["Settings"]
+                    SettingsDir[settings/]
+                    SettingsSys[systems.rs]
+                    SettingsRes[resources.rs]
+                    SettingsUI[ui.rs]
+                end
+                
+                subgraph FWAudio["Audio"]
+                    AudioDir[audio/]
+                    AudioSys[systems.rs]
+                    AudioRes[resources.rs]
+                end
+                
+                subgraph FWCamera["Camera"]
+                    CamDir[camera/]
+                    OrbitCam[orbit.rs]
+                    FPSCam[first_person.rs]
+                end
+                
+                subgraph FWUI["UI Utils"]
+                    UIDir[ui/]
+                    UIStyles[styles.rs]
+                    UIWidgets[widgets.rs]
+                    UILayout[layout.rs]
+                end
+            end
+            
+            subgraph GameDir["🎮 Game Layer"]
+                GameRoot[game/]
+                GameMod[mod.rs]
+                GamePlugin[plugin.rs]
+                
+                subgraph GameStates["Game States"]
+                    GStatesDir[states/]
+                    GameStateRS[game_state.rs]
+                end
+                
+                subgraph GameComponents["Components"]
+                    CompDir[components/]
+                    PlayerComp[player.rs]
+                    EnemyComp[enemy.rs]
+                    PhysicsComp[physics.rs]
+                    HealthComp[health.rs]
+                end
+                
+                subgraph GameSystems["Systems"]
+                    SysDir[systems/]
+                    SetupSys[setup.rs]
+                    GameplaySys[gameplay.rs]
+                    PhysicsSys[physics.rs]
+                    InputSys[input.rs]
+                    CombatSys[combat.rs]
+                end
+                
+                subgraph GameResources["Resources"]
+                    ResDir[resources/]
+                    ScoreRes[score.rs]
+                    LevelRes[level.rs]
+                    ConfigRes[game_config.rs]
+                end
+                
+                subgraph GameEntities["Entity Spawners"]
+                    EntDir[entities/]
+                    PlayerEnt[player.rs]
+                    EnemyEnt[enemy.rs]
+                    PowerupEnt[powerup.rs]
+                end
+                
+                Constants[constants.rs]
+            end
+            
+            subgraph ConfigDir["⚙️ Config"]
+                ConfigDirRoot[config/]
+                GameConfig[game_config.rs]
+            end
+            
+            subgraph UtilsDir["🛠️ Utils"]
+                UtilsRoot[utils/]
+                MathUtils[math.rs]
+                DebugUtils[debug.rs]
+            end
+        end
+        
+        subgraph TestsDir["🧪 Tests"]
+            TestsRoot[tests/]
+            FWTests[framework_tests.rs]
+            GameTests[game_tests.rs]
+        end
+        
+        subgraph BenchDir["⚡ Benchmarks"]
+            BenchRoot[benches/]
+            SimBench[simulation_bench.rs]
+        end
+        
+        subgraph DocsDir["📚 Documentation"]
+            DocsRoot[docs/]
+            ArchDoc[architecture.md]
+            FWDoc[framework_guide.md]
+            GameDoc[game_design.md]
+        end
+        
+        CargoToml[Cargo.toml<br/>📦 Dependencies]
+        GitIgnore[.gitignore]
+        Readme[README.md]
+    end
+    
+    %% Root connections
+    Root --> AssetsRoot
+    Root --> SrcRoot
+    Root --> TestsRoot
+    Root --> BenchRoot
+    Root --> DocsRoot
+    Root --> CargoToml
+    Root --> GitIgnore
+    Root --> Readme
+    
+    %% Assets structure
+    AssetsRoot --> Textures
+    AssetsRoot --> Models
+    AssetsRoot --> Audio
+    AssetsRoot --> Fonts
+    AssetsRoot --> Shaders
+    
+    %% Source structure
+    SrcRoot --> MainRS
+    SrcRoot --> LibRS
+    SrcRoot --> FWRoot
+    SrcRoot --> GameRoot
+    SrcRoot --> ConfigDirRoot
+    SrcRoot --> UtilsRoot
+    
+    %% Framework structure
+    FWRoot --> FWMod
+    FWRoot --> FWPlugin
+    FWRoot --> StatesDir
+    FWRoot --> SplashDir
+    FWRoot --> LoadDir
+    FWRoot --> MenuDir
+    FWRoot --> SettingsDir
+    FWRoot --> AudioDir
+    FWRoot --> CamDir
+    FWRoot --> UIDir
+    
+    StatesDir --> AppStateRS
+    StatesDir --> TransitionRS
+    
+    SplashDir --> SplashSys
+    SplashDir --> SplashRes
+    
+    LoadDir --> LoadSys
+    LoadDir --> LoadRes
+    LoadDir --> LoadAssets
+    
+    MenuDir --> MenuMain
+    MenuDir --> MenuPause
+    MenuDir --> MenuComp
+    
+    SettingsDir --> SettingsSys
+    SettingsDir --> SettingsRes
+    SettingsDir --> SettingsUI
+    
+    AudioDir --> AudioSys
+    AudioDir --> AudioRes
+    
+    CamDir --> OrbitCam
+    CamDir --> FPSCam
+    
+    UIDir --> UIStyles
+    UIDir --> UIWidgets
+    UIDir --> UILayout
+    
+    %% Game structure
+    GameRoot --> GameMod
+    GameRoot --> GamePlugin
+    GameRoot --> GStatesDir
+    GameRoot --> CompDir
+    GameRoot --> SysDir
+    GameRoot --> ResDir
+    GameRoot --> EntDir
+    GameRoot --> Constants
+    
+    GStatesDir --> GameStateRS
+    
+    CompDir --> PlayerComp
+    CompDir --> EnemyComp
+    CompDir --> PhysicsComp
+    CompDir --> HealthComp
+    
+    SysDir --> SetupSys
+    SysDir --> GameplaySys
+    SysDir --> PhysicsSys
+    SysDir --> InputSys
+    SysDir --> CombatSys
+    
+    ResDir --> ScoreRes
+    ResDir --> LevelRes
+    ResDir --> ConfigRes
+    
+    EntDir --> PlayerEnt
+    EntDir --> EnemyEnt
+    EntDir --> PowerupEnt
+    
+    %% Config structure
+    ConfigDirRoot --> GameConfig
+    
+    %% Utils structure
+    UtilsRoot --> MathUtils
+    UtilsRoot --> DebugUtils
+    
+    %% Tests structure
+    TestsRoot --> FWTests
+    TestsRoot --> GameTests
+    
+    %% Bench structure
+    BenchRoot --> SimBench
+    
+    %% Docs structure
+    DocsRoot --> ArchDoc
+    DocsRoot --> FWDoc
+    DocsRoot --> GameDoc
+    
+    %% Styling
+    classDef rootStyle fill:#1A237E,stroke:#0D47A1,stroke-width:3px,color:#fff
+    classDef frameworkStyle fill:#4A90E2,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    classDef gameStyle fill:#50C878,stroke:#2E7D4E,stroke-width:2px,color:#fff
+    classDef configStyle fill:#F5A623,stroke:#C17D11,stroke-width:2px,color:#fff
+    classDef utilStyle fill:#9013FE,stroke:#6610B8,stroke-width:2px,color:#fff
+    classDef fileStyle fill:#607D8B,stroke:#37474F,stroke-width:1px,color:#fff
+    classDef docsStyle fill:#FF5722,stroke:#D84315,stroke-width:2px,color:#fff
+    
+    class Root,SrcRoot rootStyle
+    class FWRoot,StatesDir,SplashDir,LoadDir,MenuDir,SettingsDir,AudioDir,CamDir,UIDir frameworkStyle
+    class GameRoot,GStatesDir,CompDir,SysDir,ResDir,EntDir gameStyle
+    class ConfigDirRoot,GameConfig configStyle
+    class UtilsRoot,MathUtils,DebugUtils utilStyle
+    class DocsRoot,ArchDoc,FWDoc,GameDoc docsStyle
+    class MainRS,LibRS,FWMod,FWPlugin,GameMod,GamePlugin,AppStateRS,TransitionRS,SplashSys,SplashRes,LoadSys,LoadRes,LoadAssets,MenuMain,MenuPause,MenuComp,SettingsSys,SettingsRes,SettingsUI,AudioSys,AudioRes,OrbitCam,FPSCam,UIStyles,UIWidgets,UILayout,GameStateRS,PlayerComp,EnemyComp,PhysicsComp,HealthComp,SetupSys,GameplaySys,PhysicsSys,InputSys,CombatSys,ScoreRes,LevelRes,ConfigRes,PlayerEnt,EnemyEnt,PowerupEnt,Constants,FWTests,GameTests,SimBench fileStyle

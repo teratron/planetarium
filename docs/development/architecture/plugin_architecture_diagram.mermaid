@@ -1,0 +1,147 @@
+graph TB
+    subgraph BevyCore["🎮 Bevy Core"]
+        DefaultPlugins[DefaultPlugins<br/>- WindowPlugin<br/>- RenderPlugin<br/>- InputPlugin<br/>- AssetPlugin<br/>- TimePlugin<br/>etc.]
+    end
+    
+    subgraph CustomPlugins["🔌 Custom Plugin Architecture"]
+        
+        subgraph FrameworkBundle["🔧 Framework Plugin Bundle"]
+            FWPlugin[FrameworkPlugin<br/>Orchestrator]
+            
+            subgraph CoreFW["Core Framework"]
+                StatesPlugin[States Plugin<br/>- AppState Management<br/>- State Transitions]
+            end
+            
+            subgraph UIFW["UI Framework"]
+                SplashPlugin[Splash Plugin<br/>- Logo Display<br/>- Timer System<br/>- Auto Transition]
+                
+                LoadingPlugin[Loading Plugin<br/>- Asset Queue<br/>- Progress Display<br/>- Completion Check]
+                
+                MenuPlugin[Menu Plugin<br/>- Main Menu<br/>- Pause Menu<br/>- UI Components]
+                
+                SettingsPlugin[Settings Plugin<br/>- Settings UI<br/>- Config Management<br/>- Save/Load]
+            end
+            
+            subgraph MediaFW["Media Framework"]
+                AudioPlugin[Audio Plugin<br/>- Sound Manager<br/>- Volume Control<br/>- Music Playback]
+            end
+            
+            subgraph CameraFW["Camera Framework"]
+                CameraPlugin[Camera Plugin<br/>- Orbit Camera<br/>- FPS Camera<br/>- Camera Controllers]
+            end
+        end
+        
+        subgraph GameBundle["🎮 Game Plugin Bundle"]
+            GamePlugin[GamePlugin<br/>Orchestrator]
+            
+            subgraph CoreGame["Core Game Systems"]
+                SetupPlugin[Setup Plugin<br/>- Scene Init<br/>- Level Loading]
+                
+                PhysicsPlugin[Physics Plugin<br/>- Collision Detection<br/>- Movement<br/>- Gravity]
+                
+                GameplayPlugin[Gameplay Plugin<br/>- Game Logic<br/>- Win/Lose Conditions<br/>- Scoring]
+            end
+            
+            subgraph InputGame["Input Systems"]
+                InputPlugin[Input Plugin<br/>- Player Controls<br/>- Camera Controls<br/>- Menu Navigation]
+            end
+            
+            subgraph CombatGame["Combat Systems"]
+                CombatPlugin[Combat Plugin<br/>- Damage System<br/>- Health System<br/>- Attack Logic]
+            end
+            
+            subgraph EntityGame["Entity Management"]
+                SpawnPlugin[Spawn Plugin<br/>- Player Spawner<br/>- Enemy Spawner<br/>- Item Spawner]
+            end
+        end
+    end
+    
+    subgraph AppInit["🚀 Application Initialization"]
+        App[Bevy App::new]
+    end
+    
+    %% App initialization flow
+    App -->|add_plugins| DefaultPlugins
+    App -->|add_plugins| FWPlugin
+    App -->|add_plugins| GamePlugin
+    
+    %% Framework Plugin hierarchy
+    FWPlugin -->|contains| StatesPlugin
+    FWPlugin -->|contains| SplashPlugin
+    FWPlugin -->|contains| LoadingPlugin
+    FWPlugin -->|contains| MenuPlugin
+    FWPlugin -->|contains| SettingsPlugin
+    FWPlugin -->|contains| AudioPlugin
+    FWPlugin -->|contains| CameraPlugin
+    
+    %% Game Plugin hierarchy
+    GamePlugin -->|contains| SetupPlugin
+    GamePlugin -->|contains| PhysicsPlugin
+    GamePlugin -->|contains| GameplayPlugin
+    GamePlugin -->|contains| InputPlugin
+    GamePlugin -->|contains| CombatPlugin
+    GamePlugin -->|contains| SpawnPlugin
+    
+    %% Dependencies between plugins
+    SplashPlugin -.->|depends on| StatesPlugin
+    LoadingPlugin -.->|depends on| StatesPlugin
+    MenuPlugin -.->|depends on| StatesPlugin
+    SettingsPlugin -.->|depends on| AudioPlugin
+    
+    GameplayPlugin -.->|depends on| StatesPlugin
+    InputPlugin -.->|depends on| CameraPlugin
+    CombatPlugin -.->|depends on| PhysicsPlugin
+    SpawnPlugin -.->|uses| PhysicsPlugin
+    
+    %% Cross-layer dependencies
+    GamePlugin -.->|uses| AudioPlugin
+    GamePlugin -.->|uses| CameraPlugin
+    InputPlugin -.->|uses| MenuPlugin
+    
+    subgraph PluginPattern["📋 Plugin Implementation Pattern"]
+        direction TB
+        
+        PatternCode["
+        pub struct MyPlugin;
+        
+        impl Plugin for MyPlugin {
+            fn build(&self, app: &mut App) {
+                app
+                    .init_resource::&lt;MyResource&gt;()
+                    .add_systems(Startup, setup)
+                    .add_systems(Update, update_system);
+            }
+        }
+        "]
+    end
+    
+    subgraph ExecutionOrder["⚡ System Execution Schedule"]
+        direction LR
+        
+        StartupSystems[Startup Schedule<br/>- Run Once<br/>- Setup Resources<br/>- Initialize Entities]
+        
+        UpdateSystems[Update Schedule<br/>- Run Every Frame<br/>- Game Logic<br/>- Input Handling<br/>- Physics<br/>- Rendering]
+        
+        OnEnterSystems[OnEnter Schedule<br/>- State Transitions<br/>- Setup State UI<br/>- Initialize State Data]
+        
+        OnExitSystems[OnExit Schedule<br/>- State Cleanup<br/>- Despawn Entities<br/>- Save Data]
+        
+        StartupSystems -->|then| OnEnterSystems
+        OnEnterSystems -->|then| UpdateSystems
+        UpdateSystems -.->|state change| OnExitSystems
+        OnExitSystems -.->|then| OnEnterSystems
+    end
+    
+    %% Styling
+    classDef coreStyle fill:#1976D2,stroke:#0D47A1,stroke-width:3px,color:#fff
+    classDef frameworkStyle fill:#4A90E2,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    classDef gameStyle fill:#50C878,stroke:#2E7D4E,stroke-width:2px,color:#fff
+    classDef bundleStyle fill:#E91E63,stroke:#880E4F,stroke-width:3px,color:#fff
+    classDef patternStyle fill:#9C27B0,stroke:#6A1B9A,stroke-width:2px,color:#fff,font-family:monospace
+    classDef scheduleStyle fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    
+    class DefaultPlugins,App coreStyle
+    class FWPlugin,StatesPlugin,SplashPlugin,LoadingPlugin,MenuPlugin,SettingsPlugin,AudioPlugin,CameraPlugin bundleStyle
+    class GamePlugin,SetupPlugin,PhysicsPlugin,GameplayPlugin,InputPlugin,CombatPlugin,SpawnPlugin bundleStyle
+    class PatternCode patternStyle
+    class StartupSystems,UpdateSystems,OnEnterSystems,OnExitSystems scheduleStyle

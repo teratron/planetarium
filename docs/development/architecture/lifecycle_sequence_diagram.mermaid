@@ -1,0 +1,129 @@
+sequenceDiagram
+    participant Main as main.rs
+    participant App as Bevy App
+    participant FW as Framework Plugin
+    participant Game as Game Plugin
+    participant ECS as ECS World
+    
+    Note over Main,ECS: 🚀 Application Startup Phase
+    
+    Main->>App: App::new()
+    App->>App: Initialize Core Systems
+    
+    Main->>App: add_plugins(DefaultPlugins)
+    App->>App: Setup Window, Renderer, Input
+    
+    Main->>FW: add_plugins(FrameworkPlugin)
+    FW->>App: Register AppState<br/>(Splash, Loading, MainMenu, InGame...)
+    FW->>App: Add Splash Systems
+    FW->>App: Add Loading Systems
+    FW->>App: Add Menu Systems
+    FW->>App: Add Settings Systems
+    FW->>App: Add Audio Systems
+    
+    Main->>Game: add_plugins(GamePlugin)
+    Game->>App: Initialize Game Resources<br/>(Score, LevelData, etc.)
+    Game->>App: Add Game Systems<br/>(Physics, Combat, Input)
+    Game->>App: Register Components
+    
+    Main->>App: run()
+    
+    Note over Main,ECS: 🎬 Splash State (OnEnter)
+    
+    App->>ECS: Change State → Splash
+    ECS->>FW: OnEnter(Splash) Systems
+    FW->>ECS: setup_splash()<br/>- Spawn Logo<br/>- Initialize Timer
+    
+    Note over Main,ECS: ⏱️ Splash State (Update Loop)
+    
+    loop Every Frame (Update)
+        App->>FW: update_splash_timer()
+        FW->>FW: Tick Timer
+        alt Timer Finished
+            FW->>App: NextState::set(Loading)
+        end
+    end
+    
+    Note over Main,ECS: 🎬 Splash State (OnExit)
+    
+    ECS->>FW: OnExit(Splash) Systems
+    FW->>ECS: cleanup_splash()<br/>- Despawn Logo
+    
+    Note over Main,ECS: 📦 Loading State (OnEnter)
+    
+    App->>ECS: Change State → Loading
+    ECS->>FW: OnEnter(Loading) Systems
+    FW->>ECS: load_assets()<br/>- Queue Assets<br/>- Show Progress
+    
+    Note over Main,ECS: 📦 Loading State (Update Loop)
+    
+    loop Every Frame (Update)
+        App->>FW: check_assets_loaded()
+        FW->>FW: Check Asset Server
+        alt All Assets Loaded
+            FW->>App: NextState::set(MainMenu)
+        end
+    end
+    
+    Note over Main,ECS: 🎬 Main Menu State (OnEnter)
+    
+    App->>ECS: Change State → MainMenu
+    ECS->>FW: OnEnter(MainMenu) Systems
+    FW->>ECS: setup_main_menu()<br/>- Spawn UI Elements<br/>- Setup Buttons
+    
+    Note over Main,ECS: 🎮 Main Menu → InGame Transition
+    
+    FW->>App: User Clicks "New Game"
+    App->>ECS: Change State → InGame
+    
+    ECS->>FW: OnExit(MainMenu) Systems
+    FW->>ECS: cleanup_main_menu()<br/>- Despawn Menu UI
+    
+    ECS->>Game: OnEnter(InGame) Systems
+    Game->>ECS: initialize_game()<br/>- Spawn Player<br/>- Spawn Enemies<br/>- Setup Level
+    
+    Note over Main,ECS: 🎮 InGame State (Game Loop)
+    
+    loop Every Frame (60 FPS)
+        App->>Game: handle_player_input()
+        Game->>ECS: Update Player Velocity
+        
+        App->>Game: update_physics()
+        Game->>ECS: Update Positions<br/>Apply Gravity
+        
+        App->>Game: check_collisions()
+        Game->>ECS: Detect & Handle Collisions
+        
+        App->>Game: update_game_logic()
+        Game->>ECS: Process Game Rules<br/>Update Score
+        
+        App->>Game: render_entities()
+        Game->>ECS: Draw Sprites<br/>Update Camera
+        
+        alt ESC Key Pressed
+            Game->>App: NextState::set(Paused)
+        end
+        
+        alt Game Over Condition
+            Game->>App: NextState::set(GameOver)
+        end
+    end
+    
+    Note over Main,ECS: ⏸️ Paused State
+    
+    App->>ECS: Change State → Paused
+    ECS->>FW: OnEnter(Paused) Systems
+    FW->>ECS: setup_pause_menu()<br/>- Spawn Pause UI
+    
+    loop Update (Paused)
+        App->>FW: handle_pause_input()
+        alt Resume
+            FW->>App: NextState::set(InGame)
+        else Quit to Menu
+            FW->>App: NextState::set(MainMenu)
+        end
+    end
+    
+    Note over Main,ECS: 🔄 State Transitions Continue...
+    
+    App->>App: Continue Game Loop<br/>Until Exit

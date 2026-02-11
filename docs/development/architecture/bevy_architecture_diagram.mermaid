@@ -1,0 +1,208 @@
+graph TB
+    subgraph Application["🚀 Bevy Application"]
+        Main[main.rs<br/>App Entry Point]
+    end
+
+    subgraph Framework["🔧 FRAMEWORK LAYER (Reusable)"]
+        direction TB
+        
+        FPlugin[FrameworkPlugin<br/>Bundle]
+        
+        subgraph States["State Management"]
+            AppState[AppState Enum<br/>- Splash<br/>- Loading<br/>- MainMenu<br/>- InGame<br/>- Paused<br/>- Settings]
+            Transitions[State Transitions<br/>transition.rs]
+        end
+        
+        subgraph Splash["Splash Screen"]
+            SplashPlugin[SplashPlugin]
+            SplashSystems[systems.rs<br/>- setup_splash<br/>- update_timer<br/>- cleanup]
+            SplashRes[resources.rs<br/>- SplashTimer]
+        end
+        
+        subgraph Loading["Asset Loading"]
+            LoadPlugin[LoadingPlugin]
+            LoadSystems[systems.rs<br/>- load_assets<br/>- check_loaded]
+            LoadRes[resources.rs<br/>- GameAssets<br/>- LoadingState]
+        end
+        
+        subgraph Menu["Menu System"]
+            MenuPlugin[MenuPlugin]
+            MainMenu[main_menu/<br/>- systems.rs<br/>- layout.rs]
+            PauseMenu[pause_menu/<br/>- systems.rs]
+            MenuComp[components.rs<br/>- Button<br/>- MenuUI]
+        end
+        
+        subgraph Settings["Settings"]
+            SettingsPlugin[SettingsPlugin]
+            SettingsSys[systems.rs<br/>- apply_settings<br/>- save_settings]
+            SettingsRes[resources.rs<br/>- SettingsResource]
+            SettingsUI[ui.rs<br/>- render_settings]
+        end
+        
+        subgraph Audio["Audio System"]
+            AudioPlugin[AudioPlugin]
+            AudioSys[systems.rs<br/>- update_volume<br/>- play_music]
+            AudioRes[resources.rs<br/>- AudioSettings<br/>- SoundManager]
+        end
+        
+        subgraph Camera["Camera System"]
+            CameraPlugin[CameraPlugin]
+            OrbitCam[orbit.rs<br/>- OrbitCamera]
+            FPCam[first_person.rs<br/>- FPSCamera]
+        end
+        
+        subgraph UI["UI Utilities"]
+            UIStyles[styles.rs<br/>- Style Constants]
+            UIWidgets[widgets.rs<br/>- Reusable Widgets]
+            UILayout[layout.rs<br/>- Layout Helpers]
+        end
+    end
+
+    subgraph Game["🎮 GAME LAYER (Project-Specific)"]
+        direction TB
+        
+        GPlugin[GamePlugin<br/>Bundle]
+        
+        subgraph GameStates["Game States (Optional)"]
+            GameState[GameState Enum<br/>- Exploring<br/>- Combat<br/>- Dialogue]
+        end
+        
+        subgraph Components["ECS Components (Data)"]
+            CompPlayer[player.rs<br/>- Player<br/>- PlayerStats]
+            CompEnemy[enemy.rs<br/>- Enemy<br/>- EnemyType]
+            CompPhysics[physics.rs<br/>- Position<br/>- Velocity<br/>- Collider]
+            CompHealth[health.rs<br/>- Health<br/>- MaxHealth]
+        end
+        
+        subgraph Systems["ECS Systems (Logic)"]
+            SysSetup[setup.rs<br/>- initialize_game<br/>- spawn_level]
+            SysGameplay[gameplay.rs<br/>- update_game_logic<br/>- check_win_condition]
+            SysPhysics[physics.rs<br/>- update_physics<br/>- apply_gravity]
+            SysInput[input.rs<br/>- handle_player_input<br/>- handle_camera]
+            SysCombat[combat.rs<br/>- process_attacks<br/>- handle_damage]
+        end
+        
+        subgraph Resources["ECS Resources (Global State)"]
+            ResScore[score.rs<br/>- Score<br/>- HighScore]
+            ResLevel[level.rs<br/>- LevelData<br/>- CurrentLevel]
+            ResGame[game_config.rs<br/>- GameConfig<br/>- Difficulty]
+        end
+        
+        subgraph Entities["Entity Spawners"]
+            EntPlayer[player.rs<br/>- spawn_player]
+            EntEnemy[enemy.rs<br/>- spawn_enemy]
+            EntPowerup[powerup.rs<br/>- spawn_powerup]
+        end
+        
+        Constants[constants.rs<br/>- GRAVITY<br/>- PLAYER_SPEED<br/>- MAX_ENEMIES]
+    end
+
+    subgraph Config["⚙️ Configuration"]
+        GameConfig[game_config.rs<br/>- Window Settings<br/>- Graphics Settings]
+    end
+
+    subgraph Utils["🛠️ Utilities"]
+        MathUtils[math.rs<br/>- Math Helpers]
+        DebugUtils[debug.rs<br/>- Debug Tools]
+    end
+
+    %% Main connections
+    Main --> FPlugin
+    Main --> GPlugin
+    Main --> Config
+    
+    %% Framework Plugin connections
+    FPlugin --> States
+    FPlugin --> Splash
+    FPlugin --> Loading
+    FPlugin --> Menu
+    FPlugin --> Settings
+    FPlugin --> Audio
+    FPlugin --> Camera
+    
+    Splash --> SplashPlugin
+    SplashPlugin --> SplashSystems
+    SplashPlugin --> SplashRes
+    
+    Loading --> LoadPlugin
+    LoadPlugin --> LoadSystems
+    LoadPlugin --> LoadRes
+    
+    Menu --> MenuPlugin
+    MenuPlugin --> MainMenu
+    MenuPlugin --> PauseMenu
+    MenuPlugin --> MenuComp
+    
+    Settings --> SettingsPlugin
+    SettingsPlugin --> SettingsSys
+    SettingsPlugin --> SettingsRes
+    SettingsPlugin --> SettingsUI
+    
+    Audio --> AudioPlugin
+    AudioPlugin --> AudioSys
+    AudioPlugin --> AudioRes
+    
+    Camera --> CameraPlugin
+    CameraPlugin --> OrbitCam
+    CameraPlugin --> FPCam
+    
+    UI --> UIStyles
+    UI --> UIWidgets
+    UI --> UILayout
+    
+    %% Game Plugin connections
+    GPlugin --> GameStates
+    GPlugin --> Components
+    GPlugin --> Systems
+    GPlugin --> Resources
+    GPlugin --> Entities
+    
+    Components --> CompPlayer
+    Components --> CompEnemy
+    Components --> CompPhysics
+    Components --> CompHealth
+    
+    Systems --> SysSetup
+    Systems --> SysGameplay
+    Systems --> SysPhysics
+    Systems --> SysInput
+    Systems --> SysCombat
+    
+    Resources --> ResScore
+    Resources --> ResLevel
+    Resources --> ResGame
+    
+    Entities --> EntPlayer
+    Entities --> EntEnemy
+    Entities --> EntPowerup
+    
+    %% State flow
+    AppState -.->|OnEnter| Splash
+    Splash -.->|Timer Complete| Loading
+    Loading -.->|Assets Loaded| Menu
+    Menu -.->|Start Game| Game
+    Game -.->|Pause| Menu
+    Game -.->|Settings| Settings
+    
+    %% Cross-layer dependencies
+    Systems -.->|Uses| Components
+    Systems -.->|Modifies| Resources
+    Entities -.->|Creates| Components
+    SysGameplay -.->|Reads| AppState
+    
+    %% Utilities usage
+    Systems -.->|Uses| Utils
+    Game -.->|Uses| Utils
+    
+    %% Styling
+    classDef frameworkClass fill:#4A90E2,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    classDef gameClass fill:#50C878,stroke:#2E7D4E,stroke-width:2px,color:#fff
+    classDef configClass fill:#F5A623,stroke:#C17D11,stroke-width:2px,color:#fff
+    classDef utilClass fill:#9013FE,stroke:#6610B8,stroke-width:2px,color:#fff
+    classDef pluginClass fill:#E84855,stroke:#B03640,stroke-width:2px,color:#fff
+    
+    class Framework,States,Splash,Loading,Menu,Settings,Audio,Camera,UI frameworkClass
+    class Game,GameStates,Components,Systems,Resources,Entities gameClass
+    class Config,GameConfig configClass
+    class Utils,MathUtils,DebugUtils utilClass
+    class FPlugin,GPlugin,SplashPlugin,LoadPlugin,MenuPlugin,SettingsPlugin,AudioPlugin,CameraPlugin pluginClass

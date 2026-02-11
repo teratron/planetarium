@@ -1,0 +1,111 @@
+graph TB
+    subgraph ECS["🎯 ECS Pattern - Entity Component System"]
+        
+        subgraph Entities["Entities (Unique IDs)"]
+            E1[Player Entity<br/>ID: 42]
+            E2[Enemy Entity<br/>ID: 108]
+            E3[Powerup Entity<br/>ID: 256]
+        end
+        
+        subgraph Components["Components (Data)"]
+            direction TB
+            
+            C1[Position<br/>x: 10.0<br/>y: 5.0<br/>z: 0.0]
+            C2[Velocity<br/>x: 1.0<br/>y: 0.0<br/>z: 0.0]
+            C3[Health<br/>current: 80<br/>max: 100]
+            C4[Player<br/>marker]
+            
+            C5[Position<br/>x: 20.0<br/>y: 8.0<br/>z: 0.0]
+            C6[Velocity<br/>x: -0.5<br/>y: 0.0<br/>z: 0.0]
+            C7[Health<br/>current: 50<br/>max: 50]
+            C8[Enemy<br/>type: Basic]
+            
+            C9[Position<br/>x: 15.0<br/>y: 3.0<br/>z: 0.0]
+            C10[Powerup<br/>type: HealthPack]
+        end
+        
+        subgraph Systems["Systems (Logic)"]
+            direction LR
+            
+            S1[Movement System<br/>Query: Position + Velocity<br/>Updates positions based on velocity]
+            
+            S2[Combat System<br/>Query: Health + Enemy<br/>Processes damage and death]
+            
+            S3[Input System<br/>Query: Player + Velocity<br/>Handles player input]
+            
+            S4[Collision System<br/>Query: Position<br/>Detects overlaps]
+            
+            S5[Rendering System<br/>Query: Position + Sprite<br/>Draws entities]
+        end
+        
+        subgraph Resources["Resources (Global State)"]
+            R1[Score<br/>value: 1500<br/>high_score: 3000]
+            R2[Time<br/>delta: 0.016s<br/>elapsed: 120s]
+            R3[GameConfig<br/>difficulty: Normal<br/>lives: 3]
+            R4[LevelData<br/>current: 2<br/>total: 10]
+        end
+        
+        %% Entity-Component relationships
+        E1 -.->|has| C1
+        E1 -.->|has| C2
+        E1 -.->|has| C3
+        E1 -.->|has| C4
+        
+        E2 -.->|has| C5
+        E2 -.->|has| C6
+        E2 -.->|has| C7
+        E2 -.->|has| C8
+        
+        E3 -.->|has| C9
+        E3 -.->|has| C10
+        
+        %% System-Component interactions
+        S1 -->|reads| C1
+        S1 -->|reads| C2
+        S1 -->|reads| C5
+        S1 -->|reads| C6
+        S1 -->|writes| C1
+        S1 -->|writes| C5
+        
+        S2 -->|reads/writes| C7
+        S2 -->|reads| C8
+        
+        S3 -->|reads| C4
+        S3 -->|writes| C2
+        
+        S4 -->|reads| C1
+        S4 -->|reads| C5
+        S4 -->|reads| C9
+        
+        %% System-Resource interactions
+        S1 -->|reads| R2
+        S2 -->|writes| R1
+        S2 -->|reads| R3
+        S3 -->|reads| R2
+        
+        %% Execution flow
+        S3 -.->|executes before| S1
+        S1 -.->|executes before| S4
+        S4 -.->|executes before| S2
+        
+    end
+    
+    subgraph Legend["Legend"]
+        L1[Entity]
+        L2[Component]
+        L3[System]
+        L4[Resource]
+        L1 -.-> L2
+        L3 --> L2
+    end
+    
+    %% Styling
+    classDef entityStyle fill:#E91E63,stroke:#880E4F,stroke-width:2px,color:#fff
+    classDef componentStyle fill:#2196F3,stroke:#0D47A1,stroke-width:2px,color:#fff
+    classDef systemStyle fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
+    classDef resourceStyle fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    
+    class E1,E2,E3 entityStyle
+    class C1,C2,C3,C4,C5,C6,C7,C8,C9,C10 componentStyle
+    class S1,S2,S3,S4,S5 systemStyle
+    class R1,R2,R3,R4 resourceStyle

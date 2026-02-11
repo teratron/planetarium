@@ -1,0 +1,34 @@
+graph LR
+    subgraph StateFlow["📊 Application State Flow"]
+        Start([App Start]) --> SplashState[Splash Screen<br/>Show Logo]
+        SplashState -->|Timer: 2s| LoadState[Loading<br/>Load Assets]
+        LoadState -->|Assets Ready| MainMenuState[Main Menu<br/>- New Game<br/>- Settings<br/>- Quit]
+        
+        MainMenuState -->|New Game| InGameState[In Game<br/>Active Gameplay]
+        MainMenuState -->|Settings| SettingsState[Settings<br/>Configure Options]
+        
+        InGameState -->|ESC Key| PausedState[Paused<br/>Pause Menu]
+        InGameState -->|Game Over| GameOverState[Game Over<br/>Final Score]
+        
+        PausedState -->|Resume| InGameState
+        PausedState -->|Main Menu| MainMenuState
+        PausedState -->|Settings| SettingsState
+        
+        SettingsState -->|Back| MainMenuState
+        SettingsState -->|Back| PausedState
+        
+        GameOverState -->|Retry| InGameState
+        GameOverState -->|Main Menu| MainMenuState
+        
+        MainMenuState -->|Quit| End([Exit App])
+    end
+    
+    style Start fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+    style End fill:#F44336,stroke:#C62828,stroke-width:3px,color:#fff
+    style SplashState fill:#9C27B0,stroke:#6A1B9A,color:#fff
+    style LoadState fill:#FF9800,stroke:#E65100,color:#fff
+    style MainMenuState fill:#2196F3,stroke:#1565C0,color:#fff
+    style InGameState fill:#4CAF50,stroke:#2E7D32,color:#fff
+    style PausedState fill:#FFC107,stroke:#F57C00,color:#000
+    style SettingsState fill:#00BCD4,stroke:#00838F,color:#fff
+    style GameOverState fill:#F44336,stroke:#C62828,color:#fff
