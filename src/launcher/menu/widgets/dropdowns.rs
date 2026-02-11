@@ -236,6 +236,64 @@ fn parse_resolution_string(s: &str) -> Option<(u32, u32)> {
     }
 }
 
+fn apply_dropdown_setting(
+    settings: &mut crate::core::config::UserSettings,
+    setting_key: &SettingKey,
+    options: &[String],
+    index: usize,
+) {
+    match setting_key {
+        SettingKey::Quality => {
+            // Map index to Quality enum and apply to settings
+            let quality = super::quality_from_index(index);
+            settings.graphics.quality = quality.clone();
+            info!("[Settings] Quality set to {:?}", quality);
+        }
+        SettingKey::Resolution => {
+            if let Some((w, h)) = options
+                .get(index)
+                .and_then(|res_str| parse_resolution_string(res_str))
+            {
+                settings.display.width = w;
+                settings.display.height = h;
+                info!("[Settings] Resolution set to {}x{}", w, h);
+            }
+        }
+        SettingKey::Fullscreen => {
+            if let Some(val) = options.get(index).and_then(|s| s.parse::<bool>().ok()) {
+                settings.display.fullscreen = val;
+                info!("[Settings] Fullscreen set to {}", val);
+            }
+        }
+        SettingKey::Vsync => {
+            if let Some(val) = options.get(index).and_then(|s| s.parse::<bool>().ok()) {
+                settings.display.vsync = val;
+                info!("[Settings] VSync set to {}", val);
+            }
+        }
+        SettingKey::AllowMultipleInstances => {
+            if let Some(val) = options.get(index).and_then(|s| s.parse::<bool>().ok()) {
+                settings.allow_multiple_instances = val;
+                info!("[Settings] Allow multiple instances set to {}", val);
+            }
+        }
+        SettingKey::Language => {
+            // Apply language string directly (options should contain locale IDs like "en-US"/"ru-RU")
+            if let Some(lang) = options.get(index) {
+                settings.language = lang.clone();
+                info!("[Settings] Language set to {}", lang);
+            }
+        }
+        SettingKey::Theme => {
+            if let Some(theme) = options.get(index) {
+                settings.theme = theme.clone();
+                info!("[Settings] Theme set to {}", theme);
+            }
+        }
+        _ => warn!("[Settings] Unknown dropdown key: {:?}", setting_key),
+    }
+}
+
 /// System to handle dropdown option selection.
 #[allow(clippy::type_complexity)]
 #[allow(clippy::too_many_arguments)]
@@ -288,62 +346,12 @@ pub fn dropdown_option_interaction_system(
             }
 
             // Apply setting
-            match dropdown.setting_key {
-                SettingKey::Quality => {
-                    // Map index to Quality enum and apply to settings
-                    let quality = super::quality_from_index(option.index);
-                    settings.graphics.quality = quality.clone();
-                    info!("[Settings] Quality set to {:?}", quality);
-                }
-                SettingKey::Resolution => {
-                    if let Some((w, h)) = dropdown
-                        .options
-                        .get(option.index)
-                        .and_then(|res_str| parse_resolution_string(res_str))
-                    {
-                        settings.display.width = w;
-                        settings.display.height = h;
-                        info!("[Settings] Resolution set to {}x{}", w, h);
-                    }
-                }
-                SettingKey::Fullscreen => {
-                    if let Some(val) = dropdown
-                        .options
-                        .get(option.index)
-                        .and_then(|s| s.parse::<bool>().ok())
-                    {
-                        settings.display.fullscreen = val;
-                        info!("[Settings] Fullscreen set to {}", val);
-                    }
-                }
-                SettingKey::Vsync => {
-                    if let Some(val) = dropdown
-                        .options
-                        .get(option.index)
-                        .and_then(|s| s.parse::<bool>().ok())
-                    {
-                        settings.display.vsync = val;
-                        info!("[Settings] VSync set to {}", val);
-                    }
-                }
-                SettingKey::Language => {
-                    // Apply language string directly (options should contain locale IDs like "en-US"/"ru-RU")
-                    if let Some(lang) = dropdown.options.get(option.index) {
-                        settings.language = lang.clone();
-                        info!("[Settings] Language set to {}", lang);
-                    }
-                }
-                SettingKey::Theme => {
-                    if let Some(theme) = dropdown.options.get(option.index) {
-                        settings.theme = theme.clone();
-                        info!("[Settings] Theme set to {}", theme);
-                    }
-                }
-                _ => warn!(
-                    "[Settings] Unknown dropdown key: {:?}",
-                    dropdown.setting_key
-                ),
-            }
+            apply_dropdown_setting(
+                &mut settings,
+                &dropdown.setting_key,
+                &dropdown.options,
+                option.index,
+            );
 
             // Close dropdown (despawn list)
             for (list_entity, list) in &option_list_query {
@@ -352,5 +360,33 @@ pub fn dropdown_option_interaction_system(
                 }
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::core::config::settings::SettingKey;
+
+    #[test]
+    fn apply_allow_multiple_instances_updates_user_settings() {
+        let mut settings = crate::core::config::UserSettings::default();
+        let options = vec!["false".to_string(), "true".to_string()];
+
+        apply_dropdown_setting(
+            &mut settings,
+            &SettingKey::AllowMultipleInstances,
+            &options,
+            1,
+        );
+        assert!(settings.allow_multiple_instances);
+
+        apply_dropdown_setting(
+            &mut settings,
+            &SettingKey::AllowMultipleInstances,
+            &options,
+            0,
+        );
+        assert!(!settings.allow_multiple_instances);
     }
 }

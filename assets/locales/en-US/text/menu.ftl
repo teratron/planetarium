@@ -30,6 +30,7 @@ setting-ambience-volume = Ambience
 # General Settings
 setting-language = Language
 setting-theme = Interface Theme
+setting-allow-multiple-instances = Allow Multiple Instances
 
 # Controls
 control-forward = Move Forward

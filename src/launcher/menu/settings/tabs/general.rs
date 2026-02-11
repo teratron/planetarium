@@ -75,5 +75,28 @@ pub fn spawn_general_tab(
                 },
                 parent_entity,
             );
+
+            // Multiple instances toggle
+            let multi_instance_options = vec!["false".to_string(), "true".to_string()];
+            let multi_instance_display =
+                vec![strings.get("val-off", loc), strings.get("val-on", loc)];
+            let multi_instance_index = if settings.allow_multiple_instances {
+                1
+            } else {
+                0
+            };
+
+            super::super::super::widgets::spawn_dropdown(
+                commands,
+                theme,
+                super::super::super::widgets::DropdownSpec {
+                    label: strings.get("setting-allow-multiple-instances", loc),
+                    options: multi_instance_options,
+                    display_values: Some(multi_instance_display),
+                    selected_index: multi_instance_index,
+                    setting_key: SettingKey::AllowMultipleInstances,
+                },
+                parent_entity,
+            );
         });
 }

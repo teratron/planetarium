@@ -30,6 +30,7 @@ setting-ambience-volume = Громкость окружения
 # Общие настройки
 setting-language = Язык
 setting-theme = Тема интерфейса
+setting-allow-multiple-instances = Разрешить несколько копий приложения
 
 # Управление
 control-forward = Вперед

@@ -51,22 +51,82 @@ pub fn acquire_single_instance_lock(
         return Ok(None);
     }
 
-    let file = OpenOptions::new()
+    let file = match OpenOptions::new()
         .create_new(true)
         .read(true)
         .write(true)
         .open(&paths.instance_lock_file)
-        .map_err(|e| {
-            if e.kind() == std::io::ErrorKind::AlreadyExists {
-                SingleInstanceError::AlreadyRunning {
-                    lock_file: paths.instance_lock_file.clone(),
-                }
+    {
+        Ok(file) => file,
+        Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => {
+            if try_clear_stale_lock(&paths.instance_lock_file).map_err(SingleInstanceError::Io)? {
+                OpenOptions::new()
+                    .create_new(true)
+                    .read(true)
+                    .write(true)
+                    .open(&paths.instance_lock_file)
+                    .map_err(|retry_err| {
+                        if retry_err.kind() == std::io::ErrorKind::AlreadyExists {
+                            SingleInstanceError::AlreadyRunning {
+                                lock_file: paths.instance_lock_file.clone(),
+                            }
+                        } else {
+                            SingleInstanceError::Io(retry_err)
+                        }
+                    })?
             } else {
-                SingleInstanceError::Io(e)
+                return Err(SingleInstanceError::AlreadyRunning {
+                    lock_file: paths.instance_lock_file.clone(),
+                });
             }
-        })?;
+        }
+        Err(e) => return Err(SingleInstanceError::Io(e)),
+    };
 
     write_lock_metadata(file, &paths.instance_lock_file).map(Some)
+}
+
+fn try_clear_stale_lock(lock_file: &std::path::Path) -> std::io::Result<bool> {
+    let content = std::fs::read_to_string(lock_file)?;
+    let Some(pid) = parse_pid_from_lock(&content) else {
+        return Ok(false);
+    };
+
+    if is_process_alive(pid) {
+        return Ok(false);
+    }
+
+    std::fs::remove_file(lock_file)?;
+    Ok(true)
+}
+
+fn parse_pid_from_lock(content: &str) -> Option<u32> {
+    content
+        .lines()
+        .find_map(|line| line.strip_prefix("pid="))
+        .and_then(|pid| pid.trim().parse::<u32>().ok())
+}
+
+#[cfg(windows)]
+fn is_process_alive(pid: u32) -> bool {
+    use std::process::Command;
+
+    match Command::new("tasklist")
+        .args(["/FI", &format!("PID eq {}", pid), "/FO", "CSV", "/NH"])
+        .output()
+    {
+        Ok(output) if output.status.success() => {
+            let text = String::from_utf8_lossy(&output.stdout);
+            text.lines()
+                .any(|line| !line.trim().is_empty() && !line.contains("No tasks are running"))
+        }
+        _ => true,
+    }
+}
+
+#[cfg(not(windows))]
+fn is_process_alive(pid: u32) -> bool {
+    std::path::Path::new("/proc").join(pid.to_string()).exists()
 }
 
 fn write_lock_metadata(
@@ -127,5 +187,45 @@ mod tests {
 
         drop(first);
         let _ = std::fs::remove_dir_all(data_dir);
+    }
+
+    #[test]
+    fn stale_lock_is_recovered_when_pid_is_not_alive() {
+        let unique = format!(
+            "planetarium-stale-lock-test-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("system time should be after epoch")
+                .as_nanos()
+        );
+        let data_dir = std::env::temp_dir().join(unique);
+        std::fs::create_dir_all(&data_dir).expect("temp lock dir should be created");
+
+        let paths = AppPaths {
+            settings_file: data_dir.join("settings.toml"),
+            log_file: data_dir.join("session.log"),
+            instance_lock_file: data_dir.join("instance.lock"),
+            assets_dir: std::path::PathBuf::from("assets"),
+            data_dir: data_dir.clone(),
+        };
+
+        std::fs::write(&paths.instance_lock_file, "pid=99999999\n")
+            .expect("stale lock file should be created");
+
+        let lock = acquire_single_instance_lock(&paths, false)
+            .expect("stale lock should be cleared")
+            .expect("lock guard should be acquired after stale cleanup");
+        drop(lock);
+
+        let _ = std::fs::remove_dir_all(data_dir);
+    }
+
+    #[test]
+    fn parse_pid_from_lock_reads_pid_line() {
+        assert_eq!(parse_pid_from_lock("pid=123\n"), Some(123));
+        assert_eq!(parse_pid_from_lock("foo=bar\npid=42\n"), Some(42));
+        assert_eq!(parse_pid_from_lock(""), None);
+        assert_eq!(parse_pid_from_lock("pid=abc"), None);
     }
 }

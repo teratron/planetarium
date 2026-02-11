@@ -12,6 +12,7 @@ documentation = "https://teratron.github.io/planetarium/docs"
 repository = "https://github.com/teratron/planetarium"
 keywords = ["rust", "bevy", "game", "simulation", "planetarium"]
 categories = ["games", "simulation"]
+include = ["assets/**/*", "LICENSE"]
 exclude = ["examples", "docs", "tests", "target/*"]
 
 [lib]

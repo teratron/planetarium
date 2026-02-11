@@ -29,6 +29,7 @@ pub enum SettingKey {
     SfxVolume,
     Fullscreen,
     Vsync,
+    AllowMultipleInstances,
     Resolution,
     Quality,
     Language,

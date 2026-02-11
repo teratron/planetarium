@@ -37,27 +37,32 @@ impl AppPaths {
         // 2. Resolve Assets Directory
         // First check CWD, then check relative to executable (helpful for direct runs from target/debug)
         let mut assets_dir = PathBuf::from("assets");
-        if !assets_dir.exists()
+        if !is_valid_assets_dir(&assets_dir)
             && let Ok(exe_path) = std::env::current_exe()
             && let Some(exe_dir) = exe_path.parent()
         {
             // Try next to exe
             let exe_assets = exe_dir.join("assets");
-            if exe_assets.exists() {
+            if is_valid_assets_dir(&exe_assets) {
                 assets_dir = exe_assets;
             } else if let Some(parent) = exe_dir.parent() {
                 // Try parent of exe (e.g. from target/debug/ up to project root)
                 let parent_assets = parent.join("assets");
-                if parent_assets.exists() {
+                if is_valid_assets_dir(&parent_assets) {
                     assets_dir = parent_assets;
                 } else if let Some(grandparent) = parent.parent() {
                     // Try grandparent (target/debug/ -> target/ -> root)
                     let gp_assets = grandparent.join("assets");
-                    if gp_assets.exists() {
+                    if is_valid_assets_dir(&gp_assets) {
                         assets_dir = gp_assets;
                     }
                 }
             }
+        }
+        if assets_dir.exists() {
+            assets_dir = assets_dir
+                .canonicalize()
+                .unwrap_or_else(|_| assets_dir.clone());
         }
 
         let settings_file = data_dir.join("settings.toml");
@@ -83,6 +88,14 @@ impl AppPaths {
     }
 }
 
+fn is_valid_assets_dir(path: &std::path::Path) -> bool {
+    path.exists()
+        && path.join("assets.toml").exists()
+        && path.join("fonts").join("FiraSans-Regular.ttf").exists()
+        && path.join("images").join("logo_planetarium.png").exists()
+        && path.join("audio").join("click.ogg").exists()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -94,5 +107,13 @@ mod tests {
             paths.instance_lock_file.file_name(),
             Some(std::ffi::OsStr::new("instance.lock"))
         );
+    }
+
+    #[test]
+    fn from_env_prefers_absolute_assets_path_when_available() {
+        let paths = AppPaths::from_env();
+        if paths.assets_dir.exists() {
+            assert!(paths.assets_dir.is_absolute());
+        }
     }
 }
