@@ -3,6 +3,9 @@ use bevy::prelude::*;
 use planetarium::core::cli::CliArgs;
 use planetarium::core::config::AppPaths;
 use planetarium::core::config::metadata::APP_TITLE;
+use planetarium::core::single_instance::{
+    SingleInstanceError, SingleInstanceLock, acquire_single_instance_lock,
+};
 use planetarium::core::states::AppState;
 use planetarium::game::GamePlugin;
 use planetarium::launcher::LauncherPlugin;
@@ -18,6 +21,12 @@ struct LogWorkerGuard {
     _guard: WorkerGuard,
 }
 
+/// Keep the single-instance lock alive during the application's lifetime.
+#[derive(Resource)]
+struct InstanceLockGuard {
+    _guard: SingleInstanceLock,
+}
+
 /// Default logging configuration level.
 const DEFAULT_LOG_FILTER: &str = "info,wgpu=error,naga=error";
 /// Debug logging configuration level used when `--debug` flag is passed.
@@ -28,12 +37,43 @@ fn main() {
     let args = CliArgs::parse_args();
     let initial_state = parse_initial_state(&args);
 
-    // 2. Setup logging system (respect --debug flag and optional --log-filter)
+    // 2. Resolve paths and ensure required directories exist.
     let paths = AppPaths::from_env();
+    if let Err(e) = paths.ensure_dirs() {
+        eprintln!(
+            "[Main] Failed to prepare data directory {:?}: {}",
+            paths.data_dir, e
+        );
+        return;
+    }
+
+    // 3. Load settings early to read startup behavior flags.
+    let settings = planetarium::core::config::settings::load_settings(&paths);
+
+    // 4. Protect against launching a second instance unless explicitly allowed.
+    let instance_lock = match acquire_single_instance_lock(
+        &paths,
+        settings.allow_multiple_instances,
+    ) {
+        Ok(lock) => lock,
+        Err(SingleInstanceError::AlreadyRunning { .. }) => {
+            eprintln!(
+                "[Main] Another game instance is already running. Set `allow_multiple_instances = true` in {:?} to override.",
+                paths.settings_file
+            );
+            return;
+        }
+        Err(e) => {
+            eprintln!("[Main] {}", e);
+            return;
+        }
+    };
+
+    // 5. Setup logging system (respect --debug flag and optional --log-filter)
     let log_guard = setup_logging(&initial_state, &paths, args.debug, args.log_filter.clone());
 
-    // 3. Configure and run Bevy app (keep the log guard alive by inserting it into App resources)
-    build_app(args, initial_state, paths, log_guard).run();
+    // 6. Configure and run Bevy app, keeping runtime guards alive in resources.
+    build_app(args, initial_state, paths, log_guard, instance_lock).run();
 }
 
 /// Parse CLI arguments to determine initial `AppState`.
@@ -136,6 +176,7 @@ fn build_app(
     initial_state: AppState,
     paths: AppPaths,
     log_guard: Option<WorkerGuard>,
+    instance_lock: Option<SingleInstanceLock>,
 ) -> App {
     let mut app = App::new();
     let assets_path = paths.assets_dir.clone();
@@ -168,6 +209,9 @@ fn build_app(
     // from being dropped prematurely.
     if let Some(guard) = log_guard {
         app.insert_resource(LogWorkerGuard { _guard: guard });
+    }
+    if let Some(guard) = instance_lock {
+        app.insert_resource(InstanceLockGuard { _guard: guard });
     }
 
     app

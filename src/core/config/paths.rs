@@ -19,6 +19,8 @@ pub struct AppPaths {
     pub settings_file: PathBuf,
     /// Path to the session log file.
     pub log_file: PathBuf,
+    /// Path to the file used for single-instance locking.
+    pub instance_lock_file: PathBuf,
 }
 
 impl AppPaths {
@@ -60,12 +62,14 @@ impl AppPaths {
 
         let settings_file = data_dir.join("settings.toml");
         let log_file = data_dir.join("session.log");
+        let instance_lock_file = data_dir.join("instance.lock");
 
         Self {
             data_dir,
             assets_dir,
             settings_file,
             log_file,
+            instance_lock_file,
         }
     }
 
@@ -76,5 +80,19 @@ impl AppPaths {
             fs::create_dir_all(&self.data_dir)?;
         }
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn from_env_uses_expected_lock_file_name() {
+        let paths = AppPaths::from_env();
+        assert_eq!(
+            paths.instance_lock_file.file_name(),
+            Some(std::ffi::OsStr::new("instance.lock"))
+        );
     }
 }

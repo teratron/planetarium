@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 
 /// Current version of the settings schema, used for migrations.
-pub const SETTINGS_VERSION: u32 = 3;
+pub const SETTINGS_VERSION: u32 = 4;
 
 /// Quality presets for graphics settings.
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Default)]
@@ -61,6 +61,9 @@ pub struct UserSettings {
     pub audio: AudioSettings,
     #[serde(default)]
     pub graphics: GraphicsSettings,
+    /// Allows launching multiple game instances simultaneously.
+    #[serde(default)]
+    pub allow_multiple_instances: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
@@ -112,6 +115,7 @@ impl Default for UserSettings {
             display: DisplaySettings::default(),
             audio: AudioSettings::default(),
             graphics: GraphicsSettings::default(),
+            allow_multiple_instances: false,
         }
     }
 }
@@ -200,6 +204,19 @@ mod tests {
     fn default_settings_include_vsync() {
         let s = UserSettings::default();
         assert!(s.display.vsync);
+    }
+
+    #[test]
+    fn default_settings_disallow_multiple_instances() {
+        let s = UserSettings::default();
+        assert!(!s.allow_multiple_instances);
+    }
+
+    #[test]
+    fn missing_allow_multiple_instances_defaults_to_false() {
+        let parsed: UserSettings =
+            toml::from_str("version = 4").expect("minimal settings should deserialize");
+        assert!(!parsed.allow_multiple_instances);
     }
 
     proptest! {

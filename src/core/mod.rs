@@ -9,6 +9,9 @@ pub mod cli;
 /// Application configuration and path resolution.
 pub mod config;
 
+/// Startup single-instance lock protection.
+pub mod single_instance;
+
 /// Multi-language support using Project Fluent.
 pub mod localization;
 

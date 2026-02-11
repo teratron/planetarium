@@ -91,14 +91,14 @@ pub fn spawn_dropdown(
                     ..default()
                 },
                 BackgroundColor(theme.colors.surface),
-                    Dropdown {
-                        label: label.to_string(),
-                        options: options.clone(),
-                        display_values: display_values.clone(),
-                        selected_index,
-                        setting_key,
-                        is_open: false,
-                    },
+                Dropdown {
+                    label: label.to_string(),
+                    options: options.clone(),
+                    display_values: display_values.clone(),
+                    selected_index,
+                    setting_key,
+                    is_open: false,
+                },
                 ButtonHoverState {
                     base_color: theme.colors.surface,
                     hover_color: theme.colors.surface_light,
