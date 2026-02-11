@@ -1,251 +1,420 @@
-# Configuration Files Specification
+# Config System Specification
 
-Для игрового проекта на **Rust + Bevy** оптимальный выбор — **`config.toml`** с комбинацией инструментов. Вот детальное сравнение и рекомендации:
+Отличная система конфигурации! Вижу продуманный подход с разделением на слои. Давайте интегрируем это в нашу архитектуру Framework/Game и обсудим нюансы.
 
-## 📊 Сравнение форматов для игр
+## 🔍 Анализ и интеграция в архитектуру
 
-| Формат | Плюсы | Минусы | Подходит для игр? |
-| ------ | ----- | ------ | ----------------- |
-| **`.env`** | Простота, секреты | Нет типов, нет вложенности, не для игроков | ❌ Только для CI/деплоя (не для игровых настроек) |
-| **`config.json`** | Универсальность, парсится везде | Нет комментариев, строгий синтаксис, легко сломать | ⚠️ Только для автоматических сохранений (не для ручного редактирования) |
-| **`config.rs`** | Типобезопасность, компиляция | Требует пересборки, игрок не может менять | ❌ Только для *дефолтных* значений в коде |
-| **`config.toml`** | Комментарии, вложенность, человекочитаемость, нативный для экосистемы Rust | Чуть медленнее парсится (но не критично) | ✅ **Идеален для основного конфига** |
-| **`config.ron`** | Нативный для Bevy, поддержка всех типов Rust | Менее знаком игрокам, нет комментариев в старых версиях | ✅ Отличен для *сохранений* и *отладки* |
+### Ключевые наблюдения из ваших документов
 
-## 🏆 Рекомендуемая архитектура (гибридная)
+1. **Dual-Layer Architecture** идеально ложится на нашу концепцию Framework/Game
+2. **Reactive Sync** - отличное дополнение к ECS
+3. **Security-first подход** - критически важно
 
-```plaintext
-project/
+## 📐 Предлагаемая интеграция
+
+### 1. Размещение в структуре проекта
+
+```
+planetarium/
 ├── assets/
-│   └── config/
-│       └── default_config.toml    ← ДЕФОЛТНЫЕ значения (в репозитории)
+│   └── dev_config.ron          # Developer config (hot-reloadable)
+│
 ├── src/
-│   ├── config.rs                  ← Логика загрузки + структуры
-│   └── ...
-└── (игнорируется в .gitignore)
-    %APPDATA%/MyGame/config.toml   ← ПЕРЕОПРЕДЕЛЕНИЯ игроком
+│   ├── framework/
+│   │   ├── config/             # 🆕 NEW: Config management framework
+│   │   │   ├── mod.rs
+│   │   │   ├── plugin.rs       # ConfigPlugin
+│   │   │   ├── game_config.rs  # Player-facing settings (TOML)
+│   │   │   ├── dev_config.rs   # Dev settings (RON) - debug only
+│   │   │   ├── io.rs           # File I/O, paths, validation
+│   │   │   └── appliers.rs     # Apply systems (graphics, audio)
+│   │   │
+│   │   ├── settings/           # Settings UI (uses config/)
+│   │   │   ├── mod.rs
+│   │   │   └── ui.rs           # Settings menu UI
+│   │   └── ...
+│   │
+│   ├── game/
+│   │   ├── constants.rs        # Game-specific constants (compile-time)
+│   │   ├── config/             # 🆕 Game-specific config extensions
+│   │   │   ├── mod.rs
+│   │   │   └── gameplay.rs     # GameplayConfig (difficulty, physics)
+│   │   └── ...
+│   │
+│   └── config/                 # 🔄 MOVE TO: src/framework/config/
+│       └── game_config.rs      # (deprecated location)
+│
+├── .env.example                # Template for local dev secrets
+├── .gitignore                  # Must include .env
+└── Cargo.toml
 ```
 
-### Почему именно так
+### 2. Распределение ответственности
 
-1. **`default_config.toml`** — хранится в репозитории, содержит безопасные дефолты
-2. **`user config.toml`** — создаётся в `AppData`/`~/.config`, перекрывает дефолты
-3. **`config.rs`** — содержит *только структуры и логику*, не сами значения
+| Компонент | Слой | Формат | Назначение | Mutability |
+|-----------|------|--------|------------|------------|
+| **GameConfig** | Framework | TOML | Графика, звук, управление | Runtime (player) |
+| **DevConfig** | Framework | RON | Дебаг флаги, gizmos, метрики | Runtime (dev only) |
+| **GameplayConfig** | Game | RON/Code | Баланс игры, физика | Design-time |
+| **Constants** | Game | Rust code | G, AU, скорости | Compile-time |
+| **Secrets** | Outside repo | .env | API ключи | Build-time injection |
 
-## 💻 Пример реализации (Rust + Bevy)
+## 🎯 Предложения по улучшению
 
-### 1. `Cargo.toml` — зависимости
+### Вопрос 1: DevConfig - Framework или Game?
 
-```toml
-[dependencies]
-bevy = "0.18"
-serde = { version = "1.0.228", features = ["derive"] }
-toml = "0.9.11"
-directories = "6.0"  # Кроссплатформенные пути к данным пользователя
-```
-
-### 2. `src/config.rs` — структуры и логика
+**Моё мнение:** Разделить на два уровня:
 
 ```rust
-use bevy::prelude::*;
-use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
-use std::fs;
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GraphicsConfig {
-    pub resolution: (u32, u32),
-    pub fullscreen: bool,
-    pub vsync: bool,
-    pub quality: GraphicsQuality,
+// framework/config/dev_config.rs
+#[cfg(debug_assertions)]
+#[derive(Resource, Reflect, Debug, Clone)]
+pub struct FrameworkDevConfig {
+    pub show_fps: bool,
+    pub show_state_debug: bool,
+    pub hot_reload_assets: bool,
+    pub ui_debug_borders: bool,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub enum GraphicsQuality {
+// game/config/dev_config.rs
+#[cfg(debug_assertions)]
+#[derive(Resource, Reflect, Debug, Clone)]
+pub struct GameDevConfig {
+    pub debug_physics: bool,           // Планетарные орбиты
+    pub show_orbit_paths: bool,
+    pub time_scale: f32,                // Ускорение симуляции
+    pub spawn_debug_planets: bool,
+}
+```
+
+**Преимущества:**
+
+- Framework DevConfig переиспользуется в других проектах
+- Game DevConfig специфичен для планетария
+- Оба живут в `assets/` и hot-reload независимо
+
+### Вопрос 2: Где хранить dev_config.ron?
+
+**Рекомендация:**
+
+```
+assets/
+├── config/
+│   ├── framework_dev.ron       # Framework debug settings
+│   └── game_dev.ron            # Game debug settings
+├── textures/
+└── ...
+```
+
+Bevy автоматически отслеживает изменения в `assets/` через AssetServer.
+
+### Вопрос 3: GameplayConfig - код или файл?
+
+Для **баланса игры** (сложность, физические параметры планет):
+
+**Вариант A: Файл RON** (рекомендую)
+
+```ron
+// assets/config/gameplay.ron
+(
+    difficulty: Normal,
+    physics: (
+        gravitational_constant: 6.674e-11,
+        time_step: 0.016,
+        max_velocity: 1000.0,
+    ),
+    planets: (
+        default_mass: 5.972e24,  // Earth mass
+        min_radius: 100.0,
+        max_radius: 10000.0,
+    ),
+)
+```
+
+**Преимущества:**
+
+- Дизайнеры могут редактировать без пересборки
+- Hot-reload в debug builds
+- Легко создавать пресеты сложности
+
+**Вариант B: Rust константы** (для неизменяемых значений)
+
+```rust
+// game/constants.rs
+pub const GRAVITATIONAL_CONSTANT: f64 = 6.674e-11;
+pub const ASTRONOMICAL_UNIT: f64 = 1.496e11;
+pub const LIGHT_SPEED: f64 = 299_792_458.0;
+```
+
+**Мой совет:** Комбинируйте оба подхода:
+
+- **Константы** - для физических констант (G, c, AU)
+- **Config файлы** - для балансных параметров (масса планет, скорости)
+
+## 📋 Обновлённая архитектура Config System
+
+### Plugin структура
+
+```rust
+// framework/config/plugin.rs
+pub struct ConfigPlugin;
+
+impl Plugin for ConfigPlugin {
+    fn build(&self, app: &mut App) {
+        app
+            // Resources
+            .init_resource::<GameConfig>()     // Loaded from TOML
+            
+            // Debug-only resources
+            #[cfg(debug_assertions)]
+            .init_resource::<FrameworkDevConfig>()
+            
+            // Startup: Load configs
+            .add_systems(Startup, (
+                load_game_config,
+                setup_config_watchers,
+            ))
+            
+            // Update: Reactive sync
+            .add_systems(Update, (
+                save_config_on_change
+                    .run_if(resource_changed::<GameConfig>),
+                apply_graphics_settings
+                    .run_if(resource_changed::<GameConfig>),
+                apply_audio_settings
+                    .run_if(resource_changed::<GameConfig>),
+            ))
+            
+            // Debug systems
+            #[cfg(debug_assertions)]
+            .add_systems(Update, (
+                hot_reload_dev_config,
+                toggle_debug_overlays,
+            ));
+    }
+}
+```
+
+### GameConfig структура (Framework)
+
+```rust
+// framework/config/game_config.rs
+use serde::{Deserialize, Serialize};
+use bevy::prelude::*;
+
+#[derive(Resource, Serialize, Deserialize, Clone, PartialEq, Debug)]
+pub struct GameConfig {
+    pub version: u32,
+    pub graphics: GraphicsConfig,
+    pub audio: AudioConfig,
+    pub accessibility: AccessibilityConfig,
+}
+
+#[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
+pub struct GraphicsConfig {
+    #[serde(default = "default_resolution")]
+    pub resolution: [u32; 2],
+    
+    #[serde(default)]
+    pub fullscreen: bool,
+    
+    #[serde(default = "default_true")]
+    pub vsync: bool,
+    
+    #[serde(default)]
+    pub quality: QualityPreset,
+}
+
+#[derive(Serialize, Deserialize, Clone, PartialEq, Debug, Default)]
+pub enum QualityPreset {
     Low,
+    #[default]
     Medium,
     High,
     Ultra,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AudioConfig {
-    pub master_volume: f32,
-    pub music_volume: f32,
-    pub sfx_volume: f32,
-}
+// ... AudioConfig, AccessibilityConfig
+```
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GameConfig {
-    pub graphics: GraphicsConfig,
-    pub audio: AudioConfig,
-    pub language: String,
-    pub enable_telemetry: bool,
-}
+### Applier Systems (Framework)
 
-// Дефолтные значения (без хардкода в файле!)
-impl Default for GameConfig {
-    fn default() -> Self {
-        Self {
-            graphics: GraphicsConfig {
-                resolution: (1920, 1080),
-                fullscreen: false,
-                vsync: true,
-                quality: GraphicsQuality::High,
-            },
-            audio: AudioConfig {
-                master_volume: 1.0,
-                music_volume: 0.7,
-                sfx_volume: 0.8,
-            },
-            language: "en".to_string(),
-            enable_telemetry: false,
-        }
-    }
-}
+```rust
+// framework/config/appliers.rs
+use bevy::prelude::*;
+use bevy::window::{Window, WindowMode};
 
-// Система загрузки конфига при старте игры
-pub fn load_config(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
+pub fn apply_graphics_settings(
+    config: Res<GameConfig>,
+    mut windows: Query<&mut Window>,
 ) {
-    let user_config_path = get_user_config_path();
-    
-    let config = if user_config_path.exists() {
-        // Загружаем пользовательский конфиг + мержим с дефолтами
-        match fs::read_to_string(&user_config_path) {
-            Ok(content) => {
-                let mut cfg: GameConfig = toml::from_str(&content)
-                    .unwrap_or_else(|e| {
-                        warn!("Invalid user config ({}), falling back to defaults: {}", user_config_path.display(), e);
-                        GameConfig::default()
-                    });
-                // Валидация границ
-                cfg.audio.master_volume = cfg.audio.master_volume.clamp(0.0, 1.0);
-                cfg
-            }
-            Err(e) => {
-                warn!("Failed to read config ({}): {}", user_config_path.display(), e);
-                GameConfig::default()
-            }
-        }
-    } else {
-        // Первый запуск — создаём конфиг с дефолтами
-        let cfg = GameConfig::default();
-        if let Ok(dir) = user_config_path.parent() {
-            let _ = fs::create_dir_all(dir);
-        }
-        let _ = fs::write(&user_config_path, toml::to_string_pretty(&cfg).unwrap());
-        info!("Created default config at {}", user_config_path.display());
-        cfg
-    };
-
-    commands.insert_resource(config);
-}
-
-// Кроссплатформенный путь к конфигу
-fn get_user_config_path() -> PathBuf {
-    use directories::ProjectDirs;
-    
-    if let Some(proj_dirs) = ProjectDirs::from("com", "YourStudio", "YourGame") {
-        proj_dirs.config_dir().join("config.toml")
-    } else {
-        // Fallback для портативных версий
-        std::env::current_dir().unwrap().join("config.toml")
+    if let Ok(mut window) = windows.get_single_mut() {
+        let [width, height] = config.graphics.resolution;
+        window.resolution.set(width as f32, height as f32);
+        
+        window.mode = if config.graphics.fullscreen {
+            WindowMode::BorderlessFullscreen
+        } else {
+            WindowMode::Windowed
+        };
+        
+        window.present_mode = if config.graphics.vsync {
+            bevy::window::PresentMode::AutoVsync
+        } else {
+            bevy::window::PresentMode::AutoNoVsync
+        };
     }
 }
-```
 
-### 3. `assets/config/default_config.toml` — пример содержимого
-
-```toml
-# ========================================
-# GRAPHICS SETTINGS
-# ========================================
-[graphics]
-resolution = [1920, 1080]  # Width, Height
-fullscreen = false
-vsync = true
-
-# Quality preset: "Low" | "Medium" | "High" | "Ultra"
-quality = "High"
-
-# ========================================
-# AUDIO SETTINGS
-# ========================================
-[audio]
-master_volume = 1.0   # 0.0 to 1.0
-music_volume = 0.7
-sfx_volume = 0.8
-
-# ========================================
-# GAMEPLAY
-# ========================================
-language = "en"  # "en", "ru", "de", etc.
-enable_telemetry = false  # Anonymous usage stats
-```
-
-## 🔐 Для чувствительных данных (если нужны)
-
-- **Никогда не храните секреты в `config.toml`** — используйте:
-  - `.env` + `dotenvy` — только для **разработки** (добавьте в `.gitignore`)
-  - Системные переменные окружения — для продакшн-серверов
-  - Платформенные хранилища (Windows Credential Manager, macOS Keychain)
-
-```rust
-// Пример безопасной загрузки токена (только для онлайн-сервисов)
-fn load_auth_token() -> Option<String> {
-    std::env::var("GAME_AUTH_TOKEN").ok()
-        .or_else(|| std::fs::read_to_string("secrets.token").ok())
-}
-```
-
-## 🚀 Продвинутые паттерны
-
-### 1. Горячая перезагрузка конфига (для отладки)
-
-```rust
-fn hot_reload_config(
-    mut config: ResMut<GameConfig>,
-    keyboard: Res<ButtonInput<KeyCode>>,
+pub fn apply_audio_settings(
+    config: Res<GameConfig>,
+    // TODO: Integration with audio system
 ) {
-    if keyboard.just_pressed(KeyCode::F5) {
-        if let Ok(content) = fs::read_to_string(get_user_config_path()) {
-            if let Ok(new_cfg) = toml::from_str::<GameConfig>(&content) {
-                *config = new_cfg;
-                info!("Config reloaded!");
-            }
-        }
+    // Update global audio volume
+    info!("Audio: Master={}, Music={}, SFX={}", 
+        config.audio.master_volume,
+        config.audio.music_volume,
+        config.audio.sfx_volume
+    );
+}
+```
+
+## 🔐 Security Best Practices
+
+### .env файл структура
+
+```env
+# .env.example - COMMIT THIS
+# Copy to .env and fill with real values
+
+# === Development Secrets (LOCAL ONLY) ===
+STEAM_API_KEY="your_dev_key_here"
+DISCORD_APP_ID="999999999999999999"
+
+# === Analytics ===
+ANALYTICS_ENDPOINT="https://dev.yourstudio.com/events"
+ANALYTICS_API_KEY="dev_analytics_key"
+
+# === CI/CD (Override in GitHub Actions) ===
+RELEASE_SIGNING_KEY="path/to/key.p12"
+```
+
+### .gitignore обновление
+
+```gitignore
+# Environment variables
+.env
+.env.local
+
+# User configs (never commit)
+config.toml
+*.toml.bak
+
+# Build artifacts
+/target/
+```
+
+## 🚀 Интеграция с существующей архитектурой
+
+### Обновлённый main.rs
+
+```rust
+// src/main.rs
+use bevy::prelude::*;
+
+mod framework;
+mod game;
+
+fn main() {
+    // Load secrets (dev only)
+    #[cfg(debug_assertions)]
+    dotenvy::dotenv().ok();
+    
+    App::new()
+        .add_plugins(
+            DefaultPlugins.set(WindowPlugin {
+                primary_window: Some(Window {
+                    title: "Planetarium".into(),
+                    // Will be overridden by GameConfig
+                    resolution: (1280.0, 720.0).into(),
+                    ..default()
+                }),
+                ..default()
+            })
+        )
+        
+        // Framework plugins
+        .add_plugins(framework::FrameworkPlugin)
+        
+        // Game plugins
+        .add_plugins(game::GamePlugin)
+        
+        .run();
+}
+```
+
+### Framework Plugin с Config
+
+```rust
+// framework/plugin.rs
+pub struct FrameworkPlugin;
+
+impl Plugin for FrameworkPlugin {
+    fn build(&self, app: &mut App) {
+        app
+            // Config FIRST - other plugins depend on it
+            .add_plugins(config::ConfigPlugin)
+            
+            // Then other framework plugins
+            .add_plugins((
+                states::StatesPlugin,
+                splash::SplashPlugin,
+                // ...
+            ));
     }
 }
 ```
 
-### 2. RON для отладки (альтернатива)
+## 💡 Рекомендации и вопросы
 
-```rust
-// В режиме отладки можно дампить конфиг в RON для быстрой проверки
-use ron::ser::to_string_pretty;
+### Вопросы для обсуждения
 
-if cfg!(debug_assertions) {
-    let ron = to_string_pretty(&*config, ron::ser::PrettyConfig::default()).unwrap();
-    fs::write("debug_config.ron", ron).ok();
-}
-```
+1. **Hot-reload GameConfig в продакшене?**
+   - Моё мнение: НЕТ, только в debug builds
+   - В релизе только load-on-startup
 
-## ✅ Итоговые рекомендации
+2. **Миграция config versions:**
 
-| Задача | Формат | Расположение |
-| ------ | ------ | ------------ |
-| Основные настройки игрока | **TOML** | `%APPDATA%/YourGame/config.toml` |
-| Дефолтные значения | **Код (Default trait)** | `src/config.rs` |
-| Сохранения игры | **RON** или **bincode** | `%APPDATA%/YourGame/saves/` |
-| Секреты/токены | **Переменные окружения** | `.env` (только для разработки) |
-| Конфигурация сборки | **`build.rs` + фичи** | `Cargo.toml` `[features]` |
+   ```rust
+   fn migrate_config(old: GameConfig) -> GameConfig {
+       match old.version {
+           1 => migrate_v1_to_v2(old),
+           2 => old, // current
+           _ => GameConfig::default(),
+       }
+   }
+   ```
 
-> 💡 **Главное правило**: игрок должен иметь возможность отредактировать `config.toml` в Блокноте без риска сломать игру. Поэтому:
->
-> - Всегда валидируйте значения при загрузке
-> - Используйте дефолты как fallback
-> - Добавляйте комментарии в пример конфига
+   Стоит ли добавить автоматическую миграцию?
 
-Этот подход используется в реальных проектах на Bevy (например, *Fish Fight*, *Bevy Pong*) и соответствует философии Rust: **безопасность + гибкость + человекоцентричность**.
+3. **Validation стратегия:**
+
+   ```rust
+   impl GraphicsConfig {
+       pub fn validate(&mut self) {
+           self.resolution[0] = self.resolution[0].clamp(800, 7680);
+           self.resolution[1] = self.resolution[1].clamp(600, 4320);
+       }
+   }
+   ```
+
+   Где лучше валидировать - при load или при apply?
+
+4. **GameplayConfig расположение:**
+   - `assets/config/gameplay.ron` - для hot-reload
+   - `game/constants.rs` - для физических констант
+   - Или всё в один файл?
+
+### Что вы думаете?
+
+Готов обновить документацию и схемы с учётом системы конфигурации. Хотите обсудить какой-то конкретный аспект подробнее?
