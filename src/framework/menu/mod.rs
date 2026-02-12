@@ -5,6 +5,7 @@ use crate::core::states::AppState;
 use bevy::prelude::*;
 
 pub mod layout;
+pub mod pause;
 pub mod reactive;
 pub mod screen;
 pub mod settings;
@@ -96,5 +97,8 @@ impl Plugin for MenuPlugin {
 
         // Cleanup on exit
         app.add_systems(OnExit(AppState::MainMenu), despawn_main_menu);
+
+        // Pause menu (in-game)
+        app.add_plugins(pause::PauseMenuPlugin);
     }
 }

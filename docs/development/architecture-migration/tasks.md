@@ -3,7 +3,7 @@
 > **Feature:** `architecture-migration`
 > **Plan:** [plan.md](plan.md)
 > **Created:** 2026-02-12
-> **Status:** 🔄 In Progress (Phase 3 ✅)
+> **Status:** 🔄 In Progress (Phase 4 ✅)
 
 ---
 
@@ -129,22 +129,21 @@
 
 > **Strategy:** Pause menu is UI infrastructure. Move entire folder to framework. Rename `pause_menu` → `pause` to avoid tautology inside `menu/`.
 
-- [ ] **TASK-AM-025**: Move `game/pause_menu/` → `framework/menu/pause/`
-  - **Action:** MOVE entire folder (7 files: `mod.rs`, `components.rs`, `input.rs`, `state.rs`, `systems.rs`, `settings_bridge.rs`, `ui.rs`)
-  - Rename module from `pause_menu` to `pause`
-  - Update internal imports (`crate::game::pause_menu` → `crate::framework::menu::pause`)
+- [x] **TASK-AM-025**: Move `game/pause_menu/` → `framework/menu/pause/`
+  - **Action:** MOVE entire folder (7 files), renamed module `pause_menu` → `pause`
+  - Updated `crate::launcher::menu::` → `super::super::` relative imports
   - **Depends on:** Phase 3
 
-- [ ] **TASK-AM-026**: Update `game/mod.rs` — remove `pause_menu` module, update `GamePlugin`
-  - **Action:** ADAPT — remove PauseMenuPlugin from GamePlugin
+- [x] **TASK-AM-026**: Update `game/mod.rs` — remove `pause_menu` module, update `GamePlugin`
+  - **Action:** ADAPT — removed PauseMenuPlugin, created re-export shim `pause_menu` → `framework::menu::pause`
   - **Depends on:** TASK-AM-025
 
-- [ ] **TASK-AM-027**: Update `framework/menu/mod.rs` — register PauseMenuPlugin
-  - **Action:** ADAPT — add `pub mod pause;` and register in MenuPlugin
+- [x] **TASK-AM-027**: Update `framework/menu/mod.rs` — register PauseMenuPlugin
+  - **Action:** ADAPT — added `pub mod pause;` and `app.add_plugins(pause::PauseMenuPlugin)`
   - **Depends on:** TASK-AM-025
 
-- [ ] **TASK-AM-028**: ✅ Verification — Phase 4
-  - Run `cargo check`, `cargo test`, `cargo clippy -- -D warnings`
+- [x] **TASK-AM-028**: ✅ Verification — Phase 4
+  - `cargo check` ✅, `cargo clippy -- -D warnings` ✅, `cargo test` ✅ (14/14 lib + 5/5 integration)
   - **Depends on:** TASK-AM-026..027
 
 ---
@@ -278,7 +277,7 @@
 | 1 | AM-001 — AM-007 | ✅ Done | Framework skeleton + state migration |
 | 2 | AM-008 — AM-019 | ✅ Done | Move `launcher/` → `framework/` |
 | 3 | AM-020 — AM-024 | ✅ Done | Move `ui/` → `framework/ui/` |
-| 4 | AM-025 — AM-028 | ⬜ | Move `game/pause_menu/` → `framework/menu/pause/` |
+| 4 | AM-025 — AM-028 | ✅ Done | Move `game/pause_menu/` → `framework/menu/pause/` |
 | 5 | AM-029 — AM-039 | ⬜ | Decompose `core/` → `config/` + `utils/` |
 | 6 | AM-040 — AM-043 | ⬜ | New camera + audio modules |
 | 7 | AM-044 — AM-052 | ⬜ | Cleanup, versioning, docs |
