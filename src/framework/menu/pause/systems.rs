@@ -5,8 +5,8 @@ use super::super::settings::SettingsOpen;
 use super::super::widgets::{ButtonAction, PrimaryButton};
 use super::components::{PauseMenuButton, PauseMenuButtonAction};
 use super::state::{PauseMenuActionEvent, PauseMenuMode, PauseMenuState};
-use crate::core::assets::{AssetCache, AssetManifest};
-use crate::core::states::AppState;
+use crate::framework::assets::{AssetCache, AssetManifest};
+use crate::framework::states::AppState;
 use bevy::app::AppExit;
 use bevy::prelude::*;
 

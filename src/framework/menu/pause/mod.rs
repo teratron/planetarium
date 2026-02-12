@@ -1,6 +1,6 @@
 //! In-game pause menu plugin.
 
-use crate::core::states::AppState;
+use crate::framework::states::AppState;
 use bevy::prelude::*;
 
 pub mod components;
@@ -46,7 +46,7 @@ impl Plugin for PauseMenuPlugin {
             .add_systems(
                 Update,
                 settings_bridge::update_settings_ui_bridge
-                    .run_if(resource_changed::<crate::core::config::UserSettings>)
+                    .run_if(resource_changed::<crate::config::UserSettings>)
                     .run_if(in_state(AppState::InGame))
                     .run_if(state::pause_settings_active),
             )

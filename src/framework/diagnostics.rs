@@ -2,8 +2,8 @@
 //!
 //! Provides a real-time overlay for monitoring performance (FPS) and application state.
 
-use crate::core::states::AppState;
-use crate::ui::theme::Theme;
+use crate::framework::states::AppState;
+use crate::framework::ui::theme::Theme;
 use bevy::diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin};
 use bevy::prelude::*;
 

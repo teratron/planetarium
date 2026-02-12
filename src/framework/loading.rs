@@ -1,8 +1,8 @@
 //! Stage 4: Loading orchestration.
 //! Handles asynchronous asset loading and progress tracking.
 
-use crate::core::states::AppState;
-use crate::ui::theme::Theme;
+use crate::framework::states::AppState;
+use crate::framework::ui::theme::Theme;
 use bevy::prelude::*;
 
 /// Plugin managing the loading phase between the menu and the gameplay.
@@ -201,7 +201,7 @@ fn setup_loading_screen(mut commands: Commands, theme: Res<Theme>) {
 fn update_loading_progress(
     time: Res<Time>,
     mut tracker: ResMut<LoadingTracker>,
-    mut fade: ResMut<crate::ui::fading::ScreenFade>,
+    mut fade: ResMut<crate::framework::ui::fading::ScreenFade>,
 ) {
     // Mock loading logic: linearly increase progress over 3 seconds
     tracker.progress += time.delta_secs() / 3.0;

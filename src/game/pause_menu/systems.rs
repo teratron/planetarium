@@ -2,11 +2,11 @@
 
 use super::components::{PauseMenuButton, PauseMenuButtonAction};
 use super::state::{PauseMenuActionEvent, PauseMenuMode, PauseMenuState};
-use crate::core::assets::{AssetCache, AssetManifest};
-use crate::core::states::AppState;
-use crate::launcher::menu::reactive::RuntimeAudioState;
-use crate::launcher::menu::settings::SettingsOpen;
-use crate::launcher::menu::widgets::{ButtonAction, PrimaryButton};
+use crate::framework::assets::{AssetCache, AssetManifest};
+use crate::framework::states::AppState;
+use crate::framework::menu::reactive::RuntimeAudioState;
+use crate::framework::menu::settings::SettingsOpen;
+use crate::framework::menu::widgets::{ButtonAction, PrimaryButton};
 use bevy::app::AppExit;
 use bevy::prelude::*;
 

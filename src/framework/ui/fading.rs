@@ -2,7 +2,7 @@
 //!
 //! Provides a resource to manage global screen transitions (Fade In / Fade Out).
 
-use crate::core::states::AppState;
+use crate::framework::states::AppState;
 use bevy::prelude::*;
 
 pub struct FadingPlugin;

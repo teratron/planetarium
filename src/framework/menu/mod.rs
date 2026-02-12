@@ -1,7 +1,7 @@
 //! Stage 3: Main Menu system.
 //! Handles UI layout, interaction, and settings.
 
-use crate::core::states::AppState;
+use crate::framework::states::AppState;
 use bevy::prelude::*;
 
 pub mod layout;
@@ -72,7 +72,7 @@ impl Plugin for MenuPlugin {
         app.add_systems(
             Update,
             update_settings_ui
-                .run_if(resource_changed::<crate::core::config::UserSettings>)
+                .run_if(resource_changed::<crate::config::UserSettings>)
                 .run_if(in_state(AppState::MainMenu)),
         );
 
@@ -84,14 +84,14 @@ impl Plugin for MenuPlugin {
             Update,
             (
                 broadcast_settings_changes
-                    .run_if(resource_changed::<crate::core::config::UserSettings>),
+                    .run_if(resource_changed::<crate::config::UserSettings>),
                 broadcast_theme_changes
-                    .run_if(resource_changed::<crate::core::config::UserSettings>),
+                    .run_if(resource_changed::<crate::config::UserSettings>),
                 schedule_settings_save
-                    .run_if(resource_changed::<crate::core::config::UserSettings>),
+                    .run_if(resource_changed::<crate::config::UserSettings>),
                 auto_save_settings.run_if(settings_auto_save_active),
-                crate::core::localization::apply_language_change_system
-                    .run_if(resource_changed::<crate::core::config::UserSettings>),
+                crate::framework::localization::apply_language_change_system
+                    .run_if(resource_changed::<crate::config::UserSettings>),
             ),
         );
 

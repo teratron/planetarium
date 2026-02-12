@@ -2,8 +2,8 @@
 //!
 //! Centralizes design tokens (colors, fonts, sizes) for the application.
 
-use crate::core::assets::{AssetCache, AssetManifest};
-use crate::core::states::{AppState, ErrorState};
+use crate::framework::assets::{AssetCache, AssetManifest};
+use crate::framework::states::{AppState, ErrorState};
 use bevy::asset::AssetServer;
 use bevy::prelude::*;
 

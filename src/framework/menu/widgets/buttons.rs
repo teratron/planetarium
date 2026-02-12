@@ -2,10 +2,10 @@
 //!
 //! Provides primary button widget creation and interaction handling.
 
-use crate::core::assets::AssetCache;
-use crate::core::assets::AssetManifest;
-use crate::ui::theme::Theme;
-use crate::ui::theme::constants::animation;
+use crate::framework::assets::AssetCache;
+use crate::framework::assets::AssetManifest;
+use crate::framework::ui::theme::Theme;
+use crate::framework::ui::theme::constants::animation;
 use bevy::prelude::*;
 
 use super::base::Widget;

@@ -1,7 +1,7 @@
-use crate::core::assets::setup_asset_manifest;
-use crate::core::config::setup_config;
-use crate::core::localization::setup_localization;
-use crate::core::states::AppState;
+use crate::framework::assets::setup_asset_manifest;
+use crate::config::setup_config;
+use crate::framework::localization::setup_localization;
+use crate::framework::states::AppState;
 use bevy::prelude::*;
 
 pub struct BootPlugin;
@@ -17,7 +17,7 @@ impl Plugin for BootPlugin {
                 setup_config,
                 setup_localization,
                 setup_asset_manifest,
-                crate::ui::theme::setup_theme,
+                crate::framework::ui::theme::setup_theme,
             )
                 .chain(),
         );
@@ -34,8 +34,8 @@ impl Plugin for BootPlugin {
 /// In a real app, this would wait for background tasks, auth, etc.
 fn check_boot_finished(
     mut next_state: ResMut<NextState<AppState>>,
-    cli_args: Res<crate::core::cli::CliArgs>,
-    error_state: Res<crate::core::states::ErrorState>,
+    cli_args: Res<crate::config::cli::CliArgs>,
+    error_state: Res<crate::framework::states::ErrorState>,
 ) {
     if !error_state.message.is_empty() {
         // Error already occurred during booting, let the Error state transition take over.

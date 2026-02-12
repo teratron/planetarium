@@ -16,8 +16,8 @@ use bevy::prelude::*;
 /// System to initialize paths and load settings.
 pub fn setup_config(
     mut commands: Commands,
-    mut next_state: ResMut<NextState<crate::core::states::AppState>>,
-    mut error_state: ResMut<crate::core::states::ErrorState>,
+    mut next_state: ResMut<NextState<crate::framework::states::AppState>>,
+    mut error_state: ResMut<crate::framework::states::ErrorState>,
 ) {
     let metadata = AppMetadata::default();
     info!(
@@ -31,7 +31,7 @@ pub fn setup_config(
         let err_msg = format!("Failed to create data directory: {}", e);
         error!("[Config] {}", err_msg);
         error_state.message = err_msg;
-        next_state.set(crate::core::states::AppState::Error);
+        next_state.set(crate::framework::states::AppState::Error);
     }
 
     let settings = settings::load_settings(&paths);

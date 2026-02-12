@@ -2,7 +2,7 @@
 //!
 //! Handles resolution of platform-specific directories for data and configuration.
 
-use crate::core::config::metadata::APP_NAME;
+use crate::config::metadata::APP_NAME;
 use bevy::prelude::*;
 use std::fs;
 use std::path::PathBuf;

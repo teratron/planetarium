@@ -2,9 +2,9 @@
 //!
 //! Provides dropdown/select widget creation and interaction handling.
 
-use crate::core::assets::AssetCache;
-use crate::core::config::settings::SettingKey;
-use crate::ui::theme::Theme;
+use crate::framework::assets::AssetCache;
+use crate::config::settings::SettingKey;
+use crate::framework::ui::theme::Theme;
 use bevy::prelude::*;
 
 use super::base::Widget;
@@ -133,7 +133,7 @@ pub fn dropdown_interaction_system(
     mut commands: Commands,
     theme: Res<Theme>,
     asset_server: Res<AssetServer>,
-    manifest: Res<crate::core::assets::AssetManifest>,
+    manifest: Res<crate::framework::assets::AssetManifest>,
     mut cache: ResMut<AssetCache>,
     audio_state: Res<crate::framework::menu::reactive::RuntimeAudioState>,
     mut dropdown_query: Query<
@@ -237,7 +237,7 @@ fn parse_resolution_string(s: &str) -> Option<(u32, u32)> {
 }
 
 fn apply_dropdown_setting(
-    settings: &mut crate::core::config::UserSettings,
+    settings: &mut crate::config::UserSettings,
     setting_key: &SettingKey,
     options: &[String],
     index: usize,
@@ -299,9 +299,9 @@ fn apply_dropdown_setting(
 #[allow(clippy::too_many_arguments)]
 pub fn dropdown_option_interaction_system(
     mut commands: Commands,
-    mut settings: ResMut<crate::core::config::UserSettings>,
+    mut settings: ResMut<crate::config::UserSettings>,
     asset_server: Res<AssetServer>,
-    manifest: Res<crate::core::assets::AssetManifest>,
+    manifest: Res<crate::framework::assets::AssetManifest>,
     mut cache: ResMut<AssetCache>,
     audio_state: Res<crate::framework::menu::reactive::RuntimeAudioState>,
     mut dropdown_query: Query<(&mut Dropdown, &Children)>,
@@ -366,11 +366,11 @@ pub fn dropdown_option_interaction_system(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::core::config::settings::SettingKey;
+    use crate::config::settings::SettingKey;
 
     #[test]
     fn apply_allow_multiple_instances_updates_user_settings() {
-        let mut settings = crate::core::config::UserSettings::default();
+        let mut settings = crate::config::UserSettings::default();
         let options = vec!["false".to_string(), "true".to_string()];
 
         apply_dropdown_setting(

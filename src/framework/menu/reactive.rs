@@ -1,6 +1,6 @@
-use crate::core::config::UserSettings;
-use crate::ui::theme::constants;
-use crate::ui::theme::{Theme, ThemeColors};
+use crate::config::UserSettings;
+use crate::framework::ui::theme::constants;
+use crate::framework::ui::theme::{Theme, ThemeColors};
 use bevy::prelude::*;
 
 /// Runtime audio state resource (consumed by audio systems).
@@ -199,7 +199,7 @@ pub fn auto_save_settings(
     time: Res<Time>,
     mut timer: ResMut<SettingsAutoSaveTimer>,
     settings: Res<UserSettings>,
-    paths: Res<crate::core::config::AppPaths>,
+    paths: Res<crate::config::AppPaths>,
 ) {
     if timer.0.is_paused() {
         return;
@@ -209,7 +209,7 @@ pub fn auto_save_settings(
 
     if timer.0.is_finished() {
         info!("[Settings] Auto-saving settings to disk...");
-        crate::core::config::save_settings(&paths, &settings);
+        crate::config::save_settings(&paths, &settings);
         timer.0.pause();
     }
 }

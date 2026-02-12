@@ -1,9 +1,9 @@
 use bevy::prelude::*;
-use planetarium::core::states::AppState;
-use planetarium::launcher::menu::screen::handle_menu_button_clicks;
-use planetarium::launcher::menu::settings::SettingsOpen;
-use planetarium::launcher::menu::widgets::{ButtonAction, PrimaryButton};
-use planetarium::ui::fading::{FadeState, FadingPlugin, ScreenFade};
+use planetarium::framework::states::AppState;
+use planetarium::framework::menu::screen::handle_menu_button_clicks;
+use planetarium::framework::menu::settings::SettingsOpen;
+use planetarium::framework::menu::widgets::{ButtonAction, PrimaryButton};
+use planetarium::framework::ui::fading::{FadeState, FadingPlugin, ScreenFade};
 
 #[test]
 fn play_button_triggers_loading_transition() {

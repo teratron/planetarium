@@ -1,5 +1,5 @@
-use crate::core::assets::AssetManifest;
-use crate::core::states::AppState;
+use crate::framework::assets::AssetManifest;
+use crate::framework::states::AppState;
 use bevy::prelude::*;
 
 pub struct SplashPlugin;
@@ -24,7 +24,7 @@ fn setup_splash(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     manifest: Res<AssetManifest>,
-    mut fade: ResMut<crate::ui::fading::ScreenFade>,
+    mut fade: ResMut<crate::framework::ui::fading::ScreenFade>,
 ) {
     info!("[SplashPlugin] Showing splash screen...");
 
@@ -68,7 +68,7 @@ fn countdown_splash(
     mut timer: ResMut<SplashTimer>,
     keys: Res<ButtonInput<KeyCode>>,
     mouse: Res<ButtonInput<MouseButton>>,
-    mut fade: ResMut<crate::ui::fading::ScreenFade>,
+    mut fade: ResMut<crate::framework::ui::fading::ScreenFade>,
 ) {
     timer.0.tick(time.delta());
 

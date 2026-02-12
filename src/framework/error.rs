@@ -2,9 +2,9 @@
 //!
 //! Provides the UI and logic for the application's error state.
 
-use crate::core::states::{AppState, ErrorState};
+use crate::framework::states::{AppState, ErrorState};
 use crate::framework::menu::widgets::{ButtonAction, spawn_primary_button};
-use crate::ui::theme::Theme;
+use crate::framework::ui::theme::Theme;
 use bevy::prelude::*;
 
 pub struct ErrorPlugin;

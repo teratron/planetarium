@@ -2,9 +2,9 @@
 //!
 //! Provides slider widget creation and interaction handling for numeric values.
 
-use crate::core::assets::AssetCache;
-use crate::core::config::settings::SettingKey;
-use crate::ui::theme::Theme;
+use crate::framework::assets::AssetCache;
+use crate::config::settings::SettingKey;
+use crate::framework::ui::theme::Theme;
 use bevy::prelude::*;
 
 use super::base::Widget;
@@ -130,11 +130,11 @@ pub fn spawn_slider(
 pub fn slider_interaction_system(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    manifest: Res<crate::core::assets::AssetManifest>,
+    manifest: Res<crate::framework::assets::AssetManifest>,
     mut cache: ResMut<AssetCache>,
     audio_state: Res<crate::framework::menu::reactive::RuntimeAudioState>,
     mut interaction_query: Query<(&Interaction, &GlobalTransform, &ComputedNode, &mut Slider)>,
-    mut settings: ResMut<crate::core::config::UserSettings>,
+    mut settings: ResMut<crate::config::UserSettings>,
     windows: Query<&Window>,
 ) {
     let window = if let Ok(w) = windows.single() {

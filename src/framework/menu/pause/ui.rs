@@ -2,8 +2,8 @@
 
 use super::components::{PauseMenuButton, PauseMenuButtonAction, PauseMenuRoot};
 use super::state::{PauseMenuMode, PauseMenuState};
-use crate::core::localization::{Localization, LocalizedStrings};
-use crate::ui::theme::Theme;
+use crate::framework::localization::{Localization, LocalizedStrings};
+use crate::framework::ui::theme::Theme;
 use bevy::prelude::*;
 
 /// Synchronizes pause menu UI with the current pause state.

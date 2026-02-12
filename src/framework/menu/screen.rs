@@ -5,10 +5,10 @@
 
 use super::settings::SettingsOpen;
 use super::widgets::{ButtonAction, PrimaryButton, spawn_primary_button};
-use crate::core::localization::LocalizedStrings;
-use crate::core::states::AppState;
-use crate::ui::fading::ScreenFade;
-use crate::ui::theme::Theme;
+use crate::framework::localization::LocalizedStrings;
+use crate::framework::states::AppState;
+use crate::framework::ui::fading::ScreenFade;
+use crate::framework::ui::theme::Theme;
 use bevy::prelude::*;
 
 /// Marker component for menu root entity.
@@ -43,7 +43,7 @@ use super::layout;
 pub fn spawn_main_menu(
     mut commands: Commands,
     theme: Res<Theme>,
-    loc: Res<crate::core::localization::Localization>,
+    loc: Res<crate::framework::localization::Localization>,
     mut strings: ResMut<LocalizedStrings>,
 ) {
     info!("[MenuPlugin] Spawning main menu...");
@@ -112,7 +112,7 @@ fn spawn_buttons_container(commands: &mut Commands) -> Entity {
 fn spawn_title(
     commands: &mut Commands,
     theme: &Theme,
-    loc: &crate::core::localization::Localization,
+    loc: &crate::framework::localization::Localization,
     strings: &mut LocalizedStrings,
     panel_id: Entity,
 ) {
@@ -137,7 +137,7 @@ fn spawn_title(
 fn spawn_menu_buttons(
     commands: &mut Commands,
     theme: &Theme,
-    loc: &crate::core::localization::Localization,
+    loc: &crate::framework::localization::Localization,
     strings: &mut LocalizedStrings,
     container_id: Entity,
 ) {

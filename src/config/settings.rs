@@ -2,7 +2,7 @@
 //!
 //! Defines the structure of the application settings and handles loading/saving.
 
-use crate::core::config::AppPaths;
+use crate::config::AppPaths;
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::fs;

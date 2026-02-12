@@ -1,6 +1,6 @@
 //! Bridge systems reusing launcher settings UI inside the in-game pause flow.
 
-use crate::launcher::menu::settings::{
+use crate::framework::menu::settings::{
     ActiveSettingsTab, SettingsOpen, animate_settings_fade, handle_settings_tab_clicks,
     spawn_settings_if_needed, update_settings_tab_content, update_settings_ui,
 };
@@ -9,11 +9,11 @@ use bevy::prelude::*;
 /// Reuse launcher settings spawn/despawn logic for the pause flow.
 pub fn spawn_settings_if_needed_bridge(
     commands: Commands,
-    theme: Res<crate::ui::theme::Theme>,
-    loc: Res<crate::core::localization::Localization>,
-    strings: ResMut<crate::core::localization::LocalizedStrings>,
+    theme: Res<crate::framework::ui::theme::Theme>,
+    loc: Res<crate::framework::localization::Localization>,
+    strings: ResMut<crate::framework::localization::LocalizedStrings>,
     settings_open: Res<SettingsOpen>,
-    query: Query<Entity, With<crate::launcher::menu::settings::components::SettingsRoot>>,
+    query: Query<Entity, With<crate::framework::menu::settings::components::SettingsRoot>>,
     active_tab: ResMut<ActiveSettingsTab>,
 ) {
     spawn_settings_if_needed(
@@ -33,7 +33,7 @@ pub fn handle_settings_tab_clicks_bridge(
     tab_query: Query<
         (
             &Interaction,
-            &crate::launcher::menu::settings::components::SettingsTabButton,
+            &crate::framework::menu::settings::components::SettingsTabButton,
         ),
         (Changed<Interaction>, With<Button>),
     >,
@@ -47,13 +47,13 @@ pub fn handle_settings_tab_clicks_bridge(
 pub fn update_settings_tab_content_bridge(
     commands: Commands,
     active_tab: Res<ActiveSettingsTab>,
-    theme: Res<crate::ui::theme::Theme>,
-    loc: Res<crate::core::localization::Localization>,
-    strings: ResMut<crate::core::localization::LocalizedStrings>,
-    settings: Res<crate::core::config::UserSettings>,
+    theme: Res<crate::framework::ui::theme::Theme>,
+    loc: Res<crate::framework::localization::Localization>,
+    strings: ResMut<crate::framework::localization::LocalizedStrings>,
+    settings: Res<crate::config::UserSettings>,
     content_area_query: Query<
         Entity,
-        With<crate::launcher::menu::settings::components::SettingsContentArea>,
+        With<crate::framework::menu::settings::components::SettingsContentArea>,
     >,
     children_query: Query<&Children>,
 ) {
@@ -73,12 +73,12 @@ pub fn update_settings_tab_content_bridge(
 pub fn animate_settings_fade_bridge(
     commands: Commands,
     time: Res<Time>,
-    theme: Res<crate::ui::theme::Theme>,
+    theme: Res<crate::framework::ui::theme::Theme>,
     query: Query<(
         Entity,
         &mut BackgroundColor,
         &mut Transform,
-        &mut crate::launcher::menu::settings::components::SettingsFade,
+        &mut crate::framework::menu::settings::components::SettingsFade,
     )>,
 ) {
     animate_settings_fade(commands, time, theme, query);
@@ -87,11 +87,11 @@ pub fn animate_settings_fade_bridge(
 /// Reuse launcher settings value-to-UI synchronization.
 #[allow(clippy::type_complexity)]
 pub fn update_settings_ui_bridge(
-    settings: Res<crate::core::config::UserSettings>,
+    settings: Res<crate::config::UserSettings>,
     queries: ParamSet<(
-        Query<&mut Text, With<crate::launcher::menu::settings::components::MasterVolumeControl>>,
-        Query<&mut Text, With<crate::launcher::menu::settings::components::MusicVolumeControl>>,
-        Query<&mut Text, With<crate::launcher::menu::settings::components::SFXVolumeControl>>,
+        Query<&mut Text, With<crate::framework::menu::settings::components::MasterVolumeControl>>,
+        Query<&mut Text, With<crate::framework::menu::settings::components::MusicVolumeControl>>,
+        Query<&mut Text, With<crate::framework::menu::settings::components::SFXVolumeControl>>,
     )>,
 ) {
     update_settings_ui(settings, queries);

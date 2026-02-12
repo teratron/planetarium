@@ -8,9 +8,9 @@ use super::components::{
     FadeDirection, SettingsContentArea, SettingsFade, SettingsRoot, SettingsTabButton,
 };
 use super::layout;
-use crate::core::localization::{Localization, LocalizedStrings};
-use crate::ui::theme::Theme;
-use crate::ui::theme::constants;
+use crate::framework::localization::{Localization, LocalizedStrings};
+use crate::framework::ui::theme::Theme;
+use crate::framework::ui::theme::constants;
 use bevy::prelude::*;
 
 /// Spawns the settings UI root and basic layout.

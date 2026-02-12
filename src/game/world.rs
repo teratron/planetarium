@@ -2,8 +2,8 @@
 //!
 //! Handles the setup, orchestration, and cleanup of the 3D game world.
 
-use crate::core::states::AppState;
-use crate::ui::theme::Theme;
+use crate::framework::states::AppState;
+use crate::framework::ui::theme::Theme;
 use bevy::prelude::*;
 
 pub struct WorldPlugin;

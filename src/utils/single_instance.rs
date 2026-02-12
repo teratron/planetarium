@@ -1,6 +1,6 @@
 //! Single-instance process lock management.
 
-use crate::core::config::AppPaths;
+use crate::config::AppPaths;
 use std::fmt::{Display, Formatter};
 use std::fs::{File, OpenOptions};
 use std::io::Write;
@@ -145,7 +145,7 @@ fn write_lock_metadata(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::core::config::AppPaths;
+    use crate::config::AppPaths;
 
     #[test]
     fn lock_is_skipped_when_multiple_instances_enabled() {

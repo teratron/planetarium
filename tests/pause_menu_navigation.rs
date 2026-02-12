@@ -1,14 +1,16 @@
 use bevy::prelude::*;
-use planetarium::core::assets::{AssetCache, AssetManifest};
-use planetarium::core::states::AppState;
-use planetarium::game::pause_menu::components::{PauseMenuButton, PauseMenuButtonAction};
-use planetarium::game::pause_menu::input::handle_escape_input;
-use planetarium::game::pause_menu::state::{PauseMenuActionEvent, PauseMenuMode, PauseMenuState};
-use planetarium::game::pause_menu::systems::{
+use planetarium::framework::assets::{AssetCache, AssetManifest};
+use planetarium::framework::menu::pause::components::{PauseMenuButton, PauseMenuButtonAction};
+use planetarium::framework::menu::pause::input::handle_escape_input;
+use planetarium::framework::menu::pause::state::{
+    PauseMenuActionEvent, PauseMenuMode, PauseMenuState,
+};
+use planetarium::framework::menu::pause::systems::{
     apply_pause_menu_actions, handle_pause_menu_button_clicks,
 };
-use planetarium::launcher::menu::reactive::RuntimeAudioState;
-use planetarium::launcher::menu::settings::SettingsOpen;
+use planetarium::framework::menu::reactive::RuntimeAudioState;
+use planetarium::framework::menu::settings::SettingsOpen;
+use planetarium::framework::states::AppState;
 
 fn setup_app() -> App {
     let mut app = App::new();

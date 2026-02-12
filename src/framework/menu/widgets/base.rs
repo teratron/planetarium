@@ -1,6 +1,6 @@
 //! Base widget trait for reusable UI elements.
 
-use crate::ui::theme::Theme;
+use crate::framework::ui::theme::Theme;
 use bevy::prelude::*;
 
 /// Common interface for widget creation.

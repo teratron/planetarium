@@ -1,14 +1,14 @@
 use bevy::log::LogPlugin;
 use bevy::prelude::*;
-use planetarium::core::cli::CliArgs;
-use planetarium::core::config::AppPaths;
-use planetarium::core::config::metadata::APP_TITLE;
-use planetarium::core::single_instance::{
+use planetarium::config::AppPaths;
+use planetarium::config::cli::CliArgs;
+use planetarium::config::metadata::APP_TITLE;
+use planetarium::framework::FrameworkPlugin;
+use planetarium::framework::states::AppState;
+use planetarium::game::GamePlugin;
+use planetarium::utils::single_instance::{
     SingleInstanceError, SingleInstanceLock, acquire_single_instance_lock,
 };
-use planetarium::core::states::AppState;
-use planetarium::game::GamePlugin;
-use planetarium::launcher::LauncherPlugin;
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::{EnvFilter, fmt, prelude::*};
 
@@ -48,7 +48,7 @@ fn main() {
     }
 
     // 3. Load settings early to read startup behavior flags.
-    let settings = planetarium::core::config::settings::load_settings(&paths);
+    let settings = planetarium::config::settings::load_settings(&paths);
 
     // 4. Protect against launching a second instance unless explicitly allowed.
     let instance_lock = match acquire_single_instance_lock(
@@ -197,10 +197,10 @@ fn build_app(
             .disable::<LogPlugin>(),
     )
     .insert_state(initial_state)
-    .init_resource::<planetarium::core::states::ErrorState>()
+    .init_resource::<planetarium::framework::states::ErrorState>()
     .insert_resource(args)
     .insert_resource(paths)
-    .add_plugins((LauncherPlugin, GamePlugin));
+    .add_plugins((FrameworkPlugin, GamePlugin));
 
     // Keep the tracing worker guard alive for the application lifetime by
     // inserting it as a Bevy resource. This prevents log flushing worker

@@ -8,10 +8,10 @@ use super::components::{
 };
 use super::tabs;
 use super::{ActiveSettingsTab, SettingsOpen, SettingsTab};
-use crate::core::config::UserSettings;
-use crate::core::localization::{Localization, LocalizedStrings};
-use crate::ui::theme::Theme;
-use crate::ui::theme::constants;
+use crate::config::UserSettings;
+use crate::framework::localization::{Localization, LocalizedStrings};
+use crate::framework::ui::theme::Theme;
+use crate::framework::ui::theme::constants;
 use bevy::prelude::*;
 
 /// System to handle tab switching.

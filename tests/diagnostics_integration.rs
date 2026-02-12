@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use planetarium::ui::theme::Theme;
+use planetarium::framework::ui::theme::Theme;
 
 #[test]
 fn setup_debug_overlay_spawns_expected_texts() {
@@ -11,7 +11,7 @@ fn setup_debug_overlay_spawns_expected_texts() {
     // Add just the startup system directly to avoid other plugin systems that expect runtime resources.
     app.add_systems(
         Startup,
-        planetarium::launcher::diagnostics::setup_debug_overlay,
+        planetarium::framework::diagnostics::setup_debug_overlay,
     );
 
     // Run startup systems

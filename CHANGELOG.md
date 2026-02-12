@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.0] - 2026-02-12
+
+Major architectural refactor separating framework from game logic.
+
+### Changed
+
+- **Breaking**: Migrated `core`, `launcher`, and `ui` modules into `framework`, `config`, and `utils`.
+- **Breaking**: `GamePlugin` no longer includes `PauseMenuPlugin` (it is now part of `MenuPlugin`).
+- **Refactor**: Extracted `CameraPlugin` and `AudioPlugin` into `framework` layer.
+- **Refactor**: `main.rs` simplified to use `FrameworkPlugin` directly.
+- **Refactor**: Consolidated all UI logic into `framework/ui` and `framework/menu`.
+
+### Added
+
+- `framework`: New top-level module containing reusable subsystems.
+- `config`: Dedicated module for configuration and CLI argument parsing.
+- `utils`: Dedicated module for low-level helpers (e.g., single instance lock).
+
+### Removed
+
+- `core`: Module removed (split into `config`, `utils`, `framework`).
+- `launcher`: Logic merged into `framework`.
+- `ui`: Content moved to `framework/ui`.
+
 ## Unreleased
 
 ### Added

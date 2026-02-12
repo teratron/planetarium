@@ -11,8 +11,8 @@ use super::{Localization, LocalizedStrings};
 /// System to load initial locales based on user settings.
 pub fn setup_localization(
     mut commands: Commands,
-    settings: Res<crate::core::config::UserSettings>,
-    paths: Res<crate::core::config::AppPaths>,
+    settings: Res<crate::config::UserSettings>,
+    paths: Res<crate::config::AppPaths>,
 ) {
     info!(
         "[Localization] Setting up Fluent engine for locale: {}",
@@ -66,9 +66,9 @@ pub fn setup_localization(
 
 /// System that applies language changes at runtime when `UserSettings` changes.
 pub fn apply_language_change_system(
-    settings: Res<crate::core::config::UserSettings>,
+    settings: Res<crate::config::UserSettings>,
     mut prev: Local<Option<String>>,
-    paths: Res<crate::core::config::AppPaths>,
+    paths: Res<crate::config::AppPaths>,
     mut commands: Commands,
     mut strings: ResMut<LocalizedStrings>,
 ) {

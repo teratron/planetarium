@@ -1,9 +1,9 @@
 use bevy::prelude::*;
-use planetarium::core::config::settings::SettingKey;
-use planetarium::launcher::menu::widgets::{
+use planetarium::config::settings::SettingKey;
+use planetarium::framework::menu::widgets::{
     ButtonAction, SliderSpec, spawn_primary_button, spawn_slider,
 };
-use planetarium::ui::theme::Theme;
+use planetarium::framework::ui::theme::Theme;
 
 #[test]
 fn spawn_primary_button_creates_primary_button_component() {
@@ -19,7 +19,7 @@ fn spawn_primary_button_creates_primary_button_component() {
 
     {
         let world = app.world_mut();
-        let mut query = world.query::<&planetarium::launcher::menu::widgets::PrimaryButton>();
+        let mut query = world.query::<&planetarium::framework::menu::widgets::PrimaryButton>();
         let mut found = false;
         for pb in query.iter(world) {
             assert_eq!(pb.label, "TEST");
@@ -59,7 +59,7 @@ fn spawn_slider_creates_slider_component() {
 
     {
         let world = app.world_mut();
-        let mut query = world.query::<&planetarium::launcher::menu::widgets::Slider>();
+        let mut query = world.query::<&planetarium::framework::menu::widgets::Slider>();
         let mut found = false;
         for slider in query.iter(world) {
             assert_eq!(slider.label, "VOL");
