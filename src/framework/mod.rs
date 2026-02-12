@@ -20,6 +20,9 @@ pub mod splash;
 /// Asset loading orchestration and progress tracking.
 pub mod loading;
 
+/// Asset manifest and caching.
+pub mod assets;
+
 /// Error state UI.
 pub mod error;
 
@@ -31,5 +34,8 @@ pub mod menu;
 
 /// Shared UI utilities: fading, theming.
 pub mod ui;
+
+/// Multi-language support using Project Fluent.
+pub mod localization;
 
 pub use plugin::FrameworkPlugin;

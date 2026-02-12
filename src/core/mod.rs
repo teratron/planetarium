@@ -1,19 +1,24 @@
-//! Core functionality, shared states, and global resources.
+//! # Core Module (Re-export Shim)
+//!
+//! **DEPRECATED**: This module re-exports from new canonical locations
+//! for backward compatibility during the architecture migration.
+//! All new code should import from `crate::config`, `crate::utils`,
+//! or `crate::framework` directly.
 
-/// High-level application state definitions.
-pub mod states;
+/// Re-exports from `crate::framework::states`.
+pub use crate::framework::states;
 
-/// Command line argument parsing.
-pub mod cli;
+/// Re-exports from `crate::config`.
+pub use crate::config;
 
-/// Application configuration and path resolution.
-pub mod config;
+/// Re-exports from `crate::config::cli`.
+pub use crate::config::cli;
 
-/// Startup single-instance lock protection.
-pub mod single_instance;
+/// Re-exports from `crate::utils::single_instance`.
+pub use crate::utils::single_instance;
 
-/// Multi-language support using Project Fluent.
-pub mod localization;
+/// Re-exports from `crate::framework::localization`.
+pub use crate::framework::localization;
 
-/// Asset manifest and management.
-pub mod assets;
+/// Re-exports from `crate::framework::assets`.
+pub use crate::framework::assets;
