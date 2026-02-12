@@ -59,6 +59,7 @@ If the changes affect the public API:
 At the end of the cycle:
 
 - **Task Management**: Mark the completed task in `tasks.md` with a checkmark `- [x]` according to `task_management_standards.md`.
+- **Architecture Sync**: Update architecture documentation and diagrams if architectural changes were made, following `architecture-sync.md`.
 - **Knowledge Update**: If the task involved non-trivial architectural decisions or "gotchas", propose updating or creating Knowledge Items (KIs).
 - **Final Validation**: Perform a quick sanity check of the workspace for any artifacts left over or missing files.
 - **Reporting**: Provide a summary of work done, including results of the verification steps and a suggested commit message (Conventional Commits).
