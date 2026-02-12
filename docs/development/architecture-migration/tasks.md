@@ -3,7 +3,7 @@
 > **Feature:** `architecture-migration`
 > **Plan:** [plan.md](plan.md)
 > **Created:** 2026-02-12
-> **Status:** 🔄 In Progress (Phase 2 ✅)
+> **Status:** 🔄 In Progress (Phase 3 ✅)
 
 ---
 
@@ -101,26 +101,26 @@
 
 > **Strategy:** Move files as-is into `framework/ui/`. Leave `ui/mod.rs` as re-export shim.
 
-- [ ] **TASK-AM-020**: Create `framework/ui/mod.rs` (if not created in Phase 2)
-  - **Action:** CREATE or ADAPT — declare `fading`, `theme`, `widgets` sub-modules
+- [x] **TASK-AM-020**: Create `framework/ui/mod.rs`
+  - **Action:** CREATE — declared `fading`, `theme` sub-modules
   - **Depends on:** Phase 2
 
-- [ ] **TASK-AM-021**: Move `ui/fading.rs` → `framework/ui/fading.rs`
-  - **Action:** MOVE (~4.4KB, single file)
-  - Update internal imports
+- [x] **TASK-AM-021**: Move `ui/fading.rs` → `framework/ui/fading.rs`
+  - **Action:** MOVE (~4.4KB, single file, no import changes needed)
   - **Depends on:** TASK-AM-020
 
-- [ ] **TASK-AM-022**: Move `ui/theme/` → `framework/ui/theme/`
+- [x] **TASK-AM-022**: Move `ui/theme/` → `framework/ui/theme/`
   - **Action:** MOVE entire folder (4 files: `mod.rs`, `colors.rs`, `constants.rs`, `metrics.rs`)
-  - Update internal imports
+  - Fixed `include_bytes!` relative path (`../../../` → `../../../../`)
   - **Depends on:** TASK-AM-020
 
-- [ ] **TASK-AM-023**: Convert `ui/mod.rs` to re-export shim
-  - **Action:** RE-EXPORT — point to `crate::framework::ui`
+- [x] **TASK-AM-023**: Convert `ui/mod.rs` to re-export shim
+  - **Action:** RE-EXPORT — `pub use crate::framework::ui::{fading, theme}`
+  - Updated `FrameworkPlugin` to use `super::ui::` instead of `crate::ui::`
   - **Depends on:** TASK-AM-021..022
 
-- [ ] **TASK-AM-024**: ✅ Verification — Phase 3
-  - Run `cargo check`, `cargo test`, `cargo clippy -- -D warnings`
+- [x] **TASK-AM-024**: ✅ Verification — Phase 3
+  - `cargo check` ✅, `cargo clippy -- -D warnings` ✅, `cargo test` ✅ (14/14 + 1 pre-existing flaky)
   - **Depends on:** TASK-AM-023
 
 ---
@@ -276,7 +276,7 @@
 |-------|-------|--------|-------------|
 | 1 | AM-001 — AM-007 | ✅ Done | Framework skeleton + state migration |
 | 2 | AM-008 — AM-019 | ✅ Done | Move `launcher/` → `framework/` |
-| 3 | AM-020 — AM-024 | ⬜ | Move `ui/` → `framework/ui/` |
+| 3 | AM-020 — AM-024 | ✅ Done | Move `ui/` → `framework/ui/` |
 | 4 | AM-025 — AM-028 | ⬜ | Move `game/pause_menu/` → `framework/menu/` |
 | 5 | AM-029 — AM-039 | ⬜ | Decompose `core/` → `config/` + `utils/` |
 | 6 | AM-040 — AM-043 | ⬜ | New camera + audio modules |

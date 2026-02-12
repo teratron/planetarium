@@ -34,8 +34,8 @@ impl Plugin for FrameworkPlugin {
             LoadingPlugin,
             ErrorPlugin,
             DiagnosticsPlugin,
-            crate::ui::fading::FadingPlugin,
-            crate::ui::theme::ThemePlugin,
+            super::ui::fading::FadingPlugin,
+            super::ui::theme::ThemePlugin,
         ));
     }
 }

@@ -29,4 +29,7 @@ pub mod diagnostics;
 /// Main menu, settings, and widget systems.
 pub mod menu;
 
+/// Shared UI utilities: fading, theming.
+pub mod ui;
+
 pub use plugin::FrameworkPlugin;
