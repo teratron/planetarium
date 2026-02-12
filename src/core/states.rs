@@ -1,41 +1,7 @@
-//! # Application States
+//! # Application States (Re-export Shim)
 //!
-//! This module defines the primary states of the application.
-//! These states drive the high-level logic and determine which systems
-//! should be running at any given time.
+//! **DEPRECATED**: This module re-exports types from `crate::framework::states`
+//! for backward compatibility during the architecture migration.
+//! All new code should import from `crate::framework::states` directly.
 
-use bevy::prelude::*;
-
-/// The primary state machine for the application.
-///
-/// We use `States` derive to let Bevy manage transitions and
-/// allow us to use `OnEnter`, `OnExit`, and `OnUpdate` schedules.
-#[derive(States, Debug, Clone, Copy, Eq, PartialEq, Hash, Default)]
-#[non_exhaustive]
-pub enum AppState {
-    /// Stage 1: System initialization, configuration loading, and environment checks.
-    #[default]
-    Booting,
-
-    /// Stage 2: Displaying branding and splash screens.
-    Splash,
-
-    /// Stage 3: The main menu where the user interacts and configures settings.
-    MainMenu,
-
-    /// Stage 4: Asynchronous loading of game assets for the active world.
-    Loading,
-
-    /// Stage 5: The active gameplay state.
-    InGame,
-
-    /// Critical Error state: Shows a crash/error screen to the user.
-    Error,
-}
-
-/// Global resource to hold the last critical error message.
-#[derive(Resource, Debug, Clone, Default)]
-#[non_exhaustive]
-pub struct ErrorState {
-    pub message: String,
-}
+pub use crate::framework::states::{AppState, ErrorState};

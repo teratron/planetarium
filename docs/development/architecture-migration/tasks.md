@@ -3,306 +3,282 @@
 > **Feature:** `architecture-migration`
 > **Plan:** [plan.md](plan.md)
 > **Created:** 2026-02-12
-> **Status:** 🔴 Not Started
+> **Status:** � In Progress (Phase 1 ✅)
 
 ---
 
-## Phase 1 — Foundation: `framework/` skeleton + state migration
+## Phase 1 — Foundation: `framework/` skeleton + state migration ✅
 
-- [ ] **TASK-AM-001**: Create `src/framework/mod.rs` with sub-module declarations
-  - Declare modules: `states`, `plugin`
-  - Re-export `FrameworkPlugin` from `plugin.rs`
-  - **Depends on:** none
+- [x] **TASK-AM-001**: Create `src/framework/mod.rs` — module root with sub-module declarations
+  - **Action:** CREATE (no existing equivalent)
 
-- [ ] **TASK-AM-002**: Create `src/framework/plugin.rs` with `FrameworkPlugin` struct
-  - Empty plugin struct implementing `Plugin` for `App`
-  - Will be populated as sub-modules are migrated
-  - **Depends on:** TASK-AM-001
+- [x] **TASK-AM-002**: Create `src/framework/plugin.rs` — `FrameworkPlugin` shell
+  - **Action:** CREATE (no existing equivalent)
 
-- [ ] **TASK-AM-003**: Create `src/framework/states/mod.rs` and `app_state.rs`
-  - Move `AppState` enum from `core/states.rs` to `framework/states/app_state.rs`
-  - Add new variants: `Paused`, `Settings`, `GameOver`
-  - Move `ErrorState` resource alongside
-  - **Depends on:** TASK-AM-001
+- [x] **TASK-AM-003**: Create `src/framework/states/{mod.rs, app_state.rs}`
+  - **Action:** MOVE content from `core/states.rs`, add new variants: `Paused`, `Settings`, `GameOver`
 
-- [ ] **TASK-AM-004**: Create `src/framework/states/transition.rs`
-  - Define reusable state transition helper systems
-  - E.g. `check_splash_complete`, `check_loading_complete`
-  - **Depends on:** TASK-AM-003
+- [x] **TASK-AM-004**: Create `src/framework/states/transition.rs`
+  - **Action:** CREATE (no existing transition file — transitions are inline in systems)
 
-- [ ] **TASK-AM-005**: Update all imports across codebase to use `framework::states`
-  - Replace `crate::core::states::AppState` → `crate::framework::states::AppState`
-  - Files to update: `main.rs`, `launcher/*.rs`, `game/*.rs`
-  - **Depends on:** TASK-AM-003
+- [x] **TASK-AM-005**: Register `framework` module in `lib.rs`
+  - **Action:** ADAPT — added `pub mod framework;`
 
-- [ ] **TASK-AM-006**: Remove legacy `core/states.rs` (or add re-export shim)
-  - If desired, keep `core/states.rs` as a thin re-export for backward compat
-  - **Depends on:** TASK-AM-005
+- [x] **TASK-AM-006**: Convert `core/states.rs` to re-export shim
+  - **Action:** RE-EXPORT — `pub use crate::framework::states::{AppState, ErrorState};`
+  - All existing imports continue working without changes
 
-- [ ] **TASK-AM-007**: ✅ Verification — Phase 1
-  - Run `cargo check`, `cargo test`, `cargo clippy -- -D warnings`
-  - **Depends on:** TASK-AM-006
+- [x] **TASK-AM-007**: ✅ Verification — `cargo check` passed
 
 ---
 
-## Phase 2 — Migrate launcher infrastructure to `framework/`
+## Phase 2 — Move `launcher/` → `framework/`
 
-- [ ] **TASK-AM-008**: Move `launcher/boot.rs` → `framework/boot/`
-  - Split into `mod.rs`, `systems.rs` following ECS pattern
-  - Register `BootPlugin` in `FrameworkPlugin`
-  - **Depends on:** TASK-AM-007
+> **Strategy:** Move files as-is (no splitting). Leave `launcher/mod.rs` as re-export shim.
 
-- [ ] **TASK-AM-009**: Move `launcher/splash.rs` → `framework/splash/`
-  - Split into `mod.rs` (SplashPlugin), `systems.rs`, `components.rs`, `resources.rs`
-  - **Depends on:** TASK-AM-007
+- [ ] **TASK-AM-008**: Move `launcher/boot.rs` → `framework/boot.rs`
+  - **Action:** MOVE (53 lines, single file, well-structured — no split needed)
+  - Update internal `use crate::core::*` → `use crate::framework::*` imports
+  - **Depends on:** Phase 1
 
-- [ ] **TASK-AM-010**: Move `launcher/loading.rs` → `framework/loading/`
-  - Split into `mod.rs` (LoadingPlugin), `systems.rs`, `resources.rs`, `assets.rs`
-  - **Depends on:** TASK-AM-007
+- [ ] **TASK-AM-009**: Move `launcher/splash.rs` → `framework/splash.rs`
+  - **Action:** MOVE (100 lines, self-contained — no split needed)
+  - Update internal imports
+  - **Depends on:** Phase 1
 
-- [ ] **TASK-AM-011**: Move `launcher/error.rs` → `framework/error/`
-  - Split into `mod.rs` (ErrorPlugin), `systems.rs`
-  - **Depends on:** TASK-AM-007
+- [ ] **TASK-AM-010**: Move `launcher/loading.rs` → `framework/loading.rs`
+  - **Action:** MOVE (~9KB, could split later but not now)
+  - Update internal imports
+  - **Depends on:** Phase 1
 
-- [ ] **TASK-AM-012**: Move `launcher/diagnostics.rs` → `framework/diagnostics/`
-  - Split into `mod.rs` (DiagnosticsPlugin), `systems.rs`
-  - **Depends on:** TASK-AM-007
+- [ ] **TASK-AM-011**: Move `launcher/error.rs` → `framework/error.rs`
+  - **Action:** MOVE (~3.4KB, single file)
+  - Update internal imports
+  - **Depends on:** Phase 1
 
-- [ ] **TASK-AM-013**: Update `FrameworkPlugin` to aggregate all migrated sub-plugins
-  - Register: BootPlugin, SplashPlugin, LoadingPlugin, ErrorPlugin, DiagnosticsPlugin
-  - **Depends on:** TASK-AM-008..TASK-AM-012
+- [ ] **TASK-AM-012**: Move `launcher/diagnostics.rs` → `framework/diagnostics.rs`
+  - **Action:** MOVE (~5.5KB, single file)
+  - Update internal imports
+  - **Depends on:** Phase 1
 
-- [ ] **TASK-AM-014**: ✅ Verification — Phase 2
-  - Run `cargo check`, `cargo test`, `cargo clippy -- -D warnings`
+- [ ] **TASK-AM-013**: Move `launcher/menu/` → `framework/menu/`
+  - **Action:** MOVE entire folder (4 own files: `mod.rs`, `layout.rs`, `reactive.rs`, `screen.rs`)
+  - Does NOT include `settings/` or `widgets/` (moved separately)
+  - Update internal imports in all files
+  - **Depends on:** TASK-AM-008..012
+
+- [ ] **TASK-AM-014**: Move `launcher/menu/settings/` → `framework/settings/`
+  - **Action:** MOVE entire folder (5 files + `tabs/` subfolder with 5 files = 10 files total)
+  - Update internal imports
   - **Depends on:** TASK-AM-013
 
----
+- [ ] **TASK-AM-015**: Move `launcher/menu/widgets/` → `framework/ui/widgets/`
+  - **Action:** MOVE entire folder (7 files: `mod.rs`, `base.rs`, `buttons.rs`, `components.rs`, `constants.rs`, `dropdowns.rs`, `sliders.rs`)
+  - Create `framework/ui/mod.rs` to declare `widgets` sub-module
+  - Update internal imports
+  - **Depends on:** TASK-AM-013
 
-## Phase 3 — Migrate menu system to `framework/menu/`
+- [ ] **TASK-AM-016**: Update `framework/mod.rs` — declare all moved sub-modules
+  - **Action:** ADAPT — add `boot`, `splash`, `loading`, `error`, `diagnostics`, `menu`, `settings`
+  - **Depends on:** TASK-AM-008..015
 
-- [ ] **TASK-AM-015**: Move `launcher/menu/` → `framework/menu/`
-  - Restructure: create `framework/menu/main_menu/` from `menu/screen.rs`, `menu/reactive.rs`, `menu/layout.rs`
-  - Keep `framework/menu/mod.rs` as `MenuPlugin`
-  - **Depends on:** TASK-AM-014
+- [ ] **TASK-AM-017**: Update `FrameworkPlugin` — register all sub-plugins
+  - **Action:** ADAPT — replicate the registrations from old `LauncherPlugin`
+  - **Depends on:** TASK-AM-016
 
-- [ ] **TASK-AM-016**: Move `launcher/menu/settings/` → `framework/settings/`
-  - Create standalone `SettingsPlugin`
-  - Restructure into: `mod.rs`, `systems.rs`, `components.rs`, `layout.rs`, `ui.rs`, `tabs/`
-  - **Depends on:** TASK-AM-015
+- [ ] **TASK-AM-018**: Convert `launcher/mod.rs` to re-export shim
+  - **Action:** RE-EXPORT — `pub use crate::framework::*;`
+  - All external imports (`planetarium::launcher::*`) continue working
+  - **Depends on:** TASK-AM-017
 
-- [ ] **TASK-AM-017**: Move `game/pause_menu/` → `framework/menu/pause_menu/`
-  - Pause menu is UI infrastructure, belongs in framework
-  - Migrate: `components.rs`, `input.rs`, `state.rs`, `systems.rs`, `settings_bridge.rs`, `ui.rs`
-  - **Depends on:** TASK-AM-015
-
-- [ ] **TASK-AM-018**: Update `FrameworkPlugin` to register `MenuPlugin`, `SettingsPlugin`
-  - **Depends on:** TASK-AM-015..TASK-AM-017
-
-- [ ] **TASK-AM-019**: ✅ Verification — Phase 3
+- [ ] **TASK-AM-019**: ✅ Verification — Phase 2
   - Run `cargo check`, `cargo test`, `cargo clippy -- -D warnings`
   - **Depends on:** TASK-AM-018
 
 ---
 
-## Phase 4 — Migrate UI infrastructure to `framework/ui/`
+## Phase 3 — Move `ui/` → `framework/ui/`
 
-- [ ] **TASK-AM-020**: Move `ui/fading.rs` → `framework/ui/fading.rs`
-  - **Depends on:** TASK-AM-019
+> **Strategy:** Move files as-is into `framework/ui/`. Leave `ui/mod.rs` as re-export shim.
 
-- [ ] **TASK-AM-021**: Move `ui/theme/` → `framework/ui/theme/`
-  - Includes: `mod.rs`, `colors.rs`, `constants.rs`, `metrics.rs`
-  - **Depends on:** TASK-AM-019
+- [ ] **TASK-AM-020**: Create `framework/ui/mod.rs` (if not created in Phase 2)
+  - **Action:** CREATE or ADAPT — declare `fading`, `theme`, `widgets` sub-modules
+  - **Depends on:** Phase 2
 
-- [ ] **TASK-AM-022**: Move `launcher/menu/widgets/` → `framework/ui/widgets/`
-  - Includes: `mod.rs`, `base.rs`, `buttons.rs`, `components.rs`, `constants.rs`, `dropdowns.rs`, `sliders.rs`
-  - **Depends on:** TASK-AM-019
+- [ ] **TASK-AM-021**: Move `ui/fading.rs` → `framework/ui/fading.rs`
+  - **Action:** MOVE (~4.4KB, single file)
+  - Update internal imports
+  - **Depends on:** TASK-AM-020
 
-- [ ] **TASK-AM-023**: Create `framework/ui/styles.rs` and `framework/ui/layout.rs`
-  - Define shared UI style constants and layout helpers
-  - **Depends on:** TASK-AM-020..TASK-AM-022
+- [ ] **TASK-AM-022**: Move `ui/theme/` → `framework/ui/theme/`
+  - **Action:** MOVE entire folder (4 files: `mod.rs`, `colors.rs`, `constants.rs`, `metrics.rs`)
+  - Update internal imports
+  - **Depends on:** TASK-AM-020
 
-- [ ] **TASK-AM-024**: Remove old `src/ui/` module
-  - Remove from `lib.rs`
+- [ ] **TASK-AM-023**: Convert `ui/mod.rs` to re-export shim
+  - **Action:** RE-EXPORT — point to `crate::framework::ui`
+  - **Depends on:** TASK-AM-021..022
+
+- [ ] **TASK-AM-024**: ✅ Verification — Phase 3
+  - Run `cargo check`, `cargo test`, `cargo clippy -- -D warnings`
   - **Depends on:** TASK-AM-023
 
-- [ ] **TASK-AM-025**: Update all UI imports across codebase
-  - Replace `crate::ui::fading` → `crate::framework::ui::fading`
-  - Replace `crate::ui::theme` → `crate::framework::ui::theme`
-  - Replace `crate::launcher::menu::widgets` → `crate::framework::ui::widgets`
-  - **Depends on:** TASK-AM-024
+---
 
-- [ ] **TASK-AM-026**: ✅ Verification — Phase 4
-  - Run `cargo check`, `cargo test`, `cargo clippy -- -D warnings`
+## Phase 4 — Move `game/pause_menu/` → `framework/menu/pause_menu/`
+
+> **Strategy:** Pause menu is UI infrastructure. Move entire folder to framework.
+
+- [ ] **TASK-AM-025**: Move `game/pause_menu/` → `framework/menu/pause_menu/`
+  - **Action:** MOVE entire folder (7 files: `mod.rs`, `components.rs`, `input.rs`, `state.rs`, `systems.rs`, `settings_bridge.rs`, `ui.rs`)
+  - Update internal imports
+  - **Depends on:** Phase 3
+
+- [ ] **TASK-AM-026**: Update `game/mod.rs` — remove `pause_menu` module, update `GamePlugin`
+  - **Action:** ADAPT — remove PauseMenuPlugin from GamePlugin
   - **Depends on:** TASK-AM-025
 
+- [ ] **TASK-AM-027**: Update `framework/menu/mod.rs` — register PauseMenuPlugin
+  - **Action:** ADAPT — add `pub mod pause_menu;` and register in MenuPlugin
+  - **Depends on:** TASK-AM-025
+
+- [ ] **TASK-AM-028**: ✅ Verification — Phase 4
+  - Run `cargo check`, `cargo test`, `cargo clippy -- -D warnings`
+  - **Depends on:** TASK-AM-026..027
+
 ---
 
-## Phase 5 — Restructure `game/` following ECS patterns
+## Phase 5 — Decompose `core/` → `config/` + `utils/` + `framework/`
 
-- [ ] **TASK-AM-027**: Create `game/plugin.rs` (extract plugin logic from `game/mod.rs`)
-  - `GamePlugin` struct with proper system registration
-  - **Depends on:** TASK-AM-026
+> **Strategy:** Move folders as-is. Leave `core/mod.rs` as re-export shim.
 
-- [ ] **TASK-AM-028**: Create `game/components/mod.rs`
-  - Extract `GameWorldRoot`, `Rotates` from `world.rs`
-  - Add placeholder component files for future game components
-  - **Depends on:** TASK-AM-027
+- [ ] **TASK-AM-029**: Create `src/config/mod.rs` — top-level config module
+  - **Action:** CREATE — new module root re-exporting moved config content
+  - **Depends on:** Phase 4
 
-- [ ] **TASK-AM-029**: Create `game/systems/mod.rs`, `setup.rs`, `gameplay.rs`
-  - Move `setup_game_world` → `game/systems/setup.rs`
-  - Move `rotate_planet` → `game/systems/gameplay.rs`
-  - Move `cleanup_game_world` → `game/systems/setup.rs` (or cleanup.rs)
-  - **Depends on:** TASK-AM-028
-
-- [ ] **TASK-AM-030**: Create `game/entities/mod.rs`
-  - Extract entity spawning logic from `setup_game_world` into spawner functions
-  - E.g. `spawn_planet()`, `spawn_light()`, `spawn_game_camera()`
+- [ ] **TASK-AM-030**: Move `core/config/{metadata.rs, paths.rs, settings.rs}` → `config/`
+  - **Action:** MOVE (3 files + adapt `core/config/mod.rs` logic into `config/mod.rs`)
+  - Update internal imports
   - **Depends on:** TASK-AM-029
 
-- [ ] **TASK-AM-031**: Create `game/resources/mod.rs` and `game/constants.rs`
-  - Stub resource files for future game state
-  - Define game constants
-  - **Depends on:** TASK-AM-027
+- [ ] **TASK-AM-031**: Move `core/cli.rs` → `config/cli.rs`
+  - **Action:** MOVE (single file)
+  - Update internal imports
+  - **Depends on:** TASK-AM-029
 
-- [ ] **TASK-AM-032**: Remove legacy `game/world.rs`, update `game/mod.rs`
-  - **Depends on:** TASK-AM-028..TASK-AM-031
+- [ ] **TASK-AM-032**: Move `core/localization/` → `framework/localization/`
+  - **Action:** MOVE entire folder (3 files: `mod.rs`, `systems.rs`, `utils.rs`)
+  - Update internal imports, add to `framework/mod.rs`
+  - **Depends on:** Phase 4
 
-- [ ] **TASK-AM-033**: ✅ Verification — Phase 5
+- [ ] **TASK-AM-033**: Move `core/assets/mod.rs` → `framework/loading/assets.rs`
+  - **Action:** MOVE + ADAPT (merge with loading module)
+  - Update internal imports
+  - **Depends on:** Phase 4
+
+- [ ] **TASK-AM-034**: Create `src/utils/mod.rs` — utilities module
+  - **Action:** CREATE — new module root
+  - **Depends on:** Phase 4
+
+- [ ] **TASK-AM-035**: Move `core/single_instance.rs` → `utils/single_instance.rs`
+  - **Action:** MOVE (single file, ~7.5KB)
+  - Update internal imports
+  - **Depends on:** TASK-AM-034
+
+- [ ] **TASK-AM-036**: Convert `core/mod.rs` to re-export shim
+  - **Action:** RE-EXPORT — point sub-modules to new locations
+  - **Depends on:** TASK-AM-030..035
+
+- [ ] **TASK-AM-037**: Delete `src/assets/mod.rs` (empty module)
+  - **Action:** DELETE — remove from `lib.rs`
+  - **Depends on:** TASK-AM-033
+
+- [ ] **TASK-AM-038**: Update `lib.rs` module declarations
+  - **Action:** ADAPT — add `config`, `utils`; keep `core` shim for now
+  - **Depends on:** TASK-AM-036..037
+
+- [ ] **TASK-AM-039**: ✅ Verification — Phase 5
   - Run `cargo check`, `cargo test`, `cargo clippy -- -D warnings`
-  - **Depends on:** TASK-AM-032
-
----
-
-## Phase 6 — Restructure `core/` → `config/` + `utils/`
-
-- [ ] **TASK-AM-034**: Create `src/config/mod.rs` — top-level config module
-  - Move `core/config/` contents: `metadata.rs`, `paths.rs`, `settings.rs`
-  - Move `core/cli.rs` → `config/cli.rs`
-  - **Depends on:** TASK-AM-033
-
-- [ ] **TASK-AM-035**: Create `src/utils/mod.rs` — shared utilities
-  - Move `core/single_instance.rs` → `utils/single_instance.rs`
-  - Create stub `utils/math.rs` and `utils/debug.rs`
-  - **Depends on:** TASK-AM-033
-
-- [ ] **TASK-AM-036**: Move `core/localization/` → `framework/localization/`
-  - Localization is framework-level infrastructure
-  - **Depends on:** TASK-AM-033
-
-- [ ] **TASK-AM-037**: Consolidate `core/assets/` into `framework/loading/`
-  - Merge asset manifest logic into loading module
-  - **Depends on:** TASK-AM-033
-
-- [ ] **TASK-AM-038**: Remove `core/` module and `src/assets/` module
-  - Remove from `lib.rs`
-  - **Depends on:** TASK-AM-034..TASK-AM-037
-
-- [ ] **TASK-AM-039**: Update all imports from `crate::core::*`
-  - `crate::core::config` → `crate::config`
-  - `crate::core::cli` → `crate::config::cli`
-  - `crate::core::single_instance` → `crate::utils::single_instance`
-  - `crate::core::localization` → `crate::framework::localization`
   - **Depends on:** TASK-AM-038
 
-- [ ] **TASK-AM-040**: ✅ Verification — Phase 6
+---
+
+## Phase 6 — New framework modules: camera, audio
+
+> **Strategy:** Extract camera from `main.rs`, create audio stub.
+
+- [ ] **TASK-AM-040**: Create `framework/camera/mod.rs` — `CameraPlugin`
+  - **Action:** CREATE + MOVE `setup_camera` and `diagnose_cameras` from `main.rs`
+  - **Depends on:** Phase 5
+
+- [ ] **TASK-AM-041**: Create `framework/audio/{mod.rs, systems.rs, resources.rs}` — stub
+  - **Action:** CREATE — `AudioPlugin` with `AudioSettings` resource stub
+  - **Depends on:** Phase 5
+
+- [ ] **TASK-AM-042**: Register `CameraPlugin` and `AudioPlugin` in `FrameworkPlugin`
+  - **Action:** ADAPT
+  - **Depends on:** TASK-AM-040..041
+
+- [ ] **TASK-AM-043**: ✅ Verification — Phase 6
   - Run `cargo check`, `cargo test`, `cargo clippy -- -D warnings`
-  - **Depends on:** TASK-AM-039
+  - **Depends on:** TASK-AM-042
 
 ---
 
-## Phase 7 — New framework modules: camera, audio
+## Phase 7 — Cleanup, versioning, documentation
 
-- [ ] **TASK-AM-041**: Create `framework/camera/mod.rs` and `orbit.rs`
-  - Move `setup_camera` and `diagnose_cameras` from `main.rs`
-  - Create `CameraPlugin` with proper state-dependent scheduling
-  - **Depends on:** TASK-AM-040
+> **Strategy:** Remove all shims, finalize entry point, update docs.
 
-- [ ] **TASK-AM-042**: Create `framework/audio/mod.rs`, `systems.rs`, `resources.rs`
-  - Stub `AudioPlugin` with `AudioSettings` resource
-  - Prepare for future audio integration
-  - **Depends on:** TASK-AM-040
+- [ ] **TASK-AM-044**: Update `main.rs` — use `FrameworkPlugin` + `GamePlugin` only
+  - **Action:** ADAPT — simplify `build_app()`, remove inline camera systems
+  - **Depends on:** Phase 6
 
-- [ ] **TASK-AM-043**: Register `CameraPlugin` and `AudioPlugin` in `FrameworkPlugin`
-  - **Depends on:** TASK-AM-041, TASK-AM-042
-
-- [ ] **TASK-AM-044**: ✅ Verification — Phase 7
-  - Run `cargo check`, `cargo test`, `cargo clippy -- -D warnings`
-  - **Depends on:** TASK-AM-043
-
----
-
-## Phase 8 — Entry point update + final integration
-
-- [ ] **TASK-AM-045**: Update `lib.rs` — new module declarations
-  - Modules: `framework`, `game`, `config`, `utils`
-  - Remove: `core`, `launcher`, `ui`, `assets`
+- [ ] **TASK-AM-045**: Remove re-export shims — replace with deprecation or delete
+  - **Action:** DELETE old shim files: `core/states.rs`, `launcher/mod.rs`, `ui/mod.rs`, `core/mod.rs`
+  - Update `lib.rs` to remove `core`, `launcher`, `ui` modules
   - **Depends on:** TASK-AM-044
 
-- [ ] **TASK-AM-046**: Update `main.rs` — use `FrameworkPlugin` + `GamePlugin`
-  - Clean up: remove inline camera systems (moved to framework/camera)
-  - Simplify `build_app()` function
+- [ ] **TASK-AM-046**: Dead code cleanup
+  - **Action:** `cargo clippy -- -D warnings`, remove unused imports
   - **Depends on:** TASK-AM-045
 
-- [ ] **TASK-AM-047**: Remove old `launcher/` module entirely
-  - **Depends on:** TASK-AM-046
+- [ ] **TASK-AM-047**: Update integration tests (`tests/`)
+  - **Action:** ADAPT — update `use planetarium::core::*` → `use planetarium::framework::*` etc.
+  - Files: `diagnostics_integration.rs`, `menu_navigation.rs`, `pause_menu_navigation.rs`, `widgets_integration.rs`
+  - **Depends on:** TASK-AM-045
 
-- [ ] **TASK-AM-048**: Dead code cleanup
-  - Find and remove all unused imports, dead re-exports
-  - Run `cargo clippy -- -D warnings`
-  - **Depends on:** TASK-AM-047
+- [ ] **TASK-AM-048**: SemVer bump: `0.2.0` → `0.3.0` in `Cargo.toml`
+  - **Action:** ADAPT — apply `rust-semver` skill for validation
+  - **Depends on:** TASK-AM-046..047
 
-- [ ] **TASK-AM-049**: ✅ Verification — Phase 8
-  - Run `cargo check`, `cargo test`, `cargo clippy -- -D warnings`, `cargo fmt`
+- [ ] **TASK-AM-049**: Update `CHANGELOG.md`
+  - **Action:** ADAPT — document the architectural migration
   - **Depends on:** TASK-AM-048
 
----
+- [ ] **TASK-AM-050**: Update architecture diagrams in `docs/architecture/`
+  - **Action:** ADAPT — ensure `.mermaid` files and guides match actual final structure
+  - **Depends on:** TASK-AM-048
 
-## Phase 9 — Versioning, docs, completion
-
-- [ ] **TASK-AM-050**: SemVer bump: `0.2.0` → `0.3.0` in `Cargo.toml`
-  - Apply `rust-semver` skill for validation
-  - **Depends on:** TASK-AM-049
-
-- [ ] **TASK-AM-051**: Update `CHANGELOG.md`
-  - Document the architectural migration
-  - **Depends on:** TASK-AM-050
-
-- [ ] **TASK-AM-052**: Update `README.md` project structure section (if applicable)
-  - **Depends on:** TASK-AM-050
-
-- [ ] **TASK-AM-053**: Verify architecture diagrams match actual structure
-  - Update `.mermaid` files in `docs/development/architecture/` if needed
-  - **Depends on:** TASK-AM-050
-
-- [ ] **TASK-AM-054**: Update integration tests to reflect new module paths
-  - `tests/diagnostics_integration.rs`
-  - `tests/menu_navigation.rs`
-  - `tests/pause_menu_navigation.rs`
-  - `tests/widgets_integration.rs`
-  - **Depends on:** TASK-AM-049
-
-- [ ] **TASK-AM-055**: ✅ Final Verification
+- [ ] **TASK-AM-051**: ✅ Final Verification
   - Full `cargo check`, `cargo test`, `cargo clippy -- -D warnings`, `cargo fmt`
-  - Manual smoke test: launch app → splash → menu → game → pause → menu
-  - **Depends on:** TASK-AM-050..TASK-AM-054
+  - Manual smoke test: launch → splash → menu → game → pause → menu
+  - **Depends on:** TASK-AM-048..050
 
-- [ ] **TASK-AM-056**: Propose git tag `v0.3.0`
+- [ ] **TASK-AM-052**: Propose git tag `v0.3.0`
   - Commit message: `refactor!: migrate to two-layer framework/game architecture`
-  - **Depends on:** TASK-AM-055
+  - **Depends on:** TASK-AM-051
 
 ---
 
 ## Summary
 
-| Phase | Tasks | Description |
-|-------|-------|-------------|
-| 1 | AM-001 — AM-007 | Framework skeleton + state migration |
-| 2 | AM-008 — AM-014 | Launcher → framework migration |
-| 3 | AM-015 — AM-019 | Menu system restructuring |
-| 4 | AM-020 — AM-026 | UI infrastructure consolidation |
-| 5 | AM-027 — AM-033 | Game module ECS restructuring |
-| 6 | AM-034 — AM-040 | Core → config/utils decomposition |
-| 7 | AM-041 — AM-044 | New camera + audio modules |
-| 8 | AM-045 — AM-049 | Entry point + final integration |
-| 9 | AM-050 — AM-056 | Versioning, docs, completion |
-| **Total** | **56 tasks** | **9 phases** |
+| Phase | Tasks | Status | Description |
+|-------|-------|--------|-------------|
+| 1 | AM-001 — AM-007 | ✅ Done | Framework skeleton + state migration |
+| 2 | AM-008 — AM-019 | ⬜ | Move `launcher/` → `framework/` |
+| 3 | AM-020 — AM-024 | ⬜ | Move `ui/` → `framework/ui/` |
+| 4 | AM-025 — AM-028 | ⬜ | Move `game/pause_menu/` → `framework/menu/` |
+| 5 | AM-029 — AM-039 | ⬜ | Decompose `core/` → `config/` + `utils/` |
+| 6 | AM-040 — AM-043 | ⬜ | New camera + audio modules |
+| 7 | AM-044 — AM-052 | ⬜ | Cleanup, versioning, docs |
+| **Total** | **52 tasks** | | **7 phases** |

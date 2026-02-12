@@ -5,6 +5,7 @@
 
 pub mod assets;
 pub mod core;
+pub mod framework;
 pub mod game;
 pub mod launcher;
 pub mod ui;
