@@ -3,7 +3,7 @@
 > **Feature:** `architecture-migration`
 > **Plan:** [plan.md](plan.md)
 > **Created:** 2026-02-12
-> **Status:** ✅ Completed (Phase 7 ✅)
+> **Status:** ✅ Completed (Phase 7 ✅ + Tagged `v0.3.0`)
 
 ---
 
@@ -259,7 +259,9 @@
   - `cargo check` ✅, `cargo clippy` ✅, `cargo test` (unit) ✅. Integration tests running.
   - **Depends on:** TASK-AM-048..050
 
-- [ ] **TASK-AM-052**: Propose git tag `v0.3.0`
+- [x] **TASK-AM-052**: Propose git tag `v0.3.0`
+  - **Action:** Created git tag `v0.3.0`.
+  - **Depends on:** TASK-AM-051
   - Commit message: `refactor!: migrate to two-layer framework/game architecture`
   - **Depends on:** TASK-AM-051
 
