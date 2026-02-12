@@ -45,7 +45,7 @@ project_name/
 │   │   │
 │   │   ├── states/           # Framework-level state machine
 │   │   │   ├── mod.rs
-│   │   │   ├── app_state.rs  # Core app states enum
+│   │   │   ├── state.rs      # Core app states enum
 │   │   │   └── transition.rs # State transition logic
 │   │   │
 │   │   ├── splash/           # Splash screen system
@@ -62,11 +62,11 @@ project_name/
 │   │   │
 │   │   ├── menu/             # Menu systems
 │   │   │   ├── mod.rs
-│   │   │   ├── main_menu/    # Main menu screen
+│   │   │   ├── main/         # Main menu screen
 │   │   │   │   ├── mod.rs
 │   │   │   │   ├── systems.rs
 │   │   │   │   └── layout.rs
-│   │   │   ├── pause_menu/   # In-game pause menu
+│   │   │   ├── pause/        # In-game pause menu
 │   │   │   │   ├── mod.rs
 │   │   │   │   └── systems.rs
 │   │   │   └── components.rs # Shared menu UI components
@@ -99,7 +99,7 @@ project_name/
 │   │   │
 │   │   ├── states/           # Game-specific substates (optional)
 │   │   │   ├── mod.rs
-│   │   │   └── game_state.rs # GameState enum (if needed)
+│   │   │   └── state.rs      # GameState enum (if needed)
 │   │   │
 │   │   ├── components/       # Game components (ECS data)
 │   │   │   ├── mod.rs
@@ -133,7 +133,7 @@ project_name/
 │   │
 │   ├── config/               # Configuration management
 │   │   ├── mod.rs
-│   │   └── game_config.rs
+│   │   └── game.rs           # Game configuration
 │   │
 │   └── utils/                # Shared utility functions
 │       ├── mod.rs
@@ -582,7 +582,7 @@ pub fn spawn_enemy_with_healthbar(
 ```rust
 // framework/states/transition.rs
 use bevy::prelude::*;
-use super::app_state::AppState;
+use super::state::AppState;
 
 pub fn check_splash_complete(
     time: Res<Time>,

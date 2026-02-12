@@ -27,8 +27,8 @@ graph TB
         
         subgraph Menu["Menu System"]
             MenuPlugin[MenuPlugin]
-            MainMenu[main_menu/<br/>- systems.rs<br/>- layout.rs]
-            PauseMenu[pause_menu/<br/>- systems.rs]
+            MainMenu[main/<br/>- systems.rs<br/>- layout.rs]
+            PauseMenu[pause/<br/>- systems.rs]
             MenuComp[components.rs<br/>- Button<br/>- MenuUI]
         end
         
@@ -85,7 +85,7 @@ graph TB
         subgraph Resources["ECS Resources (Global State)"]
             ResScore[score.rs<br/>- Score<br/>- HighScore]
             ResLevel[level.rs<br/>- LevelData<br/>- CurrentLevel]
-            ResGame[game_config.rs<br/>- GameConfig<br/>- Difficulty]
+            ResGame[game.rs<br/>- GameConfig<br/>- Difficulty]
         end
         
         subgraph Entities["Entity Spawners"]
@@ -98,7 +98,7 @@ graph TB
     end
 
     subgraph Config["⚙️ Configuration"]
-        GameConfig[game_config.rs<br/>- Window Settings<br/>- Graphics Settings]
+        GameConfig[game.rs<br/>- Window Settings<br/>- Graphics Settings]
     end
 
     subgraph Utils["🛠️ Utilities"]

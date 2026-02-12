@@ -23,7 +23,7 @@ graph TB
                 
                 subgraph FWStates["States"]
                     StatesDir[states/]
-                    AppStateRS[app_state.rs]
+                    AppStateRS[state.rs]
                     TransitionRS[transition.rs]
                 end
                 
@@ -42,8 +42,8 @@ graph TB
                 
                 subgraph FWMenu["Menu"]
                     MenuDir[menu/]
-                    MenuMain[main_menu/]
-                    MenuPause[pause_menu/]
+                    MenuMain[main/]
+                    MenuPause[pause/]
                     MenuComp[components.rs]
                 end
                 
@@ -81,7 +81,7 @@ graph TB
                 
                 subgraph GameStates["Game States"]
                     GStatesDir[states/]
-                    GameStateRS[game_state.rs]
+                    GameStateRS[state.rs]
                 end
                 
                 subgraph GameComponents["Components"]
@@ -105,7 +105,7 @@ graph TB
                     ResDir[resources/]
                     ScoreRes[score.rs]
                     LevelRes[level.rs]
-                    ConfigRes[game_config.rs]
+                    ConfigRes[game.rs]
                 end
                 
                 subgraph GameEntities["Entity Spawners"]
@@ -120,7 +120,7 @@ graph TB
             
             subgraph ConfigDir["⚙️ Config"]
                 ConfigDirRoot[config/]
-                GameConfig[game_config.rs]
+                GameConfig[game.rs]
             end
             
             subgraph UtilsDir["🛠️ Utils"]
