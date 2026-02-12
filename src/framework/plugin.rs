@@ -36,6 +36,8 @@ impl Plugin for FrameworkPlugin {
             DiagnosticsPlugin,
             super::ui::fading::FadingPlugin,
             super::ui::theme::ThemePlugin,
+            super::camera::CameraPlugin,
+            super::audio::AudioPlugin,
         ));
     }
 }

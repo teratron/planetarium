@@ -3,7 +3,7 @@
 > **Feature:** `architecture-migration`
 > **Plan:** [plan.md](plan.md)
 > **Created:** 2026-02-12
-> **Status:** 🔄 In Progress (Phase 5 ✅)
+> **Status:** 🔄 In Progress (Phase 6 ✅)
 
 ---
 
@@ -205,20 +205,20 @@
 
 > **Strategy:** Extract camera from `main.rs`, create audio stub.
 
-- [ ] **TASK-AM-040**: Create `framework/camera/mod.rs` — `CameraPlugin`
-  - **Action:** CREATE + MOVE `setup_camera` and `diagnose_cameras` from `main.rs`
+- [x] **TASK-AM-040**: Create `framework/camera/mod.rs` — `CameraPlugin`
+  - **Action:** Created `framework/camera/mod.rs`, extracted `setup_camera` and `diagnose_cameras` from `main.rs`
   - **Depends on:** Phase 5
 
-- [ ] **TASK-AM-041**: Create `framework/audio/{mod.rs, systems.rs, resources.rs}` — stub
-  - **Action:** CREATE — `AudioPlugin` with `AudioSettings` resource stub
+- [x] **TASK-AM-041**: Create `framework/audio/{mod.rs, systems.rs, resources.rs}` — stub
+  - **Action:** Created stub `framework/audio/{mod.rs, systems.rs, resources.rs}`
   - **Depends on:** Phase 5
 
-- [ ] **TASK-AM-042**: Register `CameraPlugin` and `AudioPlugin` in `FrameworkPlugin`
-  - **Action:** ADAPT
+- [x] **TASK-AM-042**: Register `CameraPlugin` and `AudioPlugin` in `FrameworkPlugin`
+  - **Action:** Updated `framework/plugin.rs`
   - **Depends on:** TASK-AM-040..041
 
-- [ ] **TASK-AM-043**: ✅ Verification — Phase 6
-  - Run `cargo check`, `cargo test`, `cargo clippy -- -D warnings`
+- [x] **TASK-AM-043**: ✅ Verification — Phase 6
+  - `cargo check` ✅, `cargo clippy` ✅, `cargo test` ✅
   - **Depends on:** TASK-AM-042
 
 ---
@@ -277,6 +277,6 @@
 | 3 | AM-020 — AM-024 | ✅ Done | Move `ui/` → `framework/ui/` |
 | 4 | AM-025 — AM-028 | ✅ Done | Move `game/pause_menu/` → `framework/menu/pause/` |
 | 5 | AM-029 — AM-039 | ✅ Done | Decompose `core/` → `config/` + `utils/` |
-| 6 | AM-040 — AM-043 | ⬜ | New camera + audio modules |
+| 6 | AM-040 — AM-043 | ✅ Done | New camera + audio modules |
 | 7 | AM-044 — AM-052 | ⬜ | Cleanup, versioning, docs |
 | **Total** | **52 tasks** | | **7 phases** |

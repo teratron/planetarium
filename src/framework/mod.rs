@@ -38,4 +38,10 @@ pub mod ui;
 /// Multi-language support using Project Fluent.
 pub mod localization;
 
+/// Camera management and diagnostics.
+pub mod camera;
+
+/// Audio subsystem and settings.
+pub mod audio;
+
 pub use plugin::FrameworkPlugin;
