@@ -1,42 +1,14 @@
-//! # Launcher Module
+//! # Launcher Module (Re-export Shim)
 //!
-//! This module manages the application's lifecycle from the initial boot
-//! to the transition into the main gameplay.
+//! **DEPRECATED**: This module re-exports from `crate::framework`
+//! for backward compatibility during the architecture migration.
+//! All new code should import from `crate::framework` directly.
 
-use bevy::prelude::*;
+pub use crate::framework::boot;
+pub use crate::framework::diagnostics;
+pub use crate::framework::error;
+pub use crate::framework::loading;
+pub use crate::framework::menu;
+pub use crate::framework::splash;
 
-// Importing sub-modules
-pub mod boot;
-pub mod diagnostics;
-pub mod error;
-pub mod loading;
-pub mod menu;
-pub mod splash;
-
-// Using the plugin structs from sub-modules
-use boot::BootPlugin;
-use diagnostics::DiagnosticsPlugin;
-use error::ErrorPlugin;
-use loading::LoadingPlugin;
-use menu::MenuPlugin;
-use splash::SplashPlugin;
-
-/// The main plugin for the Launcher module.
-/// It aggregates sub-plugins for booting, splash screens, and menus.
-pub struct LauncherPlugin;
-
-impl Plugin for LauncherPlugin {
-    fn build(&self, app: &mut App) {
-        // Registering sub-plugins
-        app.add_plugins((
-            BootPlugin,
-            SplashPlugin,
-            MenuPlugin,
-            LoadingPlugin,
-            ErrorPlugin,
-            DiagnosticsPlugin,
-            crate::ui::fading::FadingPlugin,
-            crate::ui::theme::ThemePlugin,
-        ));
-    }
-}
+pub use crate::framework::FrameworkPlugin as LauncherPlugin;

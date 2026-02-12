@@ -11,4 +11,22 @@ pub mod states;
 /// Framework plugin that bundles all framework sub-plugins.
 pub mod plugin;
 
+/// Boot sequence — initialization and environment checks.
+pub mod boot;
+
+/// Splash screen display.
+pub mod splash;
+
+/// Asset loading orchestration and progress tracking.
+pub mod loading;
+
+/// Error state UI.
+pub mod error;
+
+/// Debug overlay and diagnostics.
+pub mod diagnostics;
+
+/// Main menu, settings, and widget systems.
+pub mod menu;
+
 pub use plugin::FrameworkPlugin;
