@@ -6,6 +6,7 @@ use bevy::prelude::*;
 
 use crate::framework::assets::AssetManifest;
 use crate::framework::states::AppState;
+use crate::framework::ui::fading::{FadeState, ScreenFade};
 
 use super::components::SplashRoot;
 use super::resources::SplashTimer;
@@ -14,7 +15,7 @@ pub fn setup_splash(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     manifest: Res<AssetManifest>,
-    mut fade: ResMut<crate::framework::ui::fading::ScreenFade>,
+    mut fade: ResMut<ScreenFade>,
 ) {
     info!("[SplashPlugin] Showing splash screen...");
 
@@ -58,9 +59,17 @@ pub fn countdown_splash(
     mut timer: ResMut<SplashTimer>,
     keys: Res<ButtonInput<KeyCode>>,
     mouse: Res<ButtonInput<MouseButton>>,
-    mut fade: ResMut<crate::framework::ui::fading::ScreenFade>,
+    mut fade: ResMut<ScreenFade>,
 ) {
     timer.0.tick(time.delta());
+
+    // Guard: if a fade-out is already in progress, do nothing
+    if matches!(
+        fade.state,
+        FadeState::FadingOut | FadeState::WaitingForStateChange
+    ) {
+        return;
+    }
 
     // Check if timer finished naturally
     if timer.0.just_finished() {
@@ -82,6 +91,7 @@ pub fn countdown_splash(
 }
 
 pub fn cleanup_splash(mut commands: Commands, query: Query<Entity, With<SplashRoot>>) {
+    info!("[SplashPlugin] Cleaning up splash screen.");
     for entity in query.iter() {
         commands.entity(entity).despawn();
     }

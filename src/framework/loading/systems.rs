@@ -9,7 +9,7 @@ use crate::framework::states::AppState;
 use crate::framework::ui::theme::Theme;
 
 use super::components::*;
-use super::resources::LoadingTracker;
+use super::resources::{AssetLoadingState, LoadingTracker};
 
 /// Initial loading hints to display.
 const LOADING_HINTS: &[&str] = &[
@@ -134,17 +134,40 @@ pub fn setup_loading_screen(mut commands: Commands, theme: Res<Theme>) {
         });
 }
 
+/// Tracks real asset loading progress via `AssetServer`.
+///
+/// When `AssetLoadingState.required_assets` is empty the loading screen
+/// progresses instantly (no assets registered yet).
 pub fn update_loading_progress(
-    time: Res<Time>,
+    asset_server: Res<AssetServer>,
     mut tracker: ResMut<LoadingTracker>,
+    mut loading_state: ResMut<AssetLoadingState>,
     mut fade: ResMut<crate::framework::ui::fading::ScreenFade>,
 ) {
-    // Mock loading logic: linearly increase progress over 3 seconds
-    tracker.progress += time.delta_secs() / 3.0;
+    let total = loading_state.required_assets.len();
+
+    if total == 0 {
+        // No registered assets — complete immediately
+        tracker.progress = 1.0;
+    } else {
+        let mut loaded = 0usize;
+        for handle in &loading_state.required_assets {
+            match asset_server.get_load_state(handle.id()) {
+                Some(bevy::asset::LoadState::Loaded) => loaded += 1,
+                Some(bevy::asset::LoadState::Failed(_)) => {
+                    error!("[LoadingUI] Asset failed to load: {:?}", handle);
+                    loaded += 1; // Count as "done" to avoid stalling
+                }
+                _ => {} // Still loading
+            }
+        }
+        loading_state.loaded_count = loaded;
+        loading_state.total_count = total;
+        tracker.progress = loaded as f32 / total.max(1) as f32;
+    }
 
     if tracker.progress >= 1.0 {
         tracker.progress = 1.0;
-        // Log only once when loading completes
         if !tracker.completed_logged {
             info!("[LoadingUI] Content loaded. Fading out to InGame.");
             fade.fade_out(0.5, AppState::InGame);

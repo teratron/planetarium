@@ -3,7 +3,8 @@
 //! Provides slider widget creation and interaction handling for numeric values.
 
 use crate::config::settings::SettingKey;
-use crate::framework::assets::AssetCache;
+use crate::framework::loading::assets::AssetCache;
+use crate::framework::menu::events::{UiAudioEvent, play_ui_audio};
 use crate::framework::ui::theme::Theme;
 use bevy::prelude::*;
 
@@ -130,9 +131,9 @@ pub fn spawn_slider(
 pub fn slider_interaction_system(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    manifest: Res<crate::framework::assets::AssetManifest>,
+    manifest: Res<crate::framework::loading::assets::AssetManifest>,
     mut cache: ResMut<AssetCache>,
-    audio_state: Res<crate::framework::menu::reactive::RuntimeAudioState>,
+    runtime_audio: Res<crate::framework::menu::reactive::RuntimeAudioState>,
     mut interaction_query: Query<(&Interaction, &GlobalTransform, &ComputedNode, &mut Slider)>,
     mut settings: ResMut<crate::config::UserSettings>,
     windows: Query<&Window>,
@@ -149,46 +150,69 @@ pub fn slider_interaction_system(
     };
 
     for (interaction, transform, computed, mut slider) in &mut interaction_query {
-        if *interaction == Interaction::Pressed {
-            let width = computed.size().x;
-            if width <= 0.0 {
-                continue;
-            }
-
-            let node_pos = transform.translation().truncate();
-            let half_width = width / 2.0;
-            let min_x = node_pos.x - half_width;
-
-            let relative_x = (mouse_pos.x - min_x) / width;
-            let relative_x = relative_x.clamp(0.0, 1.0);
-
-            let new_value = slider.min + (slider.max - slider.min) * relative_x;
-
-            // Only update and play sound if value changed significantly
-            if (slider.value - new_value).abs() > 0.001 {
-                slider.value = new_value;
-
-                // Play subtle scroll sound on value change
-                if let Some(handle) = cache.get_or_load_audio("scroll", &asset_server, &manifest) {
-                    commands.spawn((
-                        AudioPlayer::new(handle),
-                        PlaybackSettings {
-                            mode: bevy::audio::PlaybackMode::Despawn,
-                            volume: bevy::audio::Volume::Linear(audio_state.sfx * 0.3), // Lower volume for slider
-                            ..default()
-                        },
-                    ));
-                }
-
-                // Apply to settings
-                match slider.setting_key {
-                    SettingKey::MasterVolume => settings.audio.master_volume = new_value,
-                    SettingKey::MusicVolume => settings.audio.music_volume = new_value,
-                    SettingKey::SfxVolume => settings.audio.sfx_volume = new_value,
-                    _ => warn!("[UI] Unknown slider setting key: {:?}", slider.setting_key),
-                }
-            }
+        if *interaction != Interaction::Pressed {
+            continue;
         }
+
+        let width = computed.size().x;
+        if width <= f32::EPSILON {
+            warn!("[Slider] Invalid slider width: {}", width);
+            continue;
+        }
+
+        let node_pos = transform.translation().truncate();
+        let half_width = width / 2.0;
+        let min_x = node_pos.x - half_width;
+
+        let relative_x = ((mouse_pos.x - min_x) / width).clamp(0.0, 1.0);
+
+        let new_value =
+            (slider.min + (slider.max - slider.min) * relative_x).clamp(slider.min, slider.max);
+
+        // Extra validation for volume settings
+        let new_value = match slider.setting_key {
+            SettingKey::MasterVolume | SettingKey::MusicVolume | SettingKey::SfxVolume => {
+                new_value.clamp(0.0, 1.0)
+            }
+            _ => new_value,
+        };
+
+        // Only update and play sound if value changed significantly
+        let delta = (slider.value - new_value).abs();
+        slider.value = new_value;
+
+        // Play subtle scroll sound on value change
+        if delta >= 0.001 {
+            play_ui_audio(
+                UiAudioEvent::Scroll,
+                runtime_audio.sfx * 0.7,
+                &mut commands,
+                &mut cache,
+                &asset_server,
+                &manifest,
+            );
+        }
+        // Apply to settings with validation
+        apply_slider_setting(&slider.setting_key, new_value, &mut settings);
+    }
+}
+
+/// Applies a slider value to the corresponding user setting with validation and logging.
+fn apply_slider_setting(key: &SettingKey, value: f32, settings: &mut crate::config::UserSettings) {
+    match key {
+        SettingKey::MasterVolume => {
+            settings.audio.master_volume = value.clamp(0.0, 1.0);
+            info!("[Settings] Master volume: {:.2}", value);
+        }
+        SettingKey::MusicVolume => {
+            settings.audio.music_volume = value.clamp(0.0, 1.0);
+            info!("[Settings] Music volume: {:.2}", value);
+        }
+        SettingKey::SfxVolume => {
+            settings.audio.sfx_volume = value.clamp(0.0, 1.0);
+            info!("[Settings] SFX volume: {:.2}", value);
+        }
+        _ => warn!("[Settings] Unknown slider key: {:?}", key),
     }
 }
 

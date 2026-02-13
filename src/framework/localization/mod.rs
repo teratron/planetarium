@@ -11,8 +11,21 @@ use unic_langid::LanguageIdentifier;
 pub mod systems;
 pub mod utils;
 
-pub use systems::{apply_language_change_system, setup_localization};
+/// Fired when the UI language is changed successfully at runtime.
+#[derive(Message, Debug, Clone)]
+pub struct LanguageChanged {
+    /// Previous locale.
+    pub old: LanguageIdentifier,
+    /// New locale.
+    pub new: LanguageIdentifier,
+}
+
+pub use systems::{apply_language_change_system, setup_localization, update_localized_texts};
 pub use utils::FluentBundleType;
+
+/// Component to mark UI text that should be updated when the language changes.
+#[derive(Component, Debug, Clone)]
+pub struct LocalizedText(pub String); // The key into the localization bundles
 
 /// Resource that manages localized strings and bundles.
 #[derive(Resource)]

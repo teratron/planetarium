@@ -71,6 +71,7 @@ pub fn apply_language_change_system(
     paths: Res<crate::config::AppPaths>,
     mut commands: Commands,
     mut strings: ResMut<LocalizedStrings>,
+    mut events: MessageWriter<super::LanguageChanged>,
 ) {
     if !settings.is_changed() {
         return;
@@ -121,7 +122,12 @@ pub fn apply_language_change_system(
             fallback_bundle,
             paths.assets_dir.clone(),
         ));
+        let old_locale = parse_language_id(prev.as_deref().unwrap_or(""));
         strings.invalidate(&primary_lang);
+        events.write(super::LanguageChanged {
+            old: old_locale,
+            new: primary_lang.clone(),
+        });
 
         info!(
             "[Localization] Language resource updated to {}",
@@ -130,4 +136,19 @@ pub fn apply_language_change_system(
     }
 
     *prev = Some(settings.language.clone());
+}
+
+/// System that updates all UI elements with `LocalizedText` when language changes.
+pub fn update_localized_texts(
+    mut events: MessageReader<super::LanguageChanged>,
+    localization: Res<super::Localization>,
+    mut query: Query<(&mut Text, &super::LocalizedText)>,
+) {
+    // Only run if a LanguageChanged message was received
+    if events.read().next().is_some() {
+        info!("[Localization] Updating UI texts for new language...");
+        for (mut text, localized) in &mut query {
+            text.0 = localization.t(&localized.0);
+        }
+    }
 }

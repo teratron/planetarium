@@ -10,6 +10,13 @@ use std::fs;
 /// Current version of the settings schema, used for migrations.
 pub const SETTINGS_VERSION: u32 = 4;
 
+/// Fired when settings fail to save to disk.
+#[derive(Message, Debug, Clone)]
+pub struct SettingsSaveError {
+    /// Human-readable error description.
+    pub error: String,
+}
+
 /// Quality presets for graphics settings.
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Default)]
 #[serde(rename_all = "lowercase")]
@@ -137,16 +144,15 @@ pub fn load_settings(paths: &AppPaths) -> UserSettings {
 
                     // --- VERSION GUARD / MIGRATION ---
                     if s.version < SETTINGS_VERSION {
-                        info!(
-                            "[Config] Migration: Upgrading settings from v{} to v{}",
+                        s = migrate_settings(s, paths);
+                        // Try to save the migrated and validated settings back to disk.
+                        let _ = save_settings(paths, &s);
+                    } else if s.version > SETTINGS_VERSION {
+                        warn!(
+                            "[Config] Settings v{} is newer than current v{}. Using defaults to prevent corruption.",
                             s.version, SETTINGS_VERSION
                         );
-                        s.version = SETTINGS_VERSION;
-                        // Saving the migrated settings back to disk.
-                        // Because of #[serde(default)], any NEW fields in our current
-                        // Rust structs will be populated with defaults while keeping
-                        // the user's existing values for old fields.
-                        save_settings(paths, &s);
+                        return UserSettings::default();
                     }
 
                     s
@@ -170,18 +176,51 @@ pub fn load_settings(paths: &AppPaths) -> UserSettings {
     } else {
         info!("[Config] settings.toml not found. Creating default.");
         let default_settings = UserSettings::default();
-        save_settings(paths, &default_settings);
+        let _ = save_settings(paths, &default_settings);
         default_settings
     }
 }
 
-/// Saves settings to disk in TOML format.
-pub fn save_settings(paths: &AppPaths, settings: &UserSettings) {
-    if let Ok(toml_string) = toml::to_string_pretty(settings)
-        && let Err(e) = fs::write(&paths.settings_file, toml_string)
-    {
-        error!("[Config] Failed to save settings: {}", e);
+/// Migrates settings from an older version to the current version.
+/// Ensures that existing values are preserved while new fields are correctly initialized.
+pub fn migrate_settings(mut old: UserSettings, _paths: &AppPaths) -> UserSettings {
+    info!(
+        "[Config] Migration path: {} -> {}",
+        old.version, SETTINGS_VERSION
+    );
+
+    // Simple version bump for now, as Serde's #[serde(default)] handles
+    // addition of new fields during deserialization.
+    // For more complex migrations (e.g. data renames), add logic here.
+    old.version = SETTINGS_VERSION;
+    old
+}
+
+/// Saves settings to disk in TOML format atomically.
+/// Writes to a temporary file first, then renames to avoid corruption during crashes.
+pub fn save_settings(paths: &AppPaths, settings: &UserSettings) -> Result<(), String> {
+    let toml_string = toml::to_string_pretty(settings)
+        .map_err(|e| format!("Failed to serialize settings: {}", e))?;
+
+    let tmp_file = paths.settings_file.with_extension("toml.tmp");
+
+    // Write to temp file
+    fs::write(&tmp_file, toml_string).map_err(|e| {
+        let err = format!("Failed to write to temp settings file: {}", e);
+        error!("[Config] {}", err);
+        err
+    })?;
+
+    // Rename to final destination (atomic on many filesystems)
+    if let Err(e) = fs::rename(&tmp_file, &paths.settings_file) {
+        let err = format!("Failed to rename temp settings file: {}", e);
+        error!("[Config] {}", err);
+        // Clean up temp file if rename failed
+        let _ = fs::remove_file(&tmp_file);
+        return Err(err);
     }
+
+    Ok(())
 }
 
 #[cfg(test)]

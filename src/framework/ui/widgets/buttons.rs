@@ -2,8 +2,9 @@
 //!
 //! Provides primary button widget creation and interaction handling.
 
-use crate::framework::assets::AssetCache;
-use crate::framework::assets::AssetManifest;
+use crate::framework::loading::assets::AssetCache;
+use crate::framework::loading::assets::AssetManifest;
+use crate::framework::menu::events::{UiAudioEvent, play_ui_audio};
 use crate::framework::ui::theme::Theme;
 use crate::framework::ui::theme::constants::animation;
 use bevy::prelude::*;
@@ -116,29 +117,24 @@ pub fn button_interaction_system(
         match *interaction {
             Interaction::Hovered => {
                 anim_state.is_hovered = true;
-
-                if let Some(handle) = cache.get_or_load_audio("hover", &asset_server, &manifest) {
-                    commands.spawn((
-                        AudioPlayer::new(handle),
-                        PlaybackSettings {
-                            mode: bevy::audio::PlaybackMode::Despawn,
-                            volume: bevy::audio::Volume::Linear(audio_state.sfx * 0.5),
-                            ..default()
-                        },
-                    ));
-                }
+                play_ui_audio(
+                    UiAudioEvent::Hover,
+                    audio_state.sfx * 0.5,
+                    &mut commands,
+                    &mut cache,
+                    &asset_server,
+                    &manifest,
+                );
             }
             Interaction::Pressed => {
-                if let Some(handle) = cache.get_or_load_audio("click", &asset_server, &manifest) {
-                    commands.spawn((
-                        AudioPlayer::new(handle),
-                        PlaybackSettings {
-                            mode: bevy::audio::PlaybackMode::Despawn,
-                            volume: bevy::audio::Volume::Linear(audio_state.sfx),
-                            ..default()
-                        },
-                    ));
-                }
+                play_ui_audio(
+                    UiAudioEvent::Click,
+                    audio_state.sfx,
+                    &mut commands,
+                    &mut cache,
+                    &asset_server,
+                    &manifest,
+                );
             }
             Interaction::None => {
                 anim_state.is_hovered = false;

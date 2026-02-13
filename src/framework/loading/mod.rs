@@ -22,6 +22,7 @@ pub struct LoadingPlugin;
 impl Plugin for LoadingPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<LoadingTracker>()
+            .init_resource::<resources::AssetLoadingState>()
             .add_systems(
                 OnEnter(AppState::Loading),
                 (

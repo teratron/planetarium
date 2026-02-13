@@ -20,8 +20,9 @@ impl Plugin for FadingPlugin {
 pub enum FadeState {
     #[default]
     Idle,
-    FadingIn,  // Black -> Transparent
-    FadingOut, // Transparent -> Black
+    FadingIn,              // Black -> Transparent
+    FadingOut,             // Transparent -> Black
+    WaitingForStateChange, // Waiting for AppState transition before fading in
 }
 
 /// Resource to control screen transitions.
@@ -90,6 +91,7 @@ fn setup_fade_overlay(mut commands: Commands) {
 fn update_fade_system(
     mut fade: ResMut<ScreenFade>,
     time: Res<Time>,
+    current_state: Res<State<AppState>>,
     mut next_state: ResMut<NextState<AppState>>,
     mut query: Query<&mut BackgroundColor, With<FadeOverlay>>,
 ) {
@@ -97,13 +99,15 @@ fn update_fade_system(
         return;
     }
 
-    fade.timer.tick(time.delta());
-    let percent = fade.timer.fraction(); // 0.0 to 1.0
+    // Tick timer only for animation states (not WaitingForStateChange)
+    if fade.state != FadeState::WaitingForStateChange {
+        fade.timer.tick(time.delta());
+    }
 
     match fade.state {
         FadeState::FadingIn => {
             // 1.0 -> 0.0
-            fade.alpha = 1.0 - percent;
+            fade.alpha = 1.0 - fade.timer.fraction();
             if fade.timer.just_finished() {
                 fade.state = FadeState::Idle;
                 fade.alpha = 0.0;
@@ -111,24 +115,35 @@ fn update_fade_system(
         }
         FadeState::FadingOut => {
             // 0.0 -> 1.0
-            fade.alpha = percent;
+            fade.alpha = fade.timer.fraction();
             if fade.timer.just_finished() {
-                fade.state = FadeState::Idle;
                 fade.alpha = 1.0;
 
-                // Trigger state change if requested
+                // Request state change if configured
                 if let Some(target) = fade.next_app_state {
-                    info!("[FadingPlugin] Transitioning state to {:?}", target);
+                    info!("[FadingPlugin] Requesting state transition to {:?}", target);
                     next_state.set(target);
-                    // Automatically prepare to fade in on the new state?
-                    // Usually better to let the new state trigger fade_in,
-                    // or auto-trigger it here. Let's auto-reset to In for continuity.
-                    fade.state = FadeState::FadingIn;
-                    fade.timer.reset();
-                    // We keep next_app_state as None for the In phase
-                    fade.next_app_state = None;
-                    // Alpha is already 1.0, perfect for FadingIn start
+                    // Wait for the state to actually change before fading in
+                    fade.state = FadeState::WaitingForStateChange;
+                } else {
+                    fade.state = FadeState::Idle;
                 }
+            }
+        }
+        FadeState::WaitingForStateChange => {
+            // Wait for the new state to become active before starting fade-in
+            if let Some(target) = fade.next_app_state
+                && *current_state.get() == target
+            {
+                info!(
+                    "[FadingPlugin] State changed to {:?}, starting fade in",
+                    target
+                );
+                fade.state = FadeState::FadingIn;
+                fade.timer = Timer::from_seconds(0.5, TimerMode::Once);
+                fade.timer.reset();
+                fade.next_app_state = None;
+                // Alpha is already 1.0, perfect for FadingIn start
             }
         }
         FadeState::Idle => {}

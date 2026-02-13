@@ -6,6 +6,7 @@ pub mod cli;
 pub mod metadata;
 pub mod paths;
 pub mod settings;
+pub mod validation;
 
 pub use metadata::AppMetadata;
 pub use paths::AppPaths;

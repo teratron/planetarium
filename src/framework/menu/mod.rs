@@ -4,6 +4,7 @@
 use crate::framework::states::AppState;
 use bevy::prelude::*;
 
+pub mod events;
 pub mod main;
 pub mod pause;
 pub mod reactive;
@@ -41,6 +42,10 @@ pub struct MenuPlugin;
 impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
         info!("[MenuPlugin] Initializing...");
+        // Register messages (high-level communication)
+        app.add_message::<crate::framework::localization::LanguageChanged>();
+        app.add_message::<crate::config::settings::SettingsSaveError>();
+
         // Initialize settings resources
         app.init_resource::<SettingsOpen>();
         app.init_resource::<ActiveSettingsTab>();
@@ -102,6 +107,7 @@ impl Plugin for MenuPlugin {
                 auto_save_settings.run_if(settings_auto_save_active),
                 crate::framework::localization::apply_language_change_system
                     .run_if(resource_changed::<crate::config::UserSettings>),
+                crate::framework::localization::update_localized_texts,
             ),
         );
 

@@ -24,6 +24,13 @@ impl Default for RuntimeAudioState {
     }
 }
 
+/// Lightweight snapshot of settings for efficient change tracking.
+#[derive(Default, PartialEq, Clone)]
+pub struct SettingsSnapshot {
+    pub display: crate::config::settings::DisplaySettings,
+    pub audio: crate::config::settings::AudioSettings,
+}
+
 /// Tracks pending settings changes to debounce expensive operations.
 #[derive(Resource)]
 pub struct SettingsChangeTracker {
@@ -48,12 +55,16 @@ impl Default for SettingsChangeTracker {
 /// `RuntimeAudioState` with the user's volume preferences.
 pub fn broadcast_settings_changes(
     settings: Res<UserSettings>,
-    mut prev: Local<Option<UserSettings>>,
+    mut prev: Local<Option<SettingsSnapshot>>,
     mut windows: Query<&mut Window>,
     mut runtime: ResMut<RuntimeAudioState>,
     mut tracker: ResMut<SettingsChangeTracker>,
     time: Res<Time>,
 ) {
+    if !settings.is_changed() && prev.is_some() && !tracker.pending_display_changes {
+        return;
+    }
+
     // Initialize prev if None (first run)
     if prev.is_none() {
         // Apply everything immediately on startup
@@ -81,7 +92,10 @@ pub fn broadcast_settings_changes(
         runtime.music = settings.audio.music_volume;
         runtime.sfx = settings.audio.sfx_volume;
 
-        *prev = Some(settings.clone());
+        *prev = Some(SettingsSnapshot {
+            display: settings.display.clone(),
+            audio: settings.audio.clone(),
+        });
         return;
     }
 
@@ -200,6 +214,7 @@ pub fn auto_save_settings(
     mut timer: ResMut<SettingsAutoSaveTimer>,
     settings: Res<UserSettings>,
     paths: Res<crate::config::AppPaths>,
+    mut error_events: MessageWriter<crate::config::settings::SettingsSaveError>,
 ) {
     if timer.0.is_paused() {
         return;
@@ -209,7 +224,12 @@ pub fn auto_save_settings(
 
     if timer.0.is_finished() {
         info!("[Settings] Auto-saving settings to disk...");
-        crate::config::save_settings(&paths, &settings);
+        if let Err(e) = crate::config::save_settings(&paths, &settings) {
+            error!("[Settings] Failed to auto-save settings: {}", e);
+            error_events.write(crate::config::settings::SettingsSaveError {
+                error: e.to_string(),
+            });
+        }
         timer.0.pause();
     }
 }

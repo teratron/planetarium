@@ -3,7 +3,8 @@
 //! Provides dropdown/select widget creation and interaction handling.
 
 use crate::config::settings::SettingKey;
-use crate::framework::assets::AssetCache;
+use crate::framework::loading::assets::AssetCache;
+use crate::framework::menu::events::{UiAudioEvent, play_ui_audio};
 use crate::framework::ui::theme::Theme;
 use bevy::prelude::*;
 
@@ -133,14 +134,14 @@ pub fn dropdown_interaction_system(
     mut commands: Commands,
     theme: Res<Theme>,
     asset_server: Res<AssetServer>,
-    manifest: Res<crate::framework::assets::AssetManifest>,
+    manifest: Res<crate::framework::loading::assets::AssetManifest>,
     mut cache: ResMut<AssetCache>,
     audio_state: Res<crate::framework::menu::reactive::RuntimeAudioState>,
     mut dropdown_query: Query<
         (Entity, &Interaction, &mut Dropdown, &mut BackgroundColor),
         (Changed<Interaction>, With<Button>),
     >,
-    mut option_lists: Query<(Entity, &DropdownOptionsList)>,
+    option_lists: Query<(Entity, &DropdownOptionsList)>,
 ) {
     for (entity, interaction, mut dropdown, mut bg_color) in &mut dropdown_query {
         if *interaction == Interaction::Pressed {
@@ -148,19 +149,29 @@ pub fn dropdown_interaction_system(
             *bg_color = BackgroundColor(theme.colors.surface_light); // Visual feedback
 
             // Play open/close sound
-            let sound_key = if dropdown.is_open { "open" } else { "close" };
-            if let Some(handle) = cache.get_or_load_audio(sound_key, &asset_server, &manifest) {
-                commands.spawn((
-                    AudioPlayer::new(handle),
-                    PlaybackSettings {
-                        mode: bevy::audio::PlaybackMode::Despawn,
-                        volume: bevy::audio::Volume::Linear(audio_state.sfx),
-                        ..default()
-                    },
-                ));
-            }
+            let event = if dropdown.is_open {
+                UiAudioEvent::Open
+            } else {
+                UiAudioEvent::Close
+            };
+            play_ui_audio(
+                event,
+                audio_state.sfx,
+                &mut commands,
+                &mut cache,
+                &asset_server,
+                &manifest,
+            );
 
             if dropdown.is_open {
+                // Guard: prevent duplicate options list
+                let already_exists = option_lists.iter().any(|(_, list)| list.0 == entity);
+
+                if already_exists {
+                    warn!("[Dropdown] Options list already exists for {:?}", entity);
+                    continue;
+                }
+
                 // Spawn options
                 commands.entity(entity).with_children(|parent| {
                     parent
@@ -212,11 +223,9 @@ pub fn dropdown_interaction_system(
                         });
                 });
             } else {
-                // Find and despawn options list
-                for (list_entity, list) in &mut option_lists {
+                // Despawn the options list
+                for (list_entity, list) in &option_lists {
                     if list.0 == entity {
-                        // Use non-recursive despawn for compatibility with current Bevy version.
-                        // If recursive removal is later required, consider walking children via `Children`.
                         commands.entity(list_entity).despawn();
                     }
                 }
@@ -301,7 +310,7 @@ pub fn dropdown_option_interaction_system(
     mut commands: Commands,
     mut settings: ResMut<crate::config::UserSettings>,
     asset_server: Res<AssetServer>,
-    manifest: Res<crate::framework::assets::AssetManifest>,
+    manifest: Res<crate::framework::loading::assets::AssetManifest>,
     mut cache: ResMut<AssetCache>,
     audio_state: Res<crate::framework::menu::reactive::RuntimeAudioState>,
     mut dropdown_query: Query<(&mut Dropdown, &Children)>,
@@ -317,16 +326,14 @@ pub fn dropdown_option_interaction_system(
             dropdown.is_open = false;
 
             // Play select sound
-            if let Some(handle) = cache.get_or_load_audio("select", &asset_server, &manifest) {
-                commands.spawn((
-                    AudioPlayer::new(handle),
-                    PlaybackSettings {
-                        mode: bevy::audio::PlaybackMode::Despawn,
-                        volume: bevy::audio::Volume::Linear(audio_state.sfx),
-                        ..default()
-                    },
-                ));
-            }
+            play_ui_audio(
+                UiAudioEvent::Select,
+                audio_state.sfx,
+                &mut commands,
+                &mut cache,
+                &asset_server,
+                &manifest,
+            );
 
             // Update text
             // Update button text to use display values when available, otherwise use option value
@@ -353,7 +360,7 @@ pub fn dropdown_option_interaction_system(
                 option.index,
             );
 
-            // Close dropdown (despawn list)
+            // Close dropdown (recursive despawn to clean up children)
             for (list_entity, list) in &option_list_query {
                 if list.0 == option.parent_dropdown {
                     commands.entity(list_entity).despawn();
