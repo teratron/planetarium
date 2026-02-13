@@ -5,6 +5,7 @@
 //! resources, entities, and constants.
 
 pub mod components;
+pub mod config;
 pub mod constants;
 pub mod entities;
 pub mod plugin;

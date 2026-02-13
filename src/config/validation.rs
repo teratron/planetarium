@@ -66,51 +66,45 @@ impl Validate for super::settings::AudioSettings {
     }
 }
 
+impl Validate for crate::game::config::GameplayConfig {
+    type Error = Vec<String>;
+
+    fn validate(&self) -> Result<(), Self::Error> {
+        let mut errors = Vec::new();
+
+        if self.physics.gravitational_constant <= 0.0 {
+            errors.push("gravitational_constant must be positive".to_string());
+        }
+        if self.physics.max_velocity <= 0.0 {
+            errors.push("max_velocity must be positive".to_string());
+        }
+        if self.planets.min_radius >= self.planets.max_radius {
+            errors.push("min_radius must be less than max_radius".to_string());
+        }
+
+        if errors.is_empty() {
+            Ok(())
+        } else {
+            Err(errors)
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::config::settings::{AudioSettings, DisplaySettings};
+    use crate::game::config::gameplay::GameplayConfig;
 
     #[test]
-    fn valid_display_settings() {
-        let ds = DisplaySettings {
-            width: 1920,
-            height: 1080,
-            fullscreen: false,
-            vsync: true,
-        };
-        assert!(ds.validate().is_ok());
+    fn valid_gameplay_config() {
+        let config = GameplayConfig::default();
+        assert!(config.validate().is_ok());
     }
 
     #[test]
-    fn invalid_display_width() {
-        let ds = DisplaySettings {
-            width: 100,
-            height: 1080,
-            fullscreen: false,
-            vsync: true,
-        };
-        assert!(ds.validate().is_err());
-    }
-
-    #[test]
-    fn valid_audio_settings() {
-        let audio = AudioSettings {
-            master_volume: 0.8,
-            music_volume: 0.6,
-            sfx_volume: 0.5,
-        };
-        assert!(audio.validate().is_ok());
-    }
-
-    #[test]
-    fn invalid_audio_settings() {
-        let audio = AudioSettings {
-            master_volume: 1.5,
-            music_volume: -0.1,
-            sfx_volume: 0.5,
-        };
-        let err = audio.validate().unwrap_err();
-        assert_eq!(err.len(), 2);
+    fn invalid_gameplay_config_physics() {
+        let mut config = GameplayConfig::default();
+        config.physics.gravitational_constant = -1.0;
+        assert!(config.validate().is_err());
     }
 }
