@@ -1,6 +1,6 @@
 //! # Asset Manifest System
 //!
-//! Handles the parsing of `assets.toml` and provides a centralized
+//! Handles the parsing of `assets.ron` and provides a centralized
 //! index of all mandatory game assets.
 
 use bevy::prelude::*;
@@ -89,17 +89,17 @@ pub fn setup_asset_manifest(
     mut error_state: ResMut<crate::framework::states::ErrorState>,
     paths: Res<crate::config::AppPaths>,
 ) {
-    let manifest_path = paths.assets_dir.join("assets.toml");
+    let manifest_path = paths.assets_dir.join("assets.ron");
     info!("[Assets] Loading manifest from {:?}", manifest_path);
 
     let manifest = match fs::read_to_string(&manifest_path) {
-        Ok(content) => match toml::from_str::<AssetManifest>(&content) {
+        Ok(content) => match ron::from_str::<AssetManifest>(&content) {
             Ok(m) => {
                 info!("[Assets] Manifest loaded successfully.");
                 m
             }
             Err(e) => {
-                let err_msg = format!("Failed to parse assets.toml: {}", e);
+                let err_msg = format!("Failed to parse assets.ron: {}", e);
                 error!("[Assets] {}", err_msg);
                 error_state.message = err_msg;
                 next_state.set(crate::framework::states::AppState::Error);
@@ -107,7 +107,7 @@ pub fn setup_asset_manifest(
             }
         },
         Err(e) => {
-            let err_msg = format!("Failed to read assets.toml: {}", e);
+            let err_msg = format!("Failed to read assets.ron: {}", e);
             error!("[Assets] {}", err_msg);
             error_state.message = err_msg;
             next_state.set(crate::framework::states::AppState::Error);

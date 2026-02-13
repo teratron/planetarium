@@ -3,6 +3,7 @@
 //! Handles resolution of platform-specific directories for data and configuration.
 
 use crate::config::metadata::APP_NAME;
+use crate::config::platform_paths::get_data_dir;
 use bevy::prelude::*;
 use std::fs;
 use std::path::PathBuf;
@@ -15,7 +16,7 @@ pub struct AppPaths {
     pub data_dir: PathBuf,
     /// Directory for game assets.
     pub assets_dir: PathBuf,
-    /// Full path to the settings.toml file.
+    /// Full path to the settings.ron file.
     pub settings_file: PathBuf,
     /// Path to the session log file.
     pub log_file: PathBuf,
@@ -27,12 +28,8 @@ impl AppPaths {
     /// Resolves paths based on the operating system and environment.
     /// This is designed as a reusable template for different Bevy games.
     pub fn from_env() -> Self {
-        // 1. Resolve Data Directory (OS-specific)
-        let data_dir = if let Some(proj_dirs) = dirs::data_dir() {
-            proj_dirs.join(APP_NAME)
-        } else {
-            PathBuf::from(".").join("data")
-        };
+        // 1. Resolve Data Directory (OS-specific custom implementation)
+        let data_dir = get_data_dir(APP_NAME);
 
         // 2. Resolve Assets Directory
         // First check CWD, then check relative to executable (helpful for direct runs from target/debug)
@@ -65,7 +62,7 @@ impl AppPaths {
                 .unwrap_or_else(|_| assets_dir.clone());
         }
 
-        let settings_file = data_dir.join("settings.toml");
+        let settings_file = data_dir.join("settings.ron");
         let log_file = data_dir.join("session.log");
         let instance_lock_file = data_dir.join("instance.lock");
 
@@ -90,7 +87,7 @@ impl AppPaths {
 
 fn is_valid_assets_dir(path: &std::path::Path) -> bool {
     path.exists()
-        && path.join("assets.toml").exists()
+        && path.join("assets.ron").exists()
         && path.join("fonts").join("FiraSans-Regular.ttf").exists()
         && path.join("textures").join("logo_planetarium.png").exists()
         && path.join("audio").join("click.ogg").exists()

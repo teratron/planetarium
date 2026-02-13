@@ -5,6 +5,7 @@
 pub mod cli;
 pub mod metadata;
 pub mod paths;
+pub mod platform_paths;
 pub mod settings;
 pub mod validation;
 

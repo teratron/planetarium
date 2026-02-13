@@ -176,7 +176,7 @@ mod tests {
         std::fs::create_dir_all(&data_dir).expect("temp lock dir should be created");
 
         let paths = AppPaths {
-            settings_file: data_dir.join("settings.toml"),
+            settings_file: data_dir.join("settings.ron"),
             log_file: data_dir.join("session.log"),
             instance_lock_file: data_dir.join("instance.lock"),
             assets_dir: std::path::PathBuf::from("assets"),
@@ -211,7 +211,7 @@ mod tests {
         std::fs::create_dir_all(&data_dir).expect("temp lock dir should be created");
 
         let paths = AppPaths {
-            settings_file: data_dir.join("settings.toml"),
+            settings_file: data_dir.join("settings.ron"),
             log_file: data_dir.join("session.log"),
             instance_lock_file: data_dir.join("instance.lock"),
             assets_dir: std::path::PathBuf::from("assets"),

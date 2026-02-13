@@ -4,6 +4,7 @@
 
 use crate::config::AppPaths;
 use bevy::prelude::*;
+use ron;
 use serde::{Deserialize, Serialize};
 use std::fs;
 
@@ -138,7 +139,7 @@ fn default_theme() -> String {
 pub fn load_settings(paths: &AppPaths) -> UserSettings {
     if paths.settings_file.exists() {
         match fs::read_to_string(&paths.settings_file) {
-            Ok(content) => match toml::from_str::<UserSettings>(&content) {
+            Ok(content) => match ron::from_str::<UserSettings>(&content) {
                 Ok(mut s) => {
                     info!("[Config] Settings loaded from {:?}", paths.settings_file);
 
@@ -159,7 +160,7 @@ pub fn load_settings(paths: &AppPaths) -> UserSettings {
                 }
                 Err(e) => {
                     warn!(
-                        "[Config] Failed to parse settings.toml: {}. Using defaults.",
+                        "[Config] Failed to parse settings.ron: {}. Using defaults.",
                         e
                     );
                     UserSettings::default()
@@ -174,7 +175,7 @@ pub fn load_settings(paths: &AppPaths) -> UserSettings {
             }
         }
     } else {
-        info!("[Config] settings.toml not found. Creating default.");
+        info!("[Config] settings.ron not found. Creating default.");
         let default_settings = UserSettings::default();
         let _ = save_settings(paths, &default_settings);
         default_settings
@@ -196,16 +197,20 @@ pub fn migrate_settings(mut old: UserSettings, _paths: &AppPaths) -> UserSetting
     old
 }
 
-/// Saves settings to disk in TOML format atomically.
+/// Saves settings to disk in RON format atomically.
 /// Writes to a temporary file first, then renames to avoid corruption during crashes.
 pub fn save_settings(paths: &AppPaths, settings: &UserSettings) -> Result<(), String> {
-    let toml_string = toml::to_string_pretty(settings)
+    let pretty_config = ron::ser::PrettyConfig::default()
+        .struct_names(true)
+        .enumerate_arrays(true);
+
+    let ron_string = ron::ser::to_string_pretty(settings, pretty_config)
         .map_err(|e| format!("Failed to serialize settings: {}", e))?;
 
-    let tmp_file = paths.settings_file.with_extension("toml.tmp");
+    let tmp_file = paths.settings_file.with_extension("ron.tmp");
 
     // Write to temp file
-    fs::write(&tmp_file, toml_string).map_err(|e| {
+    fs::write(&tmp_file, ron_string).map_err(|e| {
         let err = format!("Failed to write to temp settings file: {}", e);
         error!("[Config] {}", err);
         err
@@ -255,7 +260,7 @@ mod tests {
     #[test]
     fn missing_allow_multiple_instances_defaults_to_false() {
         let parsed: UserSettings =
-            toml::from_str("version = 4").expect("minimal settings should deserialize");
+            ron::from_str("UserSettings(version: 4)").expect("minimal settings should deserialize");
         assert!(!parsed.allow_multiple_instances);
     }
 
