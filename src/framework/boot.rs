@@ -1,5 +1,5 @@
-use crate::framework::assets::setup_asset_manifest;
 use crate::config::setup_config;
+use crate::framework::assets::setup_asset_manifest;
 use crate::framework::localization::setup_localization;
 use crate::framework::states::AppState;
 use bevy::prelude::*;

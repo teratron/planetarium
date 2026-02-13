@@ -29,11 +29,15 @@ This separation enables:
 ```plaintext
 project_name/
 ├── assets/                    # Game assets (textures, models, audio, fonts, shaders)
-│   ├── textures/
-│   ├── models/
-│   ├── audio/
-│   ├── fonts/
-│   └── shaders/
+│   ├── textures/              # Images and texture assets
+│   ├── models/                # 3D model files
+│   ├── audio/                 # Sound effects and music
+│   ├── fonts/                 # Font files (TTF/OTF)
+│   ├── shaders/               # Custom shader files (WGSL/GLSL)
+│   ├── configs/               # Runtime configuration files (assets.toml, settings.toml)
+│   └── locales/               # Localization data (Project Fluent .ftl files)
+│       ├── en-US/
+│       └── ru-RU/
 │
 ├── src/
 │   ├── main.rs               # Application entry point
@@ -43,9 +47,11 @@ project_name/
 │   │   ├── mod.rs
 │   │   ├── plugin.rs         # FrameworkPlugin bundle
 │   │   │
+│   │   ├── boot.rs           # Boot sequence — initialization and environment checks
+│   │   │
 │   │   ├── states/           # Framework-level state machine
 │   │   │   ├── mod.rs
-│   │   │   ├── state.rs      # Core app states enum
+│   │   │   ├── state.rs      # Core app states enum (AppState)
 │   │   │   └── transition.rs # State transition logic
 │   │   │
 │   │   ├── splash/           # Splash screen system
@@ -56,26 +62,36 @@ project_name/
 │   │   │
 │   │   ├── loading/          # Asset loading system
 │   │   │   ├── mod.rs
+│   │   │   ├── assets.rs     # Asset manifest (AssetManifest) and cache (AssetCache)
 │   │   │   ├── systems.rs
 │   │   │   ├── resources.rs
-│   │   │   └── assets.rs     # Asset handles and paths
+│   │   │   └── components.rs
 │   │   │
 │   │   ├── menu/             # Menu systems
-│   │   │   ├── mod.rs
+│   │   │   ├── mod.rs        # MenuPlugin registration
 │   │   │   ├── main/         # Main menu screen
 │   │   │   │   ├── mod.rs
-│   │   │   │   ├── systems.rs
-│   │   │   │   └── layout.rs
+│   │   │   │   ├── systems.rs  # spawn_main_menu, button click handlers
+│   │   │   │   └── layout.rs   # Layout constants (panel size, margins)
 │   │   │   ├── pause/        # In-game pause menu
 │   │   │   │   ├── mod.rs
-│   │   │   │   └── systems.rs
-│   │   │   └── components.rs # Shared menu UI components
+│   │   │   │   ├── systems.rs
+│   │   │   │   ├── components.rs
+│   │   │   │   └── ...
+│   │   │   └── reactive.rs   # Reactive settings broadcast (audio, display, theme)
 │   │   │
 │   │   ├── settings/         # Settings management
-│   │   │   ├── mod.rs
-│   │   │   ├── systems.rs
-│   │   │   ├── resources.rs  # SettingsResource
-│   │   │   └── ui.rs         # Settings UI
+│   │   │   ├── mod.rs        # SettingsOpen, SettingsTab, ActiveSettingsTab
+│   │   │   ├── systems.rs    # Tab switching, spawn/despawn, fade animations
+│   │   │   ├── components.rs # UI marker components (SettingsRoot, panels, etc.)
+│   │   │   ├── layout.rs     # Layout constants for settings panel
+│   │   │   ├── ui.rs         # Settings UI construction (spawn_settings_menu)
+│   │   │   └── tabs/         # Individual settings tab content
+│   │   │       ├── mod.rs
+│   │   │       ├── graphics.rs
+│   │   │       ├── audio.rs
+│   │   │       ├── controls.rs
+│   │   │       └── general.rs
 │   │   │
 │   │   ├── audio/            # Audio management system
 │   │   │   ├── mod.rs
@@ -83,28 +99,40 @@ project_name/
 │   │   │   └── resources.rs  # AudioSettings, SoundManager
 │   │   │
 │   │   ├── camera/           # Camera controllers
-│   │   │   ├── mod.rs
-│   │   │   ├── orbit.rs      # Orbit camera controller
-│   │   │   └── first_person.rs
+│   │   │   ├── mod.rs        # CameraPlugin, UI camera setup, diagnostics
+│   │   │   ├── orbit.rs      # Orbit camera controller (when needed)
+│   │   │   └── first_person.rs # First-person camera (when needed)
 │   │   │
-│   │   └── ui/               # Shared UI utilities
-│   │       ├── mod.rs
-│   │       ├── styles.rs     # UI style constants
-│   │       ├── widgets.rs    # Reusable UI widget components
-│   │       └── layout.rs     # Layout helper functions
+│   │   ├── ui/               # Shared UI utilities
+│   │   │   ├── mod.rs
+│   │   │   ├── fading.rs     # Screen fade transitions (ScreenFade)
+│   │   │   ├── theme/        # Theme system (evolved from styles.rs)
+│   │   │   │   ├── mod.rs    # Theme resource, ThemeColors, ThemeFonts
+│   │   │   │   └── constants.rs # Timing, sizing constants
+│   │   │   └── widgets/      # Reusable UI widget components (evolved from widgets.rs)
+│   │   │       ├── mod.rs    # Re-exports, plugin registration
+│   │   │       ├── base.rs   # Base widget traits and helpers
+│   │   │       ├── buttons.rs  # PrimaryButton, ButtonAction
+│   │   │       ├── sliders.rs  # Slider widget
+│   │   │       ├── dropdowns.rs # Dropdown select widget
+│   │   │       ├── components.rs # Shared widget components
+│   │   │       └── constants.rs  # Widget-specific constants
+│   │   │
+│   │   ├── localization/     # Multi-language support (Project Fluent)
+│   │   │   ├── mod.rs        # Localization, LocalizedStrings
+│   │   │   └── ...
+│   │   │
+│   │   ├── diagnostics.rs    # Debug overlay and performance diagnostics
+│   │   │
+│   │   └── error.rs          # Error state UI
 │   │
 │   ├── game/                 # 🎮 GAME-SPECIFIC LOGIC LAYER
 │   │   ├── mod.rs
 │   │   ├── plugin.rs         # GamePlugin bundle
 │   │   │
-│   │   ├── states/           # Game-specific substates (optional)
-│   │   │   ├── mod.rs
-│   │   │   └── state.rs      # GameState enum (if needed)
-│   │   │
 │   │   ├── components/       # Game components (ECS data)
 │   │   │   ├── mod.rs
 │   │   │   ├── player.rs
-│   │   │   ├── enemy.rs
 │   │   │   ├── physics.rs
 │   │   │   └── ...
 │   │   │
@@ -113,44 +141,35 @@ project_name/
 │   │   │   ├── setup.rs      # Scene initialization
 │   │   │   ├── gameplay.rs   # Core gameplay logic
 │   │   │   ├── physics.rs    # Physics simulation
-│   │   │   ├── combat.rs     # Combat systems
 │   │   │   ├── input.rs      # Input handling
 │   │   │   └── ...
 │   │   │
 │   │   ├── resources/        # Game resources (ECS global data)
 │   │   │   ├── mod.rs
-│   │   │   ├── score.rs
-│   │   │   ├── level.rs
 │   │   │   └── ...
 │   │   │
 │   │   ├── entities/         # Entity spawner functions
 │   │   │   ├── mod.rs
 │   │   │   ├── player.rs     # spawn_player()
-│   │   │   ├── enemy.rs      # spawn_enemy()
 │   │   │   └── ...
 │   │   │
 │   │   └── constants.rs      # Game constants and configuration
 │   │
 │   ├── config/               # Configuration management
 │   │   ├── mod.rs
-│   │   └── game.rs           # Game configuration
+│   │   └── ...
 │   │
 │   └── utils/                # Shared utility functions
 │       ├── mod.rs
-│       ├── math.rs           # Mathematical helpers
-│       └── debug.rs          # Debug utilities
+│       └── ...
 │
 ├── tests/                    # Integration tests
-│   ├── framework_tests.rs
-│   └── game_tests.rs
 │
 ├── benches/                  # Performance benchmarks
-│   └── game_bench.rs
 │
 ├── docs/                     # Documentation
-│   ├── architecture.md
-│   ├── framework_guide.md
-│   └── game_design.md
+│   ├── architecture/
+│   └── development/
 │
 ├── Cargo.toml
 ├── .gitignore

@@ -2,8 +2,8 @@
 //!
 //! Provides the UI and logic for the application's error state.
 
-use crate::framework::states::{AppState, ErrorState};
 use crate::framework::menu::widgets::{ButtonAction, spawn_primary_button};
+use crate::framework::states::{AppState, ErrorState};
 use crate::framework::ui::theme::Theme;
 use bevy::prelude::*;
 

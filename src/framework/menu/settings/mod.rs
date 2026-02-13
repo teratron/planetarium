@@ -1,43 +1,6 @@
-//! Settings Screen UI
+//! **DEPRECATED**: Settings have been moved to `crate::framework::settings`.
 //!
-//! Implements a professional modal settings panel with categorized tabs:
-//! Graphics, Audio, Controls, and General.
-//! The panel is fully localized and synced with `UserSettings`.
+//! This module re-exports everything from the canonical location
+//! for backward compatibility within the `menu` module tree.
 
-use bevy::prelude::*;
-
-pub mod components;
-pub mod layout;
-pub mod systems;
-pub mod tabs;
-pub mod ui;
-
-pub use components::*;
-pub use layout::panel as panel_layout;
-pub use systems::{
-    animate_settings_fade, handle_settings_tab_clicks, spawn_settings_if_needed,
-    update_settings_tab_content, update_settings_ui,
-};
-pub use ui::spawn_settings_menu;
-
-/// Resource tracking visibility.
-#[derive(Resource, Default, Debug, Clone)]
-pub struct SettingsOpen(pub bool);
-
-/// Categories available in the settings menu.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Reflect)]
-pub enum SettingsTab {
-    #[default]
-    Graphics,
-    Audio,
-    Controls,
-    General,
-}
-
-/// Resource tracking the currently active tab in the settings menu.
-#[derive(Resource, Default, Debug, Clone)]
-pub struct ActiveSettingsTab(pub SettingsTab);
-
-/// Marker for the back button in settings.
-#[derive(Component)]
-pub struct SettingsBackButton;
+pub use crate::framework::settings::*;

@@ -29,10 +29,13 @@ pub mod error;
 /// Debug overlay and diagnostics.
 pub mod diagnostics;
 
-/// Main menu, settings, and widget systems.
+/// Main menu and pause menu systems.
 pub mod menu;
 
-/// Shared UI utilities: fading, theming.
+/// Settings UI and logic (canonical access path per architecture guide).
+pub mod settings;
+
+/// Shared UI utilities: fading, theming, widgets.
 pub mod ui;
 
 /// Multi-language support using Project Fluent.

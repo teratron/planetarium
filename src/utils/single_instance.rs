@@ -109,19 +109,27 @@ fn parse_pid_from_lock(content: &str) -> Option<u32> {
 
 #[cfg(windows)]
 fn is_process_alive(pid: u32) -> bool {
-    use std::process::Command;
+    // Minimal FFI to avoid external crate dependency.
+    type Handle = *mut std::ffi::c_void;
+    const PROCESS_QUERY_LIMITED_INFORMATION: u32 = 0x1000;
+    const STILL_ACTIVE: u32 = 259;
 
-    match Command::new("tasklist")
-        .args(["/FI", &format!("PID eq {}", pid), "/FO", "CSV", "/NH"])
-        .output()
-    {
-        Ok(output) if output.status.success() => {
-            let text = String::from_utf8_lossy(&output.stdout);
-            text.lines()
-                .any(|line| !line.trim().is_empty() && !line.contains("No tasks are running"))
-        }
-        _ => true,
+    unsafe extern "system" {
+        fn OpenProcess(dwDesiredAccess: u32, bInheritHandle: i32, dwProcessId: u32) -> Handle;
+        fn GetExitCodeProcess(hProcess: Handle, lpExitCode: *mut u32) -> i32;
+        fn CloseHandle(hObject: Handle) -> i32;
     }
+
+    let handle = unsafe { OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, 0, pid) };
+    if handle.is_null() {
+        return false;
+    }
+
+    let mut exit_code: u32 = 0;
+    let ok = unsafe { GetExitCodeProcess(handle, &mut exit_code) };
+    unsafe { CloseHandle(handle) };
+
+    ok != 0 && exit_code == STILL_ACTIVE
 }
 
 #[cfg(not(windows))]

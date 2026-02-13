@@ -11,5 +11,5 @@ hover = "audio/select.ogg"
 music_menu = "audio/open.ogg"
 
 [branding]
-splash_logo = "images/logo_planetarium.png"
-background_menu = "images/logo_planetarium.png"
+splash_logo = "textures/logo_planetarium.png"
+background_menu = "textures/logo_planetarium.png"

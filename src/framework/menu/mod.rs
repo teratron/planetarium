@@ -4,19 +4,32 @@
 use crate::framework::states::AppState;
 use bevy::prelude::*;
 
-pub mod layout;
+pub mod main;
 pub mod pause;
 pub mod reactive;
-pub mod screen;
 pub mod settings;
 pub mod widgets;
 
+/// Re-export old `screen` and `layout` paths for backward compatibility.
+/// Canonical code now lives in `menu::main::`.
+pub mod screen {
+    pub use super::main::*;
+}
+pub mod layout {
+    pub use super::main::layout::*;
+}
+
+/// Shared menu components marker.
+pub mod components {
+    pub use super::main::systems::{MainMenuRoot, MenuBackground};
+}
+
+use main::{despawn_main_menu, handle_menu_button_clicks, spawn_main_menu};
 use reactive::{
     RuntimeAudioState, SettingsAutoSaveTimer, SettingsChangeTracker, auto_save_settings,
     broadcast_settings_changes, broadcast_theme_changes, schedule_settings_save,
     settings_auto_save_active,
 };
-use screen::{despawn_main_menu, handle_menu_button_clicks, spawn_main_menu};
 use settings::{
     ActiveSettingsTab, SettingsOpen, animate_settings_fade, handle_settings_tab_clicks,
     spawn_settings_if_needed, update_settings_tab_content, update_settings_ui,
@@ -83,12 +96,9 @@ impl Plugin for MenuPlugin {
         app.add_systems(
             Update,
             (
-                broadcast_settings_changes
-                    .run_if(resource_changed::<crate::config::UserSettings>),
-                broadcast_theme_changes
-                    .run_if(resource_changed::<crate::config::UserSettings>),
-                schedule_settings_save
-                    .run_if(resource_changed::<crate::config::UserSettings>),
+                broadcast_settings_changes.run_if(resource_changed::<crate::config::UserSettings>),
+                broadcast_theme_changes.run_if(resource_changed::<crate::config::UserSettings>),
+                schedule_settings_save.run_if(resource_changed::<crate::config::UserSettings>),
                 auto_save_settings.run_if(settings_auto_save_active),
                 crate::framework::localization::apply_language_change_system
                     .run_if(resource_changed::<crate::config::UserSettings>),

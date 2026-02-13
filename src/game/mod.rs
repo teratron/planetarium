@@ -1,21 +1,14 @@
-//! # Game Module
+//! # Game Layer
 //!
-//! Entry point for the core gameplay logic and world orchestration.
+//! Project-specific game logic following the ECS paradigm.
+//! This module contains all gameplay-specific components, systems,
+//! resources, entities, and constants.
 
-use bevy::prelude::*;
+pub mod components;
+pub mod constants;
+pub mod entities;
+pub mod plugin;
+pub mod resources;
+pub mod systems;
 
-/// Re-export shim for backward compatibility.
-/// **DEPRECATED**: Use `crate::framework::menu::pause` directly.
-pub mod pause_menu {
-    pub use crate::framework::menu::pause::*;
-}
-
-pub mod world;
-
-pub struct GamePlugin;
-
-impl Plugin for GamePlugin {
-    fn build(&self, app: &mut App) {
-        app.add_plugins(world::WorldPlugin);
-    }
-}
+pub use plugin::GamePlugin;

@@ -92,7 +92,7 @@ fn is_valid_assets_dir(path: &std::path::Path) -> bool {
     path.exists()
         && path.join("assets.toml").exists()
         && path.join("fonts").join("FiraSans-Regular.ttf").exists()
-        && path.join("images").join("logo_planetarium.png").exists()
+        && path.join("textures").join("logo_planetarium.png").exists()
         && path.join("audio").join("click.ogg").exists()
 }
 
