@@ -46,7 +46,6 @@ project_name/
 │   ├── framework/            # 🔧 REUSABLE FRAMEWORK LAYER
 │   │   ├── mod.rs
 │   │   ├── plugin.rs         # FrameworkPlugin bundle
-│   │   │
 │   │   ├── boot.rs           # Boot sequence — initialization and environment checks
 │   │   │
 │   │   ├── states/           # Framework-level state machine
