@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use planetarium::config::AppPaths;
 use planetarium::config::cli::CliArgs;
-use planetarium::config::metadata::APP_TITLE;
+use planetarium::config::metadata::{APP_TITLE, DEBUG_LOG_FILTER, DEFAULT_LOG_FILTER};
 use planetarium::framework::FrameworkPlugin;
 use planetarium::framework::states::AppState;
 use planetarium::game::GamePlugin;
@@ -9,16 +9,14 @@ use planetarium::utils::single_instance::{
     SingleInstanceError, SingleInstanceLock, acquire_single_instance_lock,
 };
 
-/// Keep the single-instance lock alive during the application's lifetime.
-#[derive(Resource)]
+/// Resource that keeps the single-instance lock alive during the application's lifetime.
+///
+/// This guard holds an OS-level file lock. It must be kept alive until the application exits
+/// to prevent other instances from starting. It is implemented as a `NonSend` resource
+/// to ensure it stays on the main thread, which is safer for handling OS file handles.
 struct InstanceLockGuard {
     _guard: SingleInstanceLock,
 }
-
-/// Default logging configuration level.
-const DEFAULT_LOG_FILTER: &str = "info,wgpu=error,naga=error";
-/// Debug logging configuration level used when `--debug` flag is passed.
-const DEBUG_LOG_FILTER: &str = "debug,wgpu=error,naga=error";
 
 fn main() {
     // 1. Parse CLI arguments
@@ -126,7 +124,7 @@ fn build_app(
     .add_plugins((FrameworkPlugin, GamePlugin));
 
     if let Some(guard) = instance_lock {
-        app.insert_resource(InstanceLockGuard { _guard: guard });
+        app.insert_non_send_resource(InstanceLockGuard { _guard: guard });
     }
 
     app

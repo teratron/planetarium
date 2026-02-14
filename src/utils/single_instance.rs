@@ -154,6 +154,7 @@ fn write_lock_metadata(
 mod tests {
     use super::*;
     use crate::config::AppPaths;
+    use crate::config::metadata::{LOCK_FILENAME, LOG_FILENAME, SETTINGS_FILENAME};
 
     #[test]
     fn lock_is_skipped_when_multiple_instances_enabled() {
@@ -176,9 +177,9 @@ mod tests {
         std::fs::create_dir_all(&data_dir).expect("temp lock dir should be created");
 
         let paths = AppPaths {
-            settings_file: data_dir.join("settings.ron"),
-            log_file: data_dir.join("session.log"),
-            instance_lock_file: data_dir.join("instance.lock"),
+            settings_file: data_dir.join(SETTINGS_FILENAME),
+            log_file: data_dir.join(LOG_FILENAME),
+            instance_lock_file: data_dir.join(LOCK_FILENAME),
             assets_dir: std::path::PathBuf::from("assets"),
             data_dir: data_dir.clone(),
         };
@@ -211,9 +212,9 @@ mod tests {
         std::fs::create_dir_all(&data_dir).expect("temp lock dir should be created");
 
         let paths = AppPaths {
-            settings_file: data_dir.join("settings.ron"),
-            log_file: data_dir.join("session.log"),
-            instance_lock_file: data_dir.join("instance.lock"),
+            settings_file: data_dir.join(SETTINGS_FILENAME),
+            log_file: data_dir.join(LOG_FILENAME),
+            instance_lock_file: data_dir.join(LOCK_FILENAME),
             assets_dir: std::path::PathBuf::from("assets"),
             data_dir: data_dir.clone(),
         };

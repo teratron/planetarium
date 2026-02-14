@@ -2,7 +2,10 @@
 //!
 //! Handles resolution of platform-specific directories for data and configuration.
 
-use crate::config::metadata::APP_NAME;
+use crate::config::metadata::{
+    APP_NAME, ASSET_MANIFEST_FILENAME, ASSETS_DIRNAME, LOCK_FILENAME, LOG_FILENAME,
+    SETTINGS_FILENAME,
+};
 use crate::config::platform_paths::get_data_dir;
 use bevy::prelude::*;
 use std::fs;
@@ -33,7 +36,7 @@ impl AppPaths {
 
         // 2. Resolve Assets Directory
         // First check CWD, then check relative to executable (helpful for direct runs from target/debug)
-        let mut assets_dir = PathBuf::from("assets");
+        let mut assets_dir = PathBuf::from(ASSETS_DIRNAME);
         if !is_valid_assets_dir(&assets_dir)
             && let Ok(exe_path) = std::env::current_exe()
             && let Some(exe_dir) = exe_path.parent()
@@ -62,9 +65,9 @@ impl AppPaths {
                 .unwrap_or_else(|_| assets_dir.clone());
         }
 
-        let settings_file = data_dir.join("settings.ron");
-        let log_file = data_dir.join("session.log");
-        let instance_lock_file = data_dir.join("instance.lock");
+        let settings_file = data_dir.join(SETTINGS_FILENAME);
+        let log_file = data_dir.join(LOG_FILENAME);
+        let instance_lock_file = data_dir.join(LOCK_FILENAME);
 
         Self {
             data_dir,
@@ -87,7 +90,7 @@ impl AppPaths {
 
 fn is_valid_assets_dir(path: &std::path::Path) -> bool {
     path.exists()
-        && path.join("assets.ron").exists()
+        && path.join(ASSET_MANIFEST_FILENAME).exists()
         && path.join("fonts").join("FiraSans-Regular.ttf").exists()
         && path.join("textures").join("logo_planetarium.png").exists()
         && path.join("audio").join("click.ogg").exists()
@@ -102,7 +105,7 @@ mod tests {
         let paths = AppPaths::from_env();
         assert_eq!(
             paths.instance_lock_file.file_name(),
-            Some(std::ffi::OsStr::new("instance.lock"))
+            Some(std::ffi::OsStr::new(LOCK_FILENAME))
         );
     }
 
