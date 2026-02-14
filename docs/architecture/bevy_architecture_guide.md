@@ -29,12 +29,13 @@ This separation enables:
 ```plaintext
 project_name/
 ├── assets/                    # Game assets (textures, models, audio, fonts, shaders)
+│   ├── assets.ron             # Asset manifest (AssetManifest) and cache (AssetCache)
 │   ├── textures/              # Images and texture assets
 │   ├── models/                # 3D model files
 │   ├── audio/                 # Sound effects and music
 │   ├── fonts/                 # Font files (TTF/OTF)
 │   ├── shaders/               # Custom shader files (WGSL/GLSL)
-│   ├── configs/               # Runtime configuration files (assets.toml, settings.toml)
+│   ├── configs/               # Runtime configuration files (settings.ron, gameplay.ron)
 │   └── locales/               # Localization data (Project Fluent .ftl files)
 │       ├── en-US/
 │       └── ru-RU/

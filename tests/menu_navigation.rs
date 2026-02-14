@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use planetarium::framework::menu::screen::handle_menu_button_clicks;
-use planetarium::framework::menu::settings::SettingsOpen;
 use planetarium::framework::menu::widgets::{ButtonAction, PrimaryButton};
+use planetarium::framework::settings::SettingsOpen;
 use planetarium::framework::states::AppState;
 use planetarium::framework::ui::fading::{FadeState, FadingPlugin, ScreenFade};
 

@@ -8,8 +8,8 @@ use planetarium::framework::menu::pause::state::{
 use planetarium::framework::menu::pause::systems::{
     apply_pause_menu_actions, handle_pause_menu_button_clicks,
 };
-use planetarium::framework::menu::reactive::RuntimeAudioState;
-use planetarium::framework::menu::settings::SettingsOpen;
+use planetarium::framework::settings::RuntimeAudioState;
+use planetarium::framework::settings::SettingsOpen;
 use planetarium::framework::states::AppState;
 
 fn setup_app() -> App {
