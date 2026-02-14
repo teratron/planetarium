@@ -33,6 +33,8 @@ thiserror = "2.0"
 fluent-bundle = "0.16.0"
 intl-memoizer = "0.5"
 unic-langid = "0.9.5"
+strum = "0.27"
+strum_macros = "0.27"
 
 [dev-dependencies]
 proptest = "1.10.0"

@@ -55,17 +55,13 @@ fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
+use std::str::FromStr;
+
 /// Parse CLI arguments to determine initial `AppState`.
 fn parse_initial_state(args: &CliArgs) -> AppState {
     args.state
         .as_ref()
-        .and_then(|state_str| match state_str.to_lowercase().as_str() {
-            "splash" => Some(AppState::Splash),
-            "mainmenu" | "menu" => Some(AppState::MainMenu),
-            "loading" => Some(AppState::Loading),
-            "ingame" | "game" => Some(AppState::InGame),
-            _ => None,
-        })
+        .and_then(|s| AppState::from_str(s).ok())
         .unwrap_or(AppState::Booting)
 }
 
