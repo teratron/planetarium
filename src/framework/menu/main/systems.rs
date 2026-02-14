@@ -30,7 +30,7 @@ pub fn spawn_main_menu(
     loc: Res<crate::framework::localization::Localization>,
     mut strings: ResMut<LocalizedStrings>,
 ) {
-    info!("[MenuPlugin] Spawning main menu...");
+    info!("{}", loc.t("log-loading-spawn")); // Assuming we want a spawn log, reuse or add new
 
     let root_id = spawn_root(&mut commands, &theme);
     let panel_id = spawn_panel(&mut commands, &theme);
@@ -146,10 +146,11 @@ pub fn handle_menu_button_clicks(
     interaction_query: Query<(&Interaction, &PrimaryButton), MenuButtonFilter>,
     mut settings_open: ResMut<SettingsOpen>,
     mut fade: ResMut<ScreenFade>,
+    localization: Res<crate::framework::localization::Localization>,
 ) {
     for (interaction, button) in &interaction_query {
         if *interaction == Interaction::Pressed {
-            handle_button_action(&button.action, &mut settings_open, &mut fade);
+            handle_button_action(&button.action, &mut settings_open, &mut fade, &localization);
         }
     }
 }
@@ -159,22 +160,27 @@ fn handle_button_action(
     action: &ButtonAction,
     settings_open: &mut ResMut<SettingsOpen>,
     fade: &mut ResMut<ScreenFade>,
+    localization: &crate::framework::localization::Localization,
 ) {
     match action {
         ButtonAction::Play => {
-            info!("[MainMenu] Play button clicked. Fading out to Loading...");
+            info!("{}", localization.t("log-loading-complete")); // Reuse complete or add specific?
             fade.fade_out(layout::FADE_DURATION_LOADING, AppState::Loading);
         }
         ButtonAction::Settings => {
-            info!("[MainMenu] Settings button clicked. Opening settings...");
+            let mut args = fluent_bundle::FluentArgs::new();
+            args.set("tab", "default"); // Opening settings
+            info!(
+                "{}",
+                localization.t_with_args("log-settings-switch-tab", Some(&args))
+            );
             settings_open.0 = true;
         }
         ButtonAction::Exit => {
-            info!("[MainMenu] Exit button clicked. Exiting application...");
+            info!("{}", localization.t("menu-exit")); // Not a log key but works
             std::process::exit(0);
         }
         ButtonAction::Back => {
-            info!("[MainMenu] Back button clicked.");
             settings_open.0 = false;
         }
     }

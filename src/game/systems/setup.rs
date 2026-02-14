@@ -13,8 +13,9 @@ pub fn setup_game_world(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     theme: Res<Theme>,
+    localization: Res<crate::framework::localization::Localization>,
 ) {
-    info!("[Game] Initializing 3D game world...");
+    info!("{}", localization.t("log-game-init"));
 
     // Spawn a root entity to group world objects
     commands
@@ -34,7 +35,7 @@ pub fn setup_game_world(
                     Rotates,
                 ));
             } else {
-                warn!("[Game] Failed to generate sphere mesh; skipping planet placeholder.");
+                warn!("{}", localization.t("log-game-sphere-fail"));
             }
 
             // Let there be light!
@@ -54,5 +55,5 @@ pub fn setup_game_world(
             ));
         });
 
-    info!("[Game] Handover complete. Enjoy the Cosmos!");
+    info!("{}", localization.t("log-game-enjoy"));
 }

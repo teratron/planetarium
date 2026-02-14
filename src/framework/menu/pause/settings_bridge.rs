@@ -38,8 +38,9 @@ pub fn handle_settings_tab_clicks_bridge(
         (Changed<Interaction>, With<Button>),
     >,
     active_tab: ResMut<ActiveSettingsTab>,
+    localization: Res<crate::framework::localization::Localization>,
 ) {
-    handle_settings_tab_clicks(tab_query, active_tab);
+    handle_settings_tab_clicks(tab_query, active_tab, localization);
 }
 
 /// Reuse dynamic tab content rendering.

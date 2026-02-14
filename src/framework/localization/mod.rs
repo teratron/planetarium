@@ -97,6 +97,16 @@ impl Localization {
         }
     }
 
+    /// Provides mutable access to the main bundle.
+    pub fn main_bundle_mut(&mut self) -> &mut FluentBundleType {
+        &mut self.main_bundle
+    }
+
+    /// Provides mutable access to the fallback bundle.
+    pub fn fallback_bundle_mut(&mut self) -> &mut FluentBundleType {
+        &mut self.fallback_bundle
+    }
+
     /// Translates a key into the current language.
     /// Returns the localized string or the key itself if not found.
     pub fn t(&self, key: &str) -> String {
@@ -121,7 +131,27 @@ impl Localization {
         }
 
         // If all else fails, return the key itself
-        warn!("[Localization] Missing key in all bundles: {}", key);
+        let mut warn_args = FluentArgs::new();
+        warn_args.set("key", key);
+        warn!(
+            "{}",
+            self.t_silent("log-loc-missing-key", Some(&warn_args), false)
+        );
+        key.to_string()
+    }
+
+    /// Internal translation helper to avoid recursion when logging missing keys.
+    fn t_silent(&self, key: &str, args: Option<&FluentArgs>, log_errors: bool) -> String {
+        if let Some(translated) =
+            self.try_translate_internal(&self.main_bundle, key, args, "main", log_errors)
+        {
+            return translated;
+        }
+        if let Some(translated) =
+            self.try_translate_internal(&self.fallback_bundle, key, args, "fallback", log_errors)
+        {
+            return translated;
+        }
         key.to_string()
     }
 
@@ -133,17 +163,32 @@ impl Localization {
         args: Option<&FluentArgs>,
         bundle_name: &str,
     ) -> Option<String> {
+        self.try_translate_internal(bundle, key, args, bundle_name, true)
+    }
+
+    fn try_translate_internal(
+        &self,
+        bundle: &FluentBundleType,
+        key: &str,
+        args: Option<&FluentArgs>,
+        bundle_name: &str,
+        log_errors: bool,
+    ) -> Option<String> {
         let msg = bundle.get_message(key)?;
         let pattern = msg.value()?;
 
         let mut errors = vec![];
         let result = bundle.format_pattern(pattern, args, &mut errors);
 
-        if !errors.is_empty() {
+        if log_errors && !errors.is_empty() {
             for err in errors {
+                let mut err_args = FluentArgs::new();
+                err_args.set("bundle", bundle_name);
+                err_args.set("key", key);
+                err_args.set("error", err.to_string());
                 error!(
-                    "[Localization] Format error ({}) for '{}': {}",
-                    bundle_name, key, err
+                    "{}",
+                    self.t_silent("log-loc-format-error", Some(&err_args), false)
                 );
             }
         }

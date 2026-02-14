@@ -36,13 +36,14 @@ fn check_boot_finished(
     mut next_state: ResMut<NextState<AppState>>,
     cli_args: Res<crate::config::cli::CliArgs>,
     error_state: Res<crate::framework::states::ErrorState>,
+    localization: Res<crate::framework::localization::Localization>,
 ) {
     if !error_state.message.is_empty() {
         // Error already occurred during booting, let the Error state transition take over.
         return;
     }
 
-    info!("[BootPlugin] Boot sequence complete. Transitioning...");
+    info!("{}", localization.t("log-boot-complete"));
 
     if cli_args.skip_splash {
         next_state.set(AppState::MainMenu);

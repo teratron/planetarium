@@ -14,16 +14,10 @@ pub fn setup_localization(
     settings: Res<crate::config::UserSettings>,
     paths: Res<crate::config::AppPaths>,
 ) {
-    info!(
-        "[Localization] Setting up Fluent engine for locale: {}",
-        settings.language
-    );
-
     let primary_lang = parse_language_id(&settings.language);
-    // Use the same parsing function to ensure consistent fallback handling for en-US as well.
     let fallback_lang = parse_language_id("en-US");
 
-    let mut main_bundle =
+    let main_bundle =
         FluentBundle::<_, intl_memoizer::concurrent::IntlLangMemoizer>::new_concurrent(vec![
             primary_lang.clone(),
         ]);
@@ -32,35 +26,54 @@ pub fn setup_localization(
             fallback_lang.clone(),
         ]);
 
-    // Load common strings (menu.ftl)
+    // Load common strings (menu.ftl) into fallback bundle
     load_ftl_into_bundle(&mut fallback_bundle, &paths.assets_dir, "en-US", "menu.ftl");
 
-    // Resolve and log the chosen locale directory for clarity (helps explain missing-file warnings).
+    let mut localization = Localization::new(
+        primary_lang.clone(),
+        main_bundle,
+        fallback_bundle,
+        paths.assets_dir.clone(),
+    );
+
+    let mut info_args = fluent_bundle::FluentArgs::new();
+    info_args.set("locale", settings.language.clone());
+    info!(
+        "{}",
+        localization.t_with_args("log-loc-setup", Some(&info_args))
+    );
+
+    // Resolve and log the chosen locale directory for clarity
     let requested_locale = settings.language.clone();
     let resolved = super::utils::resolve_locale_dir(&paths.assets_dir, &requested_locale);
     if !resolved.eq_ignore_ascii_case(&requested_locale) {
+        let mut res_args = fluent_bundle::FluentArgs::new();
+        res_args.set("requested", requested_locale);
+        res_args.set("resolved", resolved.clone());
         info!(
-            "[Localization] Resolved requested locale '{}' -> '{}'",
-            requested_locale, resolved
+            "{}",
+            localization.t_with_args("log-loc-resolved", Some(&res_args))
         );
     }
 
     // Only attempt to load locale files if the assets locales directory exists.
     if paths.assets_dir.join("locales").exists() {
-        load_ftl_into_bundle(&mut main_bundle, &paths.assets_dir, &resolved, "menu.ftl");
+        load_ftl_into_bundle(
+            localization.main_bundle_mut(),
+            &paths.assets_dir,
+            &resolved,
+            "menu.ftl",
+        );
     } else {
+        let mut warn_args = fluent_bundle::FluentArgs::new();
+        warn_args.set("path", paths.assets_dir.display().to_string());
         warn!(
-            "[Localization] Locales directory not present under assets ({}); skipping per-locale load and using fallback en-US",
-            paths.assets_dir.display()
+            "{}",
+            localization.t_with_args("log-loc-missing-dir", Some(&warn_args))
         );
     }
 
-    commands.insert_resource(Localization::new(
-        primary_lang.clone(),
-        main_bundle,
-        fallback_bundle,
-        paths.assets_dir.clone(),
-    ));
+    commands.insert_resource(localization);
     commands.insert_resource(LocalizedStrings::new(&primary_lang));
 }
 

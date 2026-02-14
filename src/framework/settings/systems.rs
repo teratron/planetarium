@@ -18,10 +18,16 @@ use bevy::prelude::*;
 pub fn handle_settings_tab_clicks(
     mut tab_query: Query<(&Interaction, &SettingsTabButton), (Changed<Interaction>, With<Button>)>,
     mut active_tab: ResMut<ActiveSettingsTab>,
+    localization: Res<crate::framework::localization::Localization>,
 ) {
     for (interaction, tab_btn) in &mut tab_query {
         if *interaction == Interaction::Pressed && active_tab.0 != tab_btn.0 {
-            info!("[Settings] Switching to tab: {:?}", tab_btn.0);
+            let mut args = fluent_bundle::FluentArgs::new();
+            args.set("tab", format!("{:?}", tab_btn.0));
+            info!(
+                "{}",
+                localization.t_with_args("log-settings-switch-tab", Some(&args))
+            );
             active_tab.0 = tab_btn.0;
         }
     }
