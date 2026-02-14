@@ -7,7 +7,6 @@ use bevy::prelude::*;
 pub mod events;
 pub mod main;
 pub mod pause;
-pub mod settings;
 pub mod widgets;
 
 /// Re-export old `screen` and `layout` paths for backward compatibility.

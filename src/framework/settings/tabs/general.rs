@@ -2,7 +2,7 @@
 //!
 //! Provides UI controls for general settings (language, accessibility, etc.).
 
-use crate::config::UserSettings;
+use super::super::UserSettings;
 use crate::framework::localization::{Localization, LocalizedStrings};
 use crate::framework::settings::SettingKey;
 use crate::framework::ui::theme::Theme;

@@ -1,10 +1,8 @@
-//! # User Settings
+//! # Settings Model
 //!
-//! Defines the structure of the application settings and handles loading/saving.
-//!
-//! Note: This module is strictly for data structures and serialization logic.
-//! UI-specific interaction keys (like `SettingKey`) and reactive systems
-//! are located in `framework::settings`.
+//! Centralized data structures and serialization logic for user settings.
+//! This module is intended to be the single source of truth for all
+//! application configuration that is persisted to disk.
 
 use crate::config::AppPaths;
 use anyhow::Context;
@@ -17,7 +15,7 @@ use std::fs;
 pub const SETTINGS_VERSION: u32 = 4;
 
 /// Quality presets for graphics settings.
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Default, Reflect)]
 #[serde(rename_all = "lowercase")]
 pub enum Quality {
     Low,
@@ -28,7 +26,7 @@ pub enum Quality {
 }
 
 /// Graphics-related settings.
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Default, Reflect)]
 #[serde(default)]
 #[non_exhaustive]
 pub struct GraphicsSettings {
@@ -36,7 +34,7 @@ pub struct GraphicsSettings {
 }
 
 /// Global resource holding all user settings.
-#[derive(Resource, Serialize, Deserialize, Debug, Clone)]
+#[derive(Resource, Serialize, Deserialize, Debug, Clone, Reflect)]
 #[non_exhaustive]
 pub struct UserSettings {
     /// Schema version for this config file.
@@ -58,7 +56,7 @@ pub struct UserSettings {
     pub allow_multiple_instances: bool,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Reflect)]
 #[serde(default)]
 #[non_exhaustive]
 pub struct DisplaySettings {
@@ -68,7 +66,7 @@ pub struct DisplaySettings {
     pub vsync: bool,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[derive(Resource, Serialize, Deserialize, Debug, Clone, PartialEq, Reflect)]
 #[serde(default)]
 #[non_exhaustive]
 pub struct AudioSettings {
@@ -115,8 +113,6 @@ impl Default for UserSettings {
 fn default_theme() -> String {
     "dark".to_string()
 }
-
-// Unit tests moved to bottom of file to satisfy clippy (no items after test module).
 
 /// Loads settings from disk or returns defaults if not found or invalid.
 pub fn load_settings(paths: &AppPaths) -> UserSettings {
@@ -210,7 +206,6 @@ pub fn save_settings(paths: &AppPaths, settings: &UserSettings) -> anyhow::Resul
 #[cfg(test)]
 mod tests {
     use super::*;
-    use proptest::prelude::*;
 
     #[test]
     fn default_settings_include_graphics() {
@@ -241,19 +236,5 @@ mod tests {
         let parsed: UserSettings =
             ron::from_str("UserSettings(version: 4)").expect("minimal settings should deserialize");
         assert!(!parsed.allow_multiple_instances);
-    }
-
-    proptest! {
-        #[test]
-        fn volume_settings_remain_in_range(volume in 0.0f32..=1.0) {
-            let mut s = UserSettings::default();
-            s.audio.master_volume = volume;
-            s.audio.music_volume = volume;
-            s.audio.sfx_volume = volume;
-
-            prop_assert!((0.0..=1.0).contains(&s.audio.master_volume));
-            prop_assert!((0.0..=1.0).contains(&s.audio.music_volume));
-            prop_assert!((0.0..=1.0).contains(&s.audio.sfx_volume));
-        }
     }
 }

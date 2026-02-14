@@ -9,7 +9,7 @@
 //! 3. **Reactive Broadcast**: `broadcast_settings_changes` detects the change and applies it to the engine (e.g., Bevy Window, Audio State).
 //! 4. **Auto-Save**: `schedule_settings_save` triggers a debounced save to disk.
 
-use crate::config::{UserSettings, save_settings};
+use super::{AudioSettings, DisplaySettings, UserSettings, save_settings};
 use crate::framework::ui::theme::{Theme, ThemeColors, constants};
 use bevy::prelude::*;
 
@@ -59,8 +59,8 @@ impl Default for RuntimeAudioState {
 /// Lightweight snapshot of settings for efficient change tracking.
 #[derive(Default, PartialEq, Clone)]
 pub struct SettingsSnapshot {
-    pub display: crate::config::settings::DisplaySettings,
-    pub audio: crate::config::settings::AudioSettings,
+    pub display: DisplaySettings,
+    pub audio: AudioSettings,
 }
 
 /// Tracks pending settings changes to debounce expensive operations (like resolution changes).
@@ -143,7 +143,7 @@ pub fn broadcast_settings_changes(
     }
 }
 
-fn apply_display_settings(window: &mut Window, display: &crate::config::settings::DisplaySettings) {
+fn apply_display_settings(window: &mut Window, display: &DisplaySettings) {
     window
         .resolution
         .set(display.width as f32, display.height as f32);

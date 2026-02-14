@@ -32,7 +32,7 @@ fn main() -> anyhow::Result<()> {
         .with_context(|| format!("Failed to prepare data directory {:?}", paths.data_dir))?;
 
     // 3. Load settings early to read startup behavior flags.
-    let settings = planetarium::config::settings::load_settings(&paths);
+    let settings = planetarium::framework::settings::load_settings(&paths);
 
     // 4. Protect against launching a second instance unless explicitly allowed.
     let instance_lock = match acquire_single_instance_lock(

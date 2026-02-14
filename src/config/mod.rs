@@ -6,12 +6,10 @@ pub mod cli;
 pub mod metadata;
 pub mod paths;
 pub mod platform_paths;
-pub mod settings;
-pub mod validation;
 
+pub use crate::framework::settings::{UserSettings, save_settings};
 pub use metadata::AppMetadata;
 pub use paths::AppPaths;
-pub use settings::{UserSettings, save_settings};
 
 use bevy::prelude::*;
 
@@ -36,7 +34,7 @@ pub fn setup_config(
         next_state.set(crate::framework::states::AppState::Error);
     }
 
-    let settings = settings::load_settings(&paths);
+    let settings = crate::framework::settings::load_settings(&paths);
 
     commands.insert_resource(metadata);
     commands.insert_resource(paths);

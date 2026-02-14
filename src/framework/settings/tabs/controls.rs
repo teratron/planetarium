@@ -2,7 +2,7 @@
 //!
 //! Provides UI controls for input-related settings (keybindings, controller config, etc.).
 
-use crate::config::UserSettings;
+use super::super::UserSettings;
 use crate::framework::localization::{Localization, LocalizedStrings};
 use crate::framework::ui::theme::Theme;
 use bevy::prelude::*;

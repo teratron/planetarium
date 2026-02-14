@@ -1,8 +1,8 @@
 use bevy::prelude::*;
-use planetarium::config::settings::SettingKey;
 use planetarium::framework::menu::widgets::{
     ButtonAction, SliderSpec, spawn_primary_button, spawn_slider,
 };
+use planetarium::framework::settings::SettingKey;
 use planetarium::framework::ui::theme::Theme;
 
 #[test]

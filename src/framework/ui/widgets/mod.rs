@@ -3,7 +3,7 @@
 //! Generic, reusable UI widgets for the main menu and settings screens.
 //! Built on Bevy's native UI system with custom styling and interaction.
 
-use crate::config::settings::Quality;
+use crate::framework::settings::Quality;
 
 pub mod base;
 pub mod buttons;

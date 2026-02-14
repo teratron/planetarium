@@ -1,6 +1,6 @@
 //! Bridge systems reusing settings UI inside the in-game pause flow.
 
-use super::super::settings::{
+use crate::framework::settings::{
     ActiveSettingsTab, SettingsOpen, animate_settings_fade, components, handle_settings_tab_clicks,
     spawn_settings_if_needed, update_settings_tab_content, update_settings_ui,
 };
@@ -13,7 +13,7 @@ pub fn spawn_settings_if_needed_bridge(
     loc: Res<crate::framework::localization::Localization>,
     strings: ResMut<crate::framework::localization::LocalizedStrings>,
     settings_open: Res<SettingsOpen>,
-    query: Query<Entity, With<components::SettingsRoot>>,
+    query: Query<Entity, With<crate::framework::settings::components::SettingsRoot>>,
     active_tab: ResMut<ActiveSettingsTab>,
 ) {
     spawn_settings_if_needed(
@@ -31,7 +31,10 @@ pub fn spawn_settings_if_needed_bridge(
 #[allow(clippy::type_complexity)]
 pub fn handle_settings_tab_clicks_bridge(
     tab_query: Query<
-        (&Interaction, &components::SettingsTabButton),
+        (
+            &Interaction,
+            &crate::framework::settings::components::SettingsTabButton,
+        ),
         (Changed<Interaction>, With<Button>),
     >,
     active_tab: ResMut<ActiveSettingsTab>,
@@ -47,8 +50,11 @@ pub fn update_settings_tab_content_bridge(
     theme: Res<crate::framework::ui::theme::Theme>,
     loc: Res<crate::framework::localization::Localization>,
     strings: ResMut<crate::framework::localization::LocalizedStrings>,
-    settings: Res<crate::config::UserSettings>,
-    content_area_query: Query<Entity, With<components::SettingsContentArea>>,
+    settings: Res<crate::framework::settings::UserSettings>,
+    content_area_query: Query<
+        Entity,
+        With<crate::framework::settings::components::SettingsContentArea>,
+    >,
     children_query: Query<&Children>,
 ) {
     update_settings_tab_content(
@@ -81,11 +87,11 @@ pub fn animate_settings_fade_bridge(
 /// Reuse settings value-to-UI synchronization.
 #[allow(clippy::type_complexity)]
 pub fn update_settings_ui_bridge(
-    settings: Res<crate::config::UserSettings>,
+    settings: Res<crate::framework::settings::UserSettings>,
     queries: ParamSet<(
-        Query<&mut Text, With<components::MasterVolumeControl>>,
-        Query<&mut Text, With<components::MusicVolumeControl>>,
-        Query<&mut Text, With<components::SFXVolumeControl>>,
+        Query<&mut Text, With<crate::framework::settings::components::MasterVolumeControl>>,
+        Query<&mut Text, With<crate::framework::settings::components::MusicVolumeControl>>,
+        Query<&mut Text, With<crate::framework::settings::components::SFXVolumeControl>>,
     )>,
 ) {
     update_settings_ui(settings, queries);
