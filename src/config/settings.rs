@@ -3,6 +3,7 @@
 //! Defines the structure of the application settings and handles loading/saving.
 
 use crate::config::AppPaths;
+use anyhow::Context;
 use bevy::prelude::*;
 use ron;
 use serde::{Deserialize, Serialize};
@@ -199,31 +200,27 @@ pub fn migrate_settings(mut old: UserSettings, _paths: &AppPaths) -> UserSetting
 
 /// Saves settings to disk in RON format atomically.
 /// Writes to a temporary file first, then renames to avoid corruption during crashes.
-pub fn save_settings(paths: &AppPaths, settings: &UserSettings) -> Result<(), String> {
+pub fn save_settings(paths: &AppPaths, settings: &UserSettings) -> anyhow::Result<()> {
     let pretty_config = ron::ser::PrettyConfig::default()
         .struct_names(true)
         .enumerate_arrays(true);
 
     let ron_string = ron::ser::to_string_pretty(settings, pretty_config)
-        .map_err(|e| format!("Failed to serialize settings: {}", e))?;
+        .context("Failed to serialize settings")?;
 
     let tmp_file = paths.settings_file.with_extension("ron.tmp");
 
     // Write to temp file
-    fs::write(&tmp_file, ron_string).map_err(|e| {
-        let err = format!("Failed to write to temp settings file: {}", e);
-        error!("[Config] {}", err);
-        err
-    })?;
+    fs::write(&tmp_file, ron_string)
+        .with_context(|| format!("Failed to write to temp settings file: {:?}", tmp_file))?;
 
     // Rename to final destination (atomic on many filesystems)
-    if let Err(e) = fs::rename(&tmp_file, &paths.settings_file) {
-        let err = format!("Failed to rename temp settings file: {}", e);
-        error!("[Config] {}", err);
-        // Clean up temp file if rename failed
-        let _ = fs::remove_file(&tmp_file);
-        return Err(err);
-    }
+    fs::rename(&tmp_file, &paths.settings_file).with_context(|| {
+        format!(
+            "Failed to rename temp settings file {:?} to {:?}",
+            tmp_file, paths.settings_file
+        )
+    })?;
 
     Ok(())
 }

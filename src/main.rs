@@ -18,20 +18,18 @@ struct InstanceLockGuard {
     _guard: SingleInstanceLock,
 }
 
-fn main() {
+use anyhow::Context;
+
+fn main() -> anyhow::Result<()> {
     // 1. Parse CLI arguments
     let args = CliArgs::parse_args();
     let initial_state = parse_initial_state(&args);
 
     // 2. Resolve paths and ensure required directories exist.
     let paths = AppPaths::from_env();
-    if let Err(e) = paths.ensure_dirs() {
-        eprintln!(
-            "[Main] Failed to prepare data directory {:?}: {}",
-            paths.data_dir, e
-        );
-        return;
-    }
+    paths
+        .ensure_dirs()
+        .with_context(|| format!("Failed to prepare data directory {:?}", paths.data_dir))?;
 
     // 3. Load settings early to read startup behavior flags.
     let settings = planetarium::config::settings::load_settings(&paths);
@@ -43,20 +41,18 @@ fn main() {
     ) {
         Ok(lock) => lock,
         Err(SingleInstanceError::AlreadyRunning { .. }) => {
-            eprintln!(
-                "[Main] Another game instance is already running. Set `allow_multiple_instances = true` in {:?} to override.",
+            anyhow::bail!(
+                "Another game instance is already running. Set `allow_multiple_instances = true` in {:?} to override.",
                 paths.settings_file
             );
-            return;
         }
-        Err(e) => {
-            eprintln!("[Main] {}", e);
-            return;
-        }
+        Err(e) => return Err(e).context("Failed to acquire single instance lock"),
     };
 
     // 5. Build and run Bevy app.
     build_app(args, initial_state, paths, instance_lock).run();
+
+    Ok(())
 }
 
 /// Parse CLI arguments to determine initial `AppState`.

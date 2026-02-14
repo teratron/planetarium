@@ -1,7 +1,6 @@
 //! Single-instance process lock management.
 
 use crate::config::AppPaths;
-use std::fmt::{Display, Formatter};
 use std::fs::{File, OpenOptions};
 use std::io::Write;
 use std::path::PathBuf;
@@ -21,26 +20,13 @@ impl Drop for SingleInstanceLock {
 }
 
 /// Startup error for single-instance protection.
-#[derive(Debug)]
+#[derive(Debug, thiserror::Error)]
 pub enum SingleInstanceError {
+    #[error("another game instance is already running (lock file: {lock_file:?})")]
     AlreadyRunning { lock_file: PathBuf },
-    Io(std::io::Error),
+    #[error("failed to acquire startup lock: {0}")]
+    Io(#[from] std::io::Error),
 }
-
-impl Display for SingleInstanceError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::AlreadyRunning { lock_file } => write!(
-                f,
-                "another game instance is already running (lock file: {:?})",
-                lock_file
-            ),
-            Self::Io(error) => write!(f, "failed to acquire startup lock: {}", error),
-        }
-    }
-}
-
-impl std::error::Error for SingleInstanceError {}
 
 /// Acquire a global lock for the process unless multi-instance mode is enabled.
 pub fn acquire_single_instance_lock(
