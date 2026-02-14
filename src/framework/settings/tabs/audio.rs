@@ -3,8 +3,8 @@
 //! Provides UI controls for audio-related settings (volume levels, etc.).
 
 use crate::config::UserSettings;
-use crate::config::settings::SettingKey;
 use crate::framework::localization::{Localization, LocalizedStrings};
+use crate::framework::settings::SettingKey;
 use crate::framework::ui::theme::Theme;
 use crate::framework::ui::widgets::{SliderSpec, spawn_slider};
 use bevy::prelude::*;

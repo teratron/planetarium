@@ -7,12 +7,14 @@
 use bevy::prelude::*;
 
 pub mod components;
+pub mod interaction;
 pub mod layout;
 pub mod systems;
 pub mod tabs;
 pub mod ui;
 
 pub use components::*;
+pub use interaction::*;
 pub use layout::panel as panel_layout;
 pub use systems::{
     animate_settings_fade, handle_settings_tab_clicks, spawn_settings_if_needed,

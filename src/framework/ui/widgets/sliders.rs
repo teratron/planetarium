@@ -2,9 +2,9 @@
 //!
 //! Provides slider widget creation and interaction handling for numeric values.
 
-use crate::config::settings::SettingKey;
 use crate::framework::loading::assets::AssetCache;
 use crate::framework::menu::events::{UiAudioEvent, play_ui_audio};
+use crate::framework::settings::SettingKey;
 use crate::framework::ui::theme::Theme;
 use bevy::prelude::*;
 
@@ -133,7 +133,7 @@ pub fn slider_interaction_system(
     asset_server: Res<AssetServer>,
     manifest: Res<crate::framework::loading::assets::AssetManifest>,
     mut cache: ResMut<AssetCache>,
-    runtime_audio: Res<crate::framework::menu::reactive::RuntimeAudioState>,
+    runtime_audio: Res<crate::framework::settings::RuntimeAudioState>,
     mut interaction_query: Query<(&Interaction, &GlobalTransform, &ComputedNode, &mut Slider)>,
     mut settings: ResMut<crate::config::UserSettings>,
     windows: Query<&Window>,

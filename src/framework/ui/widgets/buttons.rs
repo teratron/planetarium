@@ -103,7 +103,7 @@ pub fn button_interaction_system(
     asset_server: Res<AssetServer>,
     manifest: Res<AssetManifest>,
     mut cache: ResMut<AssetCache>,
-    audio_state: Res<crate::framework::menu::reactive::RuntimeAudioState>,
+    audio_state: Res<crate::framework::settings::RuntimeAudioState>,
     mut interaction_query: Query<
         (&Interaction, &mut HoverAnimationState),
         (

@@ -81,6 +81,7 @@ project_name/
 │   │   │
 │   │   ├── settings/         # Settings management
 │   │   │   ├── mod.rs        # SettingsOpen, SettingsTab, ActiveSettingsTab
+│   │   │   ├── interaction.rs # Reactive settings & UI keys (SettingKey)
 │   │   │   ├── systems.rs    # Tab switching, spawn/despawn, fade animations
 │   │   │   ├── components.rs # UI marker components (SettingsRoot, panels, etc.)
 │   │   │   ├── layout.rs     # Layout constants for settings panel

@@ -1,8 +1,7 @@
 //! Bridge systems reusing settings UI inside the in-game pause flow.
 
-use super::super::settings::components;
 use super::super::settings::{
-    ActiveSettingsTab, SettingsOpen, animate_settings_fade, handle_settings_tab_clicks,
+    ActiveSettingsTab, SettingsOpen, animate_settings_fade, components, handle_settings_tab_clicks,
     spawn_settings_if_needed, update_settings_tab_content, update_settings_ui,
 };
 use bevy::prelude::*;

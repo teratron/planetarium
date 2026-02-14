@@ -1,6 +1,10 @@
 //! # User Settings
 //!
 //! Defines the structure of the application settings and handles loading/saving.
+//!
+//! Note: This module is strictly for data structures and serialization logic.
+//! UI-specific interaction keys (like `SettingKey`) and reactive systems
+//! are located in `framework::settings`.
 
 use crate::config::AppPaths;
 use anyhow::Context;
@@ -12,13 +16,6 @@ use std::fs;
 /// Current version of the settings schema, used for migrations.
 pub const SETTINGS_VERSION: u32 = 4;
 
-/// Fired when settings fail to save to disk.
-#[derive(Message, Debug, Clone)]
-pub struct SettingsSaveError {
-    /// Human-readable error description.
-    pub error: String,
-}
-
 /// Quality presets for graphics settings.
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Default)]
 #[serde(rename_all = "lowercase")]
@@ -28,21 +25,6 @@ pub enum Quality {
     Medium,
     High,
     Ultra,
-}
-
-/// Type-safe keys for settings that can be modified via UI.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Reflect)]
-pub enum SettingKey {
-    MasterVolume,
-    MusicVolume,
-    SfxVolume,
-    Fullscreen,
-    Vsync,
-    AllowMultipleInstances,
-    Resolution,
-    Quality,
-    Language,
-    Theme,
 }
 
 /// Graphics-related settings.

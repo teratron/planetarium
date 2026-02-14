@@ -2,7 +2,7 @@
 //!
 //! Marker components for buttons, sliders, dropdowns, and other interactive widgets.
 
-use crate::config::settings::SettingKey;
+use crate::framework::settings::SettingKey;
 use bevy::prelude::{Color, Component, Entity};
 
 /// Marker component for primary buttons (Play, Settings, Exit).

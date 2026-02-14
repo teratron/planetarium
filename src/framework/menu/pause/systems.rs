@@ -1,11 +1,11 @@
 //! Pause menu logic and action handling systems.
 
-use super::super::reactive::RuntimeAudioState;
 use super::super::settings::SettingsOpen;
 use super::super::widgets::{ButtonAction, PrimaryButton};
 use super::components::{PauseMenuButton, PauseMenuButtonAction};
 use super::state::{PauseMenuActionEvent, PauseMenuMode, PauseMenuState};
 use crate::framework::assets::{AssetCache, AssetManifest};
+use crate::framework::settings::RuntimeAudioState;
 use crate::framework::states::AppState;
 use bevy::app::AppExit;
 use bevy::prelude::*;

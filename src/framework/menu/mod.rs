@@ -7,7 +7,6 @@ use bevy::prelude::*;
 pub mod events;
 pub mod main;
 pub mod pause;
-pub mod reactive;
 pub mod settings;
 pub mod widgets;
 
@@ -25,16 +24,14 @@ pub mod components {
     pub use super::main::systems::{MainMenuRoot, MenuBackground};
 }
 
+use crate::framework::settings::{
+    ActiveSettingsTab, RuntimeAudioState, SettingsAutoSaveTimer, SettingsChangeTracker,
+    SettingsOpen, SettingsSaveError, animate_settings_fade, auto_save_settings,
+    broadcast_settings_changes, broadcast_theme_changes, handle_settings_tab_clicks,
+    schedule_settings_save, settings_auto_save_active, spawn_settings_if_needed,
+    update_settings_tab_content, update_settings_ui,
+};
 use main::{despawn_main_menu, handle_menu_button_clicks, spawn_main_menu};
-use reactive::{
-    RuntimeAudioState, SettingsAutoSaveTimer, SettingsChangeTracker, auto_save_settings,
-    broadcast_settings_changes, broadcast_theme_changes, schedule_settings_save,
-    settings_auto_save_active,
-};
-use settings::{
-    ActiveSettingsTab, SettingsOpen, animate_settings_fade, handle_settings_tab_clicks,
-    spawn_settings_if_needed, update_settings_tab_content, update_settings_ui,
-};
 use widgets::{animate_button_hover, button_interaction_system};
 
 pub struct MenuPlugin;
@@ -44,7 +41,7 @@ impl Plugin for MenuPlugin {
         info!("[MenuPlugin] Initializing...");
         // Register messages (high-level communication)
         app.add_message::<crate::framework::localization::LanguageChanged>();
-        app.add_message::<crate::config::settings::SettingsSaveError>();
+        app.add_message::<SettingsSaveError>();
 
         // Initialize settings resources
         app.init_resource::<SettingsOpen>();

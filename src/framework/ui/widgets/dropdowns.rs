@@ -2,9 +2,9 @@
 //!
 //! Provides dropdown/select widget creation and interaction handling.
 
-use crate::config::settings::SettingKey;
 use crate::framework::loading::assets::AssetCache;
 use crate::framework::menu::events::{UiAudioEvent, play_ui_audio};
+use crate::framework::settings::SettingKey;
 use crate::framework::ui::theme::Theme;
 use bevy::prelude::*;
 
@@ -136,7 +136,7 @@ pub fn dropdown_interaction_system(
     asset_server: Res<AssetServer>,
     manifest: Res<crate::framework::loading::assets::AssetManifest>,
     mut cache: ResMut<AssetCache>,
-    audio_state: Res<crate::framework::menu::reactive::RuntimeAudioState>,
+    audio_state: Res<crate::framework::settings::RuntimeAudioState>,
     mut dropdown_query: Query<
         (Entity, &Interaction, &mut Dropdown, &mut BackgroundColor),
         (Changed<Interaction>, With<Button>),
@@ -312,7 +312,7 @@ pub fn dropdown_option_interaction_system(
     asset_server: Res<AssetServer>,
     manifest: Res<crate::framework::loading::assets::AssetManifest>,
     mut cache: ResMut<AssetCache>,
-    audio_state: Res<crate::framework::menu::reactive::RuntimeAudioState>,
+    audio_state: Res<crate::framework::settings::RuntimeAudioState>,
     mut dropdown_query: Query<(&mut Dropdown, &Children)>,
     mut text_query: Query<&mut Text, With<DropdownText>>,
     option_query: Query<(&Interaction, &DropdownOption), (Changed<Interaction>, With<Button>)>,
@@ -373,7 +373,7 @@ pub fn dropdown_option_interaction_system(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::config::settings::SettingKey;
+    use crate::framework::settings::SettingKey;
 
     #[test]
     fn apply_allow_multiple_instances_updates_user_settings() {

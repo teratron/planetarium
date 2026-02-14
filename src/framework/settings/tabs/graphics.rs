@@ -3,8 +3,8 @@
 //! Provides UI controls for graphics-related settings (quality, resolution, etc.).
 
 use crate::config::UserSettings;
-use crate::config::settings::SettingKey;
 use crate::framework::localization::{Localization, LocalizedStrings};
+use crate::framework::settings::SettingKey;
 use crate::framework::ui::theme::Theme;
 use crate::framework::ui::widgets::{DropdownSpec, spawn_dropdown};
 use bevy::prelude::*;

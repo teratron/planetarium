@@ -1,7 +1,39 @@
-use crate::config::UserSettings;
-use crate::framework::ui::theme::constants;
-use crate::framework::ui::theme::{Theme, ThemeColors};
+//! # Settings Interaction and Reactive Systems
+//!
+//! This module handles the flow of data between the UI and the persistent `UserSettings`.
+//! It manages interaction keys, reactive broadcasts (audio, display, theme), and auto-saving.
+//!
+//! ## Data Flow
+//! 1. **UI Interaction**: User interacts with a widget (slider, dropdown).
+//! 2. **Setting Update**: The widget system updates the `UserSettings` resource.
+//! 3. **Reactive Broadcast**: `broadcast_settings_changes` detects the change and applies it to the engine (e.g., Bevy Window, Audio State).
+//! 4. **Auto-Save**: `schedule_settings_save` triggers a debounced save to disk.
+
+use crate::config::{UserSettings, save_settings};
+use crate::framework::ui::theme::{Theme, ThemeColors, constants};
 use bevy::prelude::*;
+
+/// Type-safe keys for settings that can be modified via UI.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Reflect)]
+pub enum SettingKey {
+    MasterVolume,
+    MusicVolume,
+    SfxVolume,
+    Fullscreen,
+    Vsync,
+    AllowMultipleInstances,
+    Resolution,
+    Quality,
+    Language,
+    Theme,
+}
+
+/// Fired when settings fail to save to disk.
+#[derive(Message, Debug, Clone)]
+pub struct SettingsSaveError {
+    /// Human-readable error description.
+    pub error: String,
+}
 
 /// Runtime audio state resource (consumed by audio systems).
 ///
@@ -31,7 +63,7 @@ pub struct SettingsSnapshot {
     pub audio: crate::config::settings::AudioSettings,
 }
 
-/// Tracks pending settings changes to debounce expensive operations.
+/// Tracks pending settings changes to debounce expensive operations (like resolution changes).
 #[derive(Resource)]
 pub struct SettingsChangeTracker {
     pub pending_display_changes: bool,
@@ -44,15 +76,12 @@ impl Default for SettingsChangeTracker {
         Self {
             pending_display_changes: false,
             last_change_time: 0.0,
-            debounce_duration: constants::timing::SETTINGS_DISPLAY_DEBOUNCE, // Debounce for expensive display changes
+            debounce_duration: constants::timing::SETTINGS_DISPLAY_DEBOUNCE,
         }
     }
 }
 
 /// Watches the `UserSettings` resource and applies changes immediately to the engine.
-///
-/// Specifically handles window resolution/mode changes and synchronizes
-/// `RuntimeAudioState` with the user's volume preferences.
 pub fn broadcast_settings_changes(
     settings: Res<UserSettings>,
     mut prev: Local<Option<SettingsSnapshot>>,
@@ -67,25 +96,8 @@ pub fn broadcast_settings_changes(
 
     // Initialize prev if None (first run)
     if prev.is_none() {
-        // Apply everything immediately on startup
         if let Ok(mut window) = windows.single_mut() {
-            window.resolution.set(
-                settings.display.width as f32,
-                settings.display.height as f32,
-            );
-            window.mode = if settings.display.fullscreen {
-                bevy::window::WindowMode::Fullscreen(
-                    bevy::window::MonitorSelection::Current,
-                    bevy::window::VideoModeSelection::Current,
-                )
-            } else {
-                bevy::window::WindowMode::Windowed
-            };
-            window.present_mode = if settings.display.vsync {
-                bevy::window::PresentMode::AutoVsync
-            } else {
-                bevy::window::PresentMode::AutoNoVsync
-            };
+            apply_display_settings(&mut window, &settings.display);
         }
 
         runtime.master = settings.audio.master_volume;
@@ -104,11 +116,6 @@ pub fn broadcast_settings_changes(
         runtime.master = settings.audio.master_volume;
         runtime.music = settings.audio.music_volume;
         runtime.sfx = settings.audio.sfx_volume;
-        info!(
-            "[Settings] Applied audio settings: master={} music={} sfx={}",
-            runtime.master, runtime.music, runtime.sfx
-        );
-        // Update cached audio settings
         if let Some(p) = prev.as_mut() {
             p.audio = settings.audio.clone();
         }
@@ -118,7 +125,6 @@ pub fn broadcast_settings_changes(
     if prev.as_ref().map(|p| &p.display) != Some(&settings.display) {
         tracker.pending_display_changes = true;
         tracker.last_change_time = time.elapsed_secs();
-        // Do NOT update prev.display yet
     }
 
     // Apply pending display changes if debounce timer expired
@@ -126,41 +132,34 @@ pub fn broadcast_settings_changes(
         && (time.elapsed_secs() - tracker.last_change_time) > tracker.debounce_duration
     {
         if let Ok(mut window) = windows.single_mut() {
-            // Set resolution using provided API
-            window.resolution.set(
-                settings.display.width as f32,
-                settings.display.height as f32,
-            );
-            window.mode = if settings.display.fullscreen {
-                bevy::window::WindowMode::Fullscreen(
-                    bevy::window::MonitorSelection::Current,
-                    bevy::window::VideoModeSelection::Current,
-                )
-            } else {
-                bevy::window::WindowMode::Windowed
-            };
-
-            window.present_mode = if settings.display.vsync {
-                bevy::window::PresentMode::AutoVsync
-            } else {
-                bevy::window::PresentMode::AutoNoVsync
-            };
-
-            info!(
-                "[Settings] Applied display settings (debounced): {}x{} fullscreen={} vsync={}",
-                settings.display.width,
-                settings.display.height,
-                settings.display.fullscreen,
-                settings.display.vsync
-            );
+            apply_display_settings(&mut window, &settings.display);
+            info!("[Settings] Applied display settings (debounced)");
         }
 
-        // Update cached display settings
         if let Some(p) = prev.as_mut() {
             p.display = settings.display.clone();
         }
         tracker.pending_display_changes = false;
     }
+}
+
+fn apply_display_settings(window: &mut Window, display: &crate::config::settings::DisplaySettings) {
+    window
+        .resolution
+        .set(display.width as f32, display.height as f32);
+    window.mode = if display.fullscreen {
+        bevy::window::WindowMode::Fullscreen(
+            bevy::window::MonitorSelection::Current,
+            bevy::window::VideoModeSelection::Current,
+        )
+    } else {
+        bevy::window::WindowMode::Windowed
+    };
+    window.present_mode = if display.vsync {
+        bevy::window::PresentMode::AutoVsync
+    } else {
+        bevy::window::PresentMode::AutoNoVsync
+    };
 }
 
 /// Watches for theme changes and updates the global Theme resource.
@@ -175,7 +174,6 @@ pub fn broadcast_theme_changes(
 
     if prev.as_ref() != Some(&settings.theme) {
         info!("[Settings] Applying theme change: {}", settings.theme);
-
         match settings.theme.as_str() {
             "light" => theme.colors = ThemeColors::light(),
             _ => theme.colors = ThemeColors::default(), // dark
@@ -192,7 +190,7 @@ pub struct SettingsAutoSaveTimer(pub Timer);
 impl Default for SettingsAutoSaveTimer {
     fn default() -> Self {
         let mut timer = Timer::from_seconds(2.0, TimerMode::Once);
-        timer.pause(); // Start paused
+        timer.pause();
         Self(timer)
     }
 }
@@ -214,7 +212,7 @@ pub fn auto_save_settings(
     mut timer: ResMut<SettingsAutoSaveTimer>,
     settings: Res<UserSettings>,
     paths: Res<crate::config::AppPaths>,
-    mut error_events: MessageWriter<crate::config::settings::SettingsSaveError>,
+    mut error_events: MessageWriter<SettingsSaveError>,
 ) {
     if timer.0.is_paused() {
         return;
@@ -224,9 +222,9 @@ pub fn auto_save_settings(
 
     if timer.0.is_finished() {
         info!("[Settings] Auto-saving settings to disk...");
-        if let Err(e) = crate::config::save_settings(&paths, &settings) {
+        if let Err(e) = save_settings(&paths, &settings) {
             error!("[Settings] Failed to auto-save settings: {}", e);
-            error_events.write(crate::config::settings::SettingsSaveError {
+            error_events.write(SettingsSaveError {
                 error: e.to_string(),
             });
         }
@@ -234,7 +232,6 @@ pub fn auto_save_settings(
     }
 }
 
-/// Run condition: only tick auto-save when the timer is active.
 pub fn settings_auto_save_active(timer: Res<SettingsAutoSaveTimer>) -> bool {
     !timer.0.is_paused()
 }
