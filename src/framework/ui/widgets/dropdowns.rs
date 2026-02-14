@@ -6,6 +6,7 @@ use crate::framework::loading::assets::AssetCache;
 use crate::framework::menu::events::{UiAudioEvent, play_ui_audio};
 use crate::framework::settings::SettingKey;
 use crate::framework::ui::theme::Theme;
+use crate::framework::utils::despawn_recursive;
 use bevy::prelude::*;
 
 use super::base::Widget;
@@ -142,6 +143,7 @@ pub fn dropdown_interaction_system(
         (Changed<Interaction>, With<Button>),
     >,
     option_lists: Query<(Entity, &DropdownOptionsList)>,
+    children_query: Query<&Children>,
 ) {
     for (entity, interaction, mut dropdown, mut bg_color) in &mut dropdown_query {
         if *interaction == Interaction::Pressed {
@@ -226,7 +228,7 @@ pub fn dropdown_interaction_system(
                 // Despawn the options list
                 for (list_entity, list) in &option_lists {
                     if list.0 == entity {
-                        commands.entity(list_entity).despawn();
+                        despawn_recursive(&mut commands, list_entity, &children_query);
                     }
                 }
             }
@@ -317,6 +319,7 @@ pub fn dropdown_option_interaction_system(
     mut text_query: Query<&mut Text, With<DropdownText>>,
     option_query: Query<(&Interaction, &DropdownOption), (Changed<Interaction>, With<Button>)>,
     option_list_query: Query<(Entity, &DropdownOptionsList)>,
+    children_query: Query<&Children>,
 ) {
     for (interaction, option) in &option_query {
         if *interaction == Interaction::Pressed
@@ -363,7 +366,7 @@ pub fn dropdown_option_interaction_system(
             // Close dropdown (recursive despawn to clean up children)
             for (list_entity, list) in &option_list_query {
                 if list.0 == option.parent_dropdown {
-                    commands.entity(list_entity).despawn();
+                    despawn_recursive(&mut commands, list_entity, &children_query);
                 }
             }
         }

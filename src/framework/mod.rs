@@ -47,4 +47,7 @@ pub mod camera;
 /// Audio subsystem and settings.
 pub mod audio;
 
+/// Shared utilities.
+pub mod utils;
+
 pub use plugin::FrameworkPlugin;

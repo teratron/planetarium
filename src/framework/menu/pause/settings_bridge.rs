@@ -81,8 +81,9 @@ pub fn animate_settings_fade_bridge(
         &mut Transform,
         &mut components::SettingsFade,
     )>,
+    children_query: Query<&Children>,
 ) {
-    animate_settings_fade(commands, time, theme, query);
+    animate_settings_fade(commands, time, theme, query, children_query);
 }
 
 /// Reuse settings value-to-UI synchronization.

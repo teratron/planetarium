@@ -2,6 +2,7 @@
 //!
 //! Top-level configuration: user settings, path resolution, CLI args, and app metadata.
 
+pub mod build_mode;
 pub mod cli;
 pub mod metadata;
 pub mod paths;

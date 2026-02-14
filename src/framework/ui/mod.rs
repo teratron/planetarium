@@ -11,3 +11,6 @@ pub mod theme;
 
 /// Reusable UI widgets (buttons, sliders, dropdowns).
 pub mod widgets;
+
+/// Modal dialog system.
+pub mod modal;

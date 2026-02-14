@@ -110,6 +110,8 @@ fn build_app(
             }),
     )
     .insert_state(initial_state)
+    .insert_resource(planetarium::config::build_mode::BuildMode::current())
+    .add_systems(Startup, planetarium::config::build_mode::log_build_mode)
     .init_resource::<planetarium::framework::states::ErrorState>()
     .insert_resource(args)
     .insert_resource(paths)

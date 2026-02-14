@@ -9,6 +9,7 @@ use crate::framework::states::AppState;
 use crate::framework::ui::fading::ScreenFade;
 use crate::framework::ui::theme::Theme;
 use crate::framework::ui::widgets::{ButtonAction, PrimaryButton, spawn_primary_button};
+use crate::framework::utils::despawn_recursive;
 use bevy::prelude::*;
 
 /// Marker component for menu root entity.
@@ -146,11 +147,18 @@ pub fn handle_menu_button_clicks(
     interaction_query: Query<(&Interaction, &PrimaryButton), MenuButtonFilter>,
     mut settings_open: ResMut<SettingsOpen>,
     mut fade: ResMut<ScreenFade>,
+    mut modal_state: ResMut<crate::framework::ui::modal::ModalState>,
     localization: Res<crate::framework::localization::Localization>,
 ) {
     for (interaction, button) in &interaction_query {
         if *interaction == Interaction::Pressed {
-            handle_button_action(&button.action, &mut settings_open, &mut fade, &localization);
+            handle_button_action(
+                &button.action,
+                &mut settings_open,
+                &mut fade,
+                &mut modal_state,
+                &localization,
+            );
         }
     }
 }
@@ -160,6 +168,7 @@ fn handle_button_action(
     action: &ButtonAction,
     settings_open: &mut ResMut<SettingsOpen>,
     fade: &mut ResMut<ScreenFade>,
+    modal_state: &mut crate::framework::ui::modal::ModalState,
     localization: &crate::framework::localization::Localization,
 ) {
     match action {
@@ -177,8 +186,8 @@ fn handle_button_action(
             settings_open.0 = true;
         }
         ButtonAction::Exit => {
-            info!("{}", localization.t("menu-exit")); // Not a log key but works
-            std::process::exit(0);
+            info!("{}", localization.t("menu-exit"));
+            modal_state.active = Some(crate::framework::ui::modal::ModalType::ConfirmExit);
         }
         ButtonAction::Back => {
             settings_open.0 = false;
@@ -187,8 +196,12 @@ fn handle_button_action(
 }
 
 /// System to despawn the menu UI when exiting MainMenu state.
-pub fn despawn_main_menu(mut commands: Commands, query: Query<Entity, With<MainMenuRoot>>) {
+pub fn despawn_main_menu(
+    mut commands: Commands,
+    query: Query<Entity, With<MainMenuRoot>>,
+    children_query: Query<&Children>,
+) {
     for entity in query.iter() {
-        commands.entity(entity).despawn();
+        despawn_recursive(&mut commands, entity, &children_query);
     }
 }

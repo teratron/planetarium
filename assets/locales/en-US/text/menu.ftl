@@ -111,3 +111,17 @@ log-settings-switch-tab = [Settings] Switching to tab: { $tab }
 log-game-init = [Game] Initializing 3D game world...
 log-game-sphere-fail = [Game] Failed to generate sphere mesh; skipping planet placeholder.
 log-game-enjoy = [Game] Handover complete. Enjoy the Cosmos!
+
+# Modal Windows
+modal-exit-title = Exit Game
+modal-exit-message = Are you sure you want to quit the game?
+modal-main-menu-title = Return to Main Menu
+modal-main-menu-message = Do you want to return to the main menu? Unsaved progress might be lost.
+modal-error-title = Error
+modal-error-generic = An unexpected error occurred.
+modal-yes = Yes
+modal-no = No
+
+# Settings Actions
+settings-apply = Apply
+settings-reset = Reset

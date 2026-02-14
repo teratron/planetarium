@@ -25,7 +25,11 @@ impl Plugin for BootPlugin {
         // Handle transition to next state
         app.add_systems(
             Update,
-            check_boot_finished.run_if(in_state(AppState::Booting)),
+            (
+                check_boot_finished,
+                crate::framework::ui::theme::check_theme_ready,
+            )
+                .run_if(in_state(AppState::Booting)),
         );
     }
 }

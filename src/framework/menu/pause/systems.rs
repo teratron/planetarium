@@ -6,6 +6,7 @@ use crate::framework::assets::{AssetCache, AssetManifest};
 use crate::framework::settings::RuntimeAudioState;
 use crate::framework::settings::SettingsOpen;
 use crate::framework::states::AppState;
+use crate::framework::ui::modal::ModalState;
 use crate::framework::ui::widgets::{ButtonAction, PrimaryButton};
 use bevy::app::AppExit;
 use bevy::prelude::*;
@@ -81,8 +82,9 @@ pub fn apply_pause_menu_actions(
     mut events: MessageReader<PauseMenuActionEvent>,
     mut pause_state: ResMut<PauseMenuState>,
     mut settings_open: ResMut<SettingsOpen>,
-    mut next_state: ResMut<NextState<AppState>>,
-    mut app_exit: MessageWriter<AppExit>,
+    _next_state: ResMut<NextState<AppState>>,
+    mut modal_state: ResMut<ModalState>,
+    _app_exit: MessageWriter<AppExit>,
 ) {
     for event in events.read() {
         match event {
@@ -111,11 +113,10 @@ pub fn apply_pause_menu_actions(
                 set_pause_mode(&mut pause_state, &mut settings_open, PauseMenuMode::Closed);
             }
             PauseMenuActionEvent::ExitToMainMenu => {
-                set_pause_mode(&mut pause_state, &mut settings_open, PauseMenuMode::Closed);
-                next_state.set(AppState::MainMenu);
+                modal_state.active = Some(crate::framework::ui::modal::ModalType::ConfirmMainMenu);
             }
             PauseMenuActionEvent::ExitGame => {
-                app_exit.write(AppExit::Success);
+                modal_state.active = Some(crate::framework::ui::modal::ModalType::ConfirmExit);
             }
         }
     }

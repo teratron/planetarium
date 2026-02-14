@@ -144,6 +144,62 @@ pub fn spawn_settings_menu(
             .with_children(|btn_area| {
                 let parent = btn_area.target_entity();
                 let commands = btn_area.commands_mut();
+
+                // Apply Button
+                commands
+                    .spawn((
+                        Button,
+                        crate::framework::settings::ApplyChangesButton,
+                        Node {
+                            width: Val::Px(120.0),
+                            height: Val::Px(40.0),
+                            margin: UiRect::right(Val::Px(10.0)),
+                            justify_content: JustifyContent::Center,
+                            align_items: AlignItems::Center,
+                            ..default()
+                        },
+                        BackgroundColor(theme.colors.accent),
+                    ))
+                    .with_children(|btn| {
+                        btn.spawn((
+                            Text::new(strings.get("settings-apply", loc)),
+                            TextFont {
+                                font: theme.fonts.bold.clone(),
+                                font_size: theme.sizes.font_body,
+                                ..default()
+                            },
+                            TextColor(theme.colors.text_primary),
+                        ));
+                    });
+
+                // Reset Button
+                commands
+                    .spawn((
+                        Button,
+                        crate::framework::settings::ResetChangesButton,
+                        Node {
+                            width: Val::Px(120.0),
+                            height: Val::Px(40.0),
+                            margin: UiRect::right(Val::Px(10.0)),
+                            justify_content: JustifyContent::Center,
+                            align_items: AlignItems::Center,
+                            ..default()
+                        },
+                        BackgroundColor(theme.colors.danger),
+                    ))
+                    .with_children(|btn| {
+                        btn.spawn((
+                            Text::new(strings.get("settings-reset", loc)),
+                            TextFont {
+                                font: theme.fonts.bold.clone(),
+                                font_size: theme.sizes.font_body,
+                                ..default()
+                            },
+                            TextColor(theme.colors.text_primary),
+                        ));
+                    });
+
+                // Back Button
                 spawn_primary_button(
                     commands,
                     theme,

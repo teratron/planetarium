@@ -2,6 +2,7 @@
 //!
 //! Systems for setup, countdown/skip, and cleanup of the splash screen.
 
+use crate::framework::utils::despawn_recursive;
 use bevy::prelude::*;
 
 use crate::framework::assets::AssetManifest;
@@ -90,10 +91,14 @@ pub fn countdown_splash(
     }
 }
 
-pub fn cleanup_splash(mut commands: Commands, query: Query<Entity, With<SplashRoot>>) {
+pub fn cleanup_splash(
+    mut commands: Commands,
+    query: Query<Entity, With<SplashRoot>>,
+    children_query: Query<&Children>,
+) {
     info!("[SplashPlugin] Cleaning up splash screen.");
     for entity in query.iter() {
-        commands.entity(entity).despawn();
+        despawn_recursive(&mut commands, entity, &children_query);
     }
     commands.remove_resource::<SplashTimer>();
 }

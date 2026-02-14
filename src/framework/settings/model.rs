@@ -34,8 +34,8 @@ pub struct GraphicsSettings {
 }
 
 /// Global resource holding all user settings.
-#[derive(Resource, Serialize, Deserialize, Debug, Clone, Reflect)]
-#[non_exhaustive]
+#[derive(Resource, Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[serde(default)]
 pub struct UserSettings {
     /// Schema version for this config file.
     pub version: u32,

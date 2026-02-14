@@ -27,6 +27,14 @@ pub struct FrameworkPlugin;
 
 impl Plugin for FrameworkPlugin {
     fn build(&self, app: &mut App) {
+        app.init_resource::<crate::framework::settings::PendingSettings>()
+            .add_systems(
+                Update,
+                (
+                    crate::framework::settings::pending_systems::handle_settings_action_buttons,
+                    crate::framework::settings::pending_systems::initialize_pending_settings,
+                ),
+            );
         app.add_plugins((
             BootPlugin,
             SplashPlugin,
@@ -35,6 +43,7 @@ impl Plugin for FrameworkPlugin {
             ErrorPlugin,
             DiagnosticsPlugin,
             super::ui::fading::FadingPlugin,
+            super::ui::modal::ModalPlugin,
             super::ui::theme::ThemePlugin,
             super::camera::CameraPlugin,
             super::audio::AudioPlugin,

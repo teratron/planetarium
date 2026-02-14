@@ -2,8 +2,7 @@
 //!
 //! Centralizes design tokens (colors, fonts, sizes) for the application.
 
-use crate::framework::assets::{AssetCache, AssetManifest};
-use crate::framework::states::{AppState, ErrorState};
+use crate::framework::states::AppState;
 use bevy::asset::AssetServer;
 use bevy::prelude::*;
 
@@ -34,41 +33,52 @@ pub struct Theme {
     pub sizes: ThemeSizes,
 }
 
+/// Loading state for theme assets.
+#[derive(Resource, Default)]
+pub struct ThemeLoadingState {
+    pub main_font: Option<Handle<Font>>,
+    pub bold_font: Option<Handle<Font>>,
+    pub is_ready: bool,
+}
+
+/// Phases of theme loading.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum ThemeLoadingPhase {
+    #[default]
+    NotStarted,
+    LoadingFonts,
+    Ready,
+}
+
 /// Embedded fallback font for critical error states.
 const FALLBACK_FONT_BYTES: &[u8] = include_bytes!("../../../../assets/fonts/FiraSans-Regular.ttf");
 
 /// System to load theme assets (fonts) using paths from the AssetManifest.
 pub fn setup_theme(
+    mut commands: Commands,
     asset_server: Res<AssetServer>,
-    manifest: Res<AssetManifest>,
-    mut cache: ResMut<AssetCache>,
+    manifest: Res<crate::framework::assets::AssetManifest>,
     mut theme: ResMut<Theme>,
     mut fonts: ResMut<Assets<Font>>,
-    mut next_state: ResMut<NextState<AppState>>,
-    mut error_state: ResMut<ErrorState>,
 ) {
-    info!("[Theme] Hydrating theme assets...");
+    info!("[Theme] Initializing theme system...");
 
-    // 1. Register the embedded fallback font first
-    // This ensures we ALWAYS have a valid font available.
-    match Font::try_from_bytes(FALLBACK_FONT_BYTES.to_vec()) {
+    // 1. Create embedded fallback (synchronously)
+    let fallback_handle = match Font::try_from_bytes(FALLBACK_FONT_BYTES.to_vec()) {
         Ok(font) => {
-            theme.fonts.fallback = fonts.add(font);
-            info!("[Theme] Embedded fallback font loaded successfully");
+            let handle = fonts.add(font);
+            info!("[Theme] Embedded fallback font loaded");
+            Some(handle)
         }
         Err(e) => {
-            error!(
-                "[Theme] CRITICAL: Failed to create fallback font from embedded bytes: {}",
-                e
-            );
-            error_state.message = format!("Failed to initialize UI fonts: {}", e);
-            next_state.set(AppState::Error);
-            return;
+            error!("[Theme] CRITICAL: Failed to load embedded font: {}", e);
+            None
         }
-    }
+    };
 
-    // 2. Load primary fonts from disk
-    // We use FiraSans as the default since it's included in the assets folder.
+    let fallback = fallback_handle.unwrap_or_default();
+
+    // 2. Start async loading from disk
     let main_path = manifest
         .font("main")
         .cloned()
@@ -78,10 +88,79 @@ pub fn setup_theme(
         .cloned()
         .unwrap_or_else(|| "fonts/FiraSans-Regular.ttf".to_string());
 
-    theme.fonts.main = cache.get_or_load_font("main", &main_path, &asset_server, &manifest);
-    theme.fonts.bold = cache.get_or_load_font("bold", &bold_path, &asset_server, &manifest);
+    let main_handle = asset_server.load(main_path.clone());
+    let bold_handle = asset_server.load(bold_path.clone());
 
-    // Force initialization of colors and sizes if not already set (re-applying defaults is cheap)
+    info!(
+        "[Theme] Requesting font assets: main={}, bold={}",
+        main_path, bold_path
+    );
+
+    // 3. Initialize theme with fallback values
     theme.colors = ThemeColors::default();
     theme.sizes = ThemeSizes::default();
+    theme.fonts = ThemeFonts {
+        main: main_handle.clone(),
+        bold: bold_handle.clone(),
+        fallback,
+    };
+
+    commands.insert_resource(ThemeLoadingState {
+        main_font: Some(main_handle),
+        bold_font: Some(bold_handle),
+        is_ready: false,
+    });
+}
+
+/// System to monitor theme loading progress.
+pub fn check_theme_ready(
+    asset_server: Res<AssetServer>,
+    mut loading_state: ResMut<ThemeLoadingState>,
+    mut local_phase: Local<ThemeLoadingPhase>,
+    _next_state: ResMut<NextState<AppState>>,
+) {
+    if loading_state.is_ready {
+        return;
+    }
+
+    match *local_phase {
+        ThemeLoadingPhase::NotStarted => {
+            info!("[Theme] Starting asset validation...");
+            *local_phase = ThemeLoadingPhase::LoadingFonts;
+        }
+        ThemeLoadingPhase::LoadingFonts => {
+            use bevy::asset::LoadState;
+
+            let main_state = loading_state
+                .main_font
+                .as_ref()
+                .and_then(|h| asset_server.get_load_state(h.id()));
+            let bold_state = loading_state
+                .bold_font
+                .as_ref()
+                .and_then(|h| asset_server.get_load_state(h.id()));
+
+            let main_ready = matches!(main_state, Some(LoadState::Loaded));
+            let bold_ready = matches!(bold_state, Some(LoadState::Loaded));
+
+            if main_ready && bold_ready {
+                info!("[Theme] All fonts loaded successfully");
+                loading_state.is_ready = true;
+                *local_phase = ThemeLoadingPhase::Ready;
+                // In a real flow, we might advance state here if this was the last blocker
+            }
+
+            // Check for failures
+            if matches!(main_state, Some(LoadState::Failed(_))) {
+                warn!("[Theme] Main font failed to load, UI might be degraded");
+                // We could set to ready anyway to allow usage of fallback
+            }
+            if matches!(bold_state, Some(LoadState::Failed(_))) {
+                warn!("[Theme] Bold font failed to load");
+            }
+        }
+        ThemeLoadingPhase::Ready => {
+            // Can trigger follow-up state transitions here
+        }
+    }
 }

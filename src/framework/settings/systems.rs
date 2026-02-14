@@ -11,6 +11,7 @@ use super::{ActiveSettingsTab, SettingsOpen, SettingsTab, UserSettings};
 use crate::framework::localization::{Localization, LocalizedStrings};
 use crate::framework::ui::theme::Theme;
 use crate::framework::ui::theme::constants;
+use crate::framework::utils::despawn_recursive;
 use bevy::prelude::*;
 
 /// System to handle tab switching.
@@ -53,7 +54,7 @@ pub fn update_settings_tab_content(
         // 1. Clear existing content
         if let Ok(children) = children_query.get(content_area) {
             for child in children.iter() {
-                commands.entity(child).despawn();
+                despawn_recursive(&mut commands, child, &children_query);
             }
         }
 
@@ -118,6 +119,7 @@ pub fn animate_settings_fade(
         &mut Transform,
         &mut SettingsFade,
     )>,
+    children_query: Query<&Children>,
 ) {
     for (entity, mut bg_color, mut transform, mut fade) in &mut query {
         fade.timer.tick(time.delta());
@@ -147,7 +149,7 @@ pub fn animate_settings_fade(
 
         // Despawn on finish if fading out
         if fade.direction == FadeDirection::Out && fade.timer.just_finished() {
-            commands.entity(entity).despawn();
+            despawn_recursive(&mut commands, entity, &children_query);
         }
 
         // Remove Fade component if fading in finished
