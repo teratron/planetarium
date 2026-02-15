@@ -1,9 +1,9 @@
 use bevy::prelude::*;
-use planetarium::config::AppPaths;
-use planetarium::config::cli::CliArgs;
-use planetarium::config::metadata::{APP_TITLE, DEBUG_LOG_FILTER, DEFAULT_LOG_FILTER};
-use planetarium::framework::FrameworkPlugin;
-use planetarium::framework::states::AppState;
+use launcher::config::AppPaths;
+use launcher::config::cli::CliArgs;
+use launcher::config::metadata::{APP_TITLE, DEBUG_LOG_FILTER, DEFAULT_LOG_FILTER};
+use launcher::{AppState, LauncherPlugin};
+use menu::MenuPlugin;
 use planetarium::game::GamePlugin;
 use planetarium::utils::single_instance::{
     SingleInstanceError, SingleInstanceLock, acquire_single_instance_lock,
@@ -32,7 +32,7 @@ fn main() -> anyhow::Result<()> {
         .with_context(|| format!("Failed to prepare data directory {:?}", paths.data_dir))?;
 
     // 3. Load settings early to read startup behavior flags.
-    let settings = planetarium::framework::settings::load_settings(&paths);
+    let settings = launcher::config::settings::load_settings(&paths);
 
     // 4. Protect against launching a second instance unless explicitly allowed.
     let instance_lock = match acquire_single_instance_lock(
@@ -110,12 +110,12 @@ fn build_app(
             }),
     )
     .insert_state(initial_state)
-    .insert_resource(planetarium::config::build_mode::BuildMode::current())
-    .add_systems(Startup, planetarium::config::build_mode::log_build_mode)
-    .init_resource::<planetarium::framework::states::ErrorState>()
+    .insert_resource(launcher::config::build_mode::BuildMode::current())
+    .add_systems(Startup, launcher::config::build_mode::log_build_mode)
+    .init_resource::<launcher::states::ErrorState>()
     .insert_resource(args)
     .insert_resource(paths)
-    .add_plugins((FrameworkPlugin, GamePlugin));
+    .add_plugins((LauncherPlugin, MenuPlugin, GamePlugin));
 
     if let Some(guard) = instance_lock {
         app.insert_non_send_resource(InstanceLockGuard { _guard: guard });

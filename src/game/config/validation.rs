@@ -3,7 +3,7 @@
 //! Validation logic for game-specific balance parameters.
 
 use super::gameplay::GameplayConfig;
-use crate::framework::settings::validation::Validate;
+use menu::settings::validation::Validate;
 
 impl Validate for GameplayConfig {
     type Error = Vec<String>;

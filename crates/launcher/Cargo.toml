@@ -1,0 +1,43 @@
+[package]
+name = "launcher"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Reusable launcher framework for Bevy games"
+keywords = ["bevy", "game", "launcher", "framework"]
+categories = ["game-development"]
+build = "build.rs"
+
+[dependencies]
+bevy.workspace = true
+serde.workspace = true
+anyhow.workspace = true
+thiserror.workspace = true
+strum.workspace = true
+strum_macros.workspace = true
+fluent-bundle.workspace = true
+unic-langid.workspace = true
+intl-memoizer.workspace = true
+
+clap = { workspace = true, features = ["derive"] }
+ron.workspace = true
+
+
+theme = { path = "../theme", optional = true }
+localization = { path = "../localization", optional = true }
+transitions = { path = "../transitions", optional = true }
+
+
+[dev-dependencies]
+bevy = { workspace = true, features = ["bevy_dev_tools"] }
+
+[features]
+default = ["theme", "localization", "transitions"]
+theme = ["dep:theme"]
+localization = ["dep:localization"]
+diagnostics = []                                   # Enable debug overlay
+
+[build-dependencies]
+glob = "0.3"

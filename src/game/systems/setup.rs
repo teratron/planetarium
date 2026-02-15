@@ -4,8 +4,9 @@
 
 use bevy::prelude::*;
 
-use crate::framework::ui::theme::Theme;
 use crate::game::components::{GameWorldRoot, Rotates};
+use localization::Localization;
+use theme::Theme;
 
 /// Spawns the 3D game world with a placeholder planet, light, and camera.
 pub fn setup_game_world(
@@ -13,7 +14,7 @@ pub fn setup_game_world(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     theme: Res<Theme>,
-    localization: Res<crate::framework::localization::Localization>,
+    localization: Res<Localization>,
 ) {
     info!("{}", localization.t("log-game-init"));
 

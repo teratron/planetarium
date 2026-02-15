@@ -1,0 +1,20 @@
+[package]
+name = "localization"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Localization system for Bevy games"
+keywords = ["bevy", "game", "localization", "i18n"]
+categories = ["game-development"]
+
+[dependencies]
+bevy.workspace = true
+fluent-bundle.workspace = true
+unic-langid.workspace = true
+intl-memoizer.workspace = true
+
+
+[build-dependencies]
+glob = "0.3"

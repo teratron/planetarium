@@ -6,8 +6,9 @@ use bevy::prelude::*;
 
 use super::config::GameplayConfig;
 use super::systems;
-use crate::config::AppPaths;
-use crate::framework::states::AppState;
+use launcher::config::AppPaths;
+use launcher::states::AppState;
+use menu::pause::state::gameplay_active;
 
 pub struct GamePlugin;
 
@@ -22,7 +23,7 @@ impl Plugin for GamePlugin {
                 Update,
                 systems::gameplay::rotate_planet
                     .run_if(in_state(AppState::InGame))
-                    .run_if(crate::framework::menu::pause::state::gameplay_active),
+                    .run_if(gameplay_active),
             )
             .add_systems(
                 OnExit(AppState::InGame),

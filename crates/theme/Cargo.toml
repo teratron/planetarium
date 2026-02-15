@@ -1,0 +1,17 @@
+[package]
+name = "theme"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Theming system for Bevy games"
+keywords = ["bevy", "game", "theme", "ui"]
+categories = ["game-development"]
+build = "build.rs"
+
+[dependencies]
+bevy.workspace = true
+
+[build-dependencies]
+glob = "0.3"

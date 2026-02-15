@@ -1,0 +1,16 @@
+[package]
+name = "transitions"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Screen transitions for Bevy games"
+keywords = ["bevy", "game", "transitions", "effects"]
+categories = ["game-development"]
+
+[dependencies]
+bevy.workspace = true
+
+[build-dependencies]
+glob = "0.3"
