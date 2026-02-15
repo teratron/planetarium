@@ -4,7 +4,7 @@
 
 use bevy::prelude::*;
 
-use crate::game::components::GameWorldRoot;
+use crate::components::GameWorldRoot;
 
 /// Despawns all entities under the game world root.
 pub fn cleanup_game_world(mut commands: Commands, query: Query<Entity, With<GameWorldRoot>>) {

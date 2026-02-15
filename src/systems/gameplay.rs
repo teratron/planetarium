@@ -4,9 +4,9 @@
 
 use bevy::prelude::*;
 
-use crate::game::components::Rotates;
+use crate::components::Rotates;
 
-use crate::game::config::GameplayConfig;
+use crate::config::GameplayConfig;
 
 /// Rotates entities marked with the `Rotates` component.
 pub fn rotate_planet(

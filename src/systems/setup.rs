@@ -4,7 +4,7 @@
 
 use bevy::prelude::*;
 
-use crate::game::components::{GameWorldRoot, Rotates};
+use crate::components::{GameWorldRoot, Rotates};
 use localization::Localization;
 use theme::Theme;
 

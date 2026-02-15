@@ -3,6 +3,7 @@
 //! Provides a real-time overlay for monitoring performance (FPS) and application state.
 
 // use crate::framework::ui::theme::Theme; // Theme is in theme crate
+#[cfg(not(test))]
 use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
 use bevy::prelude::*;
 
@@ -37,6 +38,15 @@ impl Plugin for DiagnosticsPlugin {
             );
     }
 }
+
+#[derive(Resource, Default)]
+struct DebugSettings {
+    visible: bool,
+}
+
+/// Marker for the debug overlay root.
+#[derive(Component)]
+struct DebugOverlayRoot;
 
 // setup_debug_overlay and update_debug_text logic needs Theme.
 // I will keep them commented out until I import Theme properly.

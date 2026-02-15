@@ -2,12 +2,12 @@ use bevy::prelude::*;
 use launcher::config::AppPaths;
 use launcher::config::cli::CliArgs;
 use launcher::config::metadata::{APP_TITLE, DEBUG_LOG_FILTER, DEFAULT_LOG_FILTER};
-use launcher::{AppState, LauncherPlugin};
-use menu::MenuPlugin;
-use planetarium::game::GamePlugin;
-use planetarium::utils::single_instance::{
+use launcher::utils::single_instance::{
     SingleInstanceError, SingleInstanceLock, acquire_single_instance_lock,
 };
+use launcher::{AppState, LauncherPlugin};
+use menu::MenuPlugin;
+use planetarium::GamePlugin;
 
 /// Resource that keeps the single-instance lock alive during the application's lifetime.
 ///

@@ -1,6 +1,6 @@
 //! Single-instance process lock management.
 
-use launcher::config::AppPaths;
+use crate::config::AppPaths;
 use std::fs::{File, OpenOptions};
 use std::io::Write;
 use std::path::PathBuf;
@@ -139,8 +139,8 @@ fn write_lock_metadata(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use launcher::config::AppPaths;
-    use launcher::config::metadata::{LOCK_FILENAME, LOG_FILENAME, SETTINGS_FILENAME};
+    use crate::config::AppPaths;
+    use crate::config::metadata::{LOCK_FILENAME, LOG_FILENAME, SETTINGS_FILENAME};
 
     #[test]
     fn lock_is_skipped_when_multiple_instances_enabled() {

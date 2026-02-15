@@ -4,6 +4,8 @@
 
 use bevy::prelude::*;
 
+pub mod single_instance;
+
 /// Recursively despawn an entity and all its descendants.
 pub fn despawn_recursive(
     commands: &mut Commands,
