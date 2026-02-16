@@ -49,10 +49,9 @@ Immediately after code generation:
 If the changes affect the public API:
 
 - **SemVer Analysis**: Apply the `rust-semver` skill to evaluate the change type (MAJOR, MINOR, PATCH).
-- **Metadata Update**:
+- **Metadata Update**: Apply the `changelog-generator` skill.
   - Increment the version in `Cargo.toml` as required.
   - Update the documentation and `CHANGELOG.md` (if exists) reflecting the changes.
-- **Git Tagging**: Propose or create a git tag for the new version (format: `vX.Y.Z`).
 
 ## 5. Phase: Synchronization & Completion
 
